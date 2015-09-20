@@ -109,7 +109,7 @@ void Patterns::initializeSACounts() {
 		unsigned char *text = readFileChar(this->textFileName, textLen, 0);
 
 		unsigned int saLen;
-		unsigned int *sa = readSA(this->textFileName, saLen, 0, false);
+		unsigned int *sa = getSA(text, textLen, saLen, 0, false);
 
 		this->counts = new unsigned int[this->queriesNum];
 

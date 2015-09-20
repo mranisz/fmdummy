@@ -5,7 +5,7 @@ class I_Api {
 protected:
 	bool verbose = false;
 public:
-	virtual void build(char* textFileName) = 0;
+	virtual void build(unsigned char* text, unsigned int textLen) = 0;
 	virtual void save(char *fileName) = 0;
 	virtual void load(char *fileName) = 0;
 	virtual void free() = 0;

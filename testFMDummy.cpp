@@ -17,7 +17,7 @@ void getUsage() {
 	cout << "fmDummy option fileName q m [bits|k|selectedChars]" << endl;
 	cout << "where:" << endl;
 	cout << "fmDummy - FM Dummy index type [1|2|2CB|3|WT2|WT4|WT8]" << endl;
-	cout << "option: [256|512|256c|512c] for type [1|2|2CB] or [512|1024] for type [3|WT2|WT4|WT8] or [512-hash|1024-hash] for type [WT2|WT4|WT8] or [512c|1024c|512c-hash|1024c-hash] for WT2 or [512-SSE2|1024-SSE2] for type [WT4|WT8]" << endl;
+	cout << "option: [256c|512c] for type [1|2|2CB] or [512|1024] for type [3|WT2|WT4|WT8] or [512-hash|1024-hash] for type [WT2|WT4|WT8] or [512c|1024c|512c-hash|1024c-hash] for WT2 or [512-SSE2|1024-SSE2] for type [WT4|WT8]" << endl;
 	cout << "fileName - name of text file" << endl;
 	cout << "q - number of patterns (queries)" << endl;
 	cout << "m - pattern length" << endl;
@@ -67,6 +67,8 @@ void fmDummy1(string indexType, string selectedChars, char *textFileName, unsign
 	Patterns *P = new Patterns(textFileName, queriesNum, m, selectedChars);
 	unsigned char **patterns = P->getPatterns();
 
+	unsigned char* text = NULL;
+	unsigned int textLen;
 	FMDummy1 *FMD1;
 	stringstream ss;
 	ss << textFileName << "-" << indexType << ".fm1_idx";
@@ -79,7 +81,8 @@ void fmDummy1(string indexType, string selectedChars, char *textFileName, unsign
 	} else {
 		FMD1 = new FMDummy1(indexType, selectedChars);
 		FMD1->setVerbose(true);
-		FMD1->build(textFileName);
+		text = readText(textFileName, textLen, 0);
+		FMD1->build(text, textLen);
 		FMD1->save(indexFileName);
 	}
 
@@ -107,6 +110,7 @@ void fmDummy1(string indexType, string selectedChars, char *textFileName, unsign
 	resultFile << endl;
 	resultFile.close();
 
+	if (text != NULL) delete[] text;
 	delete[] indexCounts;
 	delete FMD1;
 	delete P;

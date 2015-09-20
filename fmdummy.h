@@ -7,6 +7,8 @@ using namespace std;
 #ifndef FMDUMMY_H_
 #define FMDUMMY_H_
 
+//FMDUMMY1
+
 class FMDummy1 : public I_Api {
 private:
 	unsigned long long *raw_bwtWithRanks[256];
@@ -33,13 +35,13 @@ private:
 
 public:
 
-	enum Constants {
+	enum IndexTypesConst {
 		TYPE_256c = 1,
 		TYPE_512c = 2
 	};
 
 	FMDummy1() {
-			this->initialize();
+		this->initialize();
 	};
 
 	FMDummy1(string indexType, string selectedChars) {
@@ -51,7 +53,7 @@ public:
 		this->freeMemory();
 	}
 
-	void build(char *textFileName);
+	void build(unsigned char *text, unsigned int textLen);
 	void save(char *fileName);
 	void load(char *fileName);
 	void free();
@@ -62,8 +64,7 @@ public:
 	unsigned int *locate(unsigned char *pattern, unsigned int patternLen);
 };
 
-unsigned char *getBinDenseForChar(char* textFileName, unsigned char *bwt, unsigned int bwtLen, int ordChar);
-unsigned int *getArrayC(char *textFileName, bool verbose);
+unsigned char *getBinDenseForChar(unsigned char *bwt, unsigned int bwtLen, int ordChar);
 unsigned long long** buildRank_64_256(unsigned long long** bwtInLong, unsigned int bwtInLongLen, unsigned long long** raw_bwtWithRanks, unsigned int *ordChars, unsigned int ordCharsLen, unsigned int &raw_bwtWithRanksLen);
 unsigned long long** buildRank_64_256_counter48(unsigned long long** bwtInLong, unsigned int bwtInLongLen, unsigned long long** raw_bwtWithRanks, unsigned int *ordChars, unsigned int ordCharsLen, unsigned int &raw_bwtWithRanksLen);
 unsigned long long** buildRank_64_512(unsigned long long** bwtInLong, unsigned int bwtInLongLen, unsigned long long** raw_bwtWithRanks, unsigned int *ordChars, unsigned int ordCharsLen, unsigned int &raw_bwtWithRanksLen);

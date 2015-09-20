@@ -109,65 +109,64 @@ bool fileExists(char* inFileName) {
 	return true;
 }
 
-unsigned int *readSA(char* inFileName, unsigned int &len, unsigned int addLen, bool verbose) {
-	unsigned int *sa;
-	if (!fileExists((char *)((string)inFileName + (string)".sa").c_str())) {
-		if (verbose) cout << "Creating SA for " << inFileName << " ... " << flush;
-		unsigned int textLen;
-		unsigned char *text = readFileChar(inFileName, textLen, 0);
-		sa = new unsigned int[textLen + 1];
-		sa[0] = textLen;
-		++sa;
-		sais(text, (int *)sa, textLen);
-		if (verbose) cout << "Done" << endl;
-		if (verbose) cout << "Saving SA in " << inFileName << ".sa ... " << flush;
-		FILE* outFile;
-		--sa;
-		outFile = fopen((char *)((string)inFileName + (string)".sa").c_str(), "w");
-		fwrite(sa, (size_t)4, (size_t)(textLen + 1), outFile);
-		fclose(outFile);
-		if (verbose) cout << "Done" << endl;
-	} else {
-		if (verbose) cout << "Reading SA from " << inFileName << ".sa ... " << flush;
-		sa = readFileInt((char *)((string)inFileName + (string)".sa").c_str(), len, addLen);
-		if (verbose) cout << "Done" << endl;
-	}
-	return sa;
-}
-
-unsigned char *readText(char* inFileName, unsigned int &len, unsigned char eof, bool checkNullChar) {
-	unsigned char* S = readFileChar(inFileName, len, 1);
-	S[len] = eof;
-	if (checkNullChar) {
-		for (unsigned int i = 0; i < len; ++i) {
-			if (S[i] == '\0') {
-				cout << "Error reading file: file contains at least one 0 character" << endl;
-				exit(1);
-			}
-		}
-	}
+unsigned char *readText(char* inFileName, unsigned int &textLen, unsigned char eof) {
+	unsigned char* S = readFileChar(inFileName, textLen, 1);
+	S[textLen] = eof;
 	return S;
 }
 
-unsigned char *getBwt(char *fileName, unsigned int &len, unsigned char eof, bool verbose) {
+void checkNullChar(unsigned char *text, unsigned int textLen) {
+	for (unsigned int i = 0; i < textLen; ++i) {
+		if (text[i] == '\0') {
+			cout << "Error: text contains at least one 0 character" << endl;
+			exit(1);
+		}
+	}
+}
 
+unsigned int *getSA(unsigned char* text, unsigned int textLen, unsigned int &saLen, unsigned int addLen, bool verbose) {
+	saLen = textLen + 1;
+	if (verbose) cout << "Creating SA ... " << flush;
+	unsigned int *sa = new unsigned int[saLen + addLen];
+	sa[0] = textLen;
+	++sa;
+	sais(text, (int *)sa, textLen);
+	--sa;
+	if (verbose) cout << "Done" << endl;
+	return sa;
+}
+
+unsigned char *getBWT(unsigned char *text, unsigned int textLen, unsigned int &bwtLen, unsigned char eof, bool verbose) {
 	unsigned int saLen;
-	unsigned int *sa = readSA(fileName, saLen, 0, verbose);
-	if (verbose) cout << "Getting BWT for " << fileName << " ... " << flush;
-	unsigned int textLen;
-	unsigned char *text = readFileChar(fileName, textLen, 0);
-	len = textLen + 1;
-	unsigned char *bwt = new unsigned char[len];
+	unsigned int *sa = getSA(text, textLen, saLen, 0, verbose);
+	if (verbose) cout << "Creating BWT ... " << flush;
+	bwtLen = textLen + 1;
+	unsigned char *bwt = new unsigned char[bwtLen];
 	bwt[0] = text[textLen - 1];
-
 	for (unsigned int i = 1; i < saLen; ++i) {
 		if (sa[i] == 0) bwt[i] = eof;
 		else bwt[i] = text[sa[i] - 1];
 	}
-	delete[] text;
 	delete[] sa;
 	if (verbose) cout << "Done" << endl;
 	return bwt;
+}
+
+unsigned int *getArrayC(unsigned char *text, unsigned int textLen, bool verbose) {
+	if (verbose) cout << "Creating array C ... " << flush;
+	unsigned int* C = new unsigned int[257];
+	for (int i = 0; i < 257; ++i) {
+		C[i] = 0;
+	}
+	for (unsigned int i = 0; i < textLen; ++i) {
+		++C[text[i] + 1];
+	}
+	C[0] = 1;
+	for (int i = 0; i < 256; ++i) {
+		C[i + 1] += C[i];
+	}
+	if (verbose) cout << "Done" << endl;
+	return C;
 }
 
 unsigned int *breakByDelimeter(string seq, char delim, unsigned int &tokensLen) {

@@ -2,15 +2,27 @@
 #include <cstdio>
 #include <stdlib.h>
 #include <string>
+#include <vector>
+#include <algorithm>
 #include "fmdummy.h"
 #include "shared/common.h"
 
 using namespace std;
 
+/*FMDUMMY1*/
+
 void FMDummy1::setType(string indexType) {
 	if (indexType == "512c") this->type = FMDummy1::TYPE_512c;
 	else this->type = FMDummy1::TYPE_256c;
 	this->setFunctions();
+}
+
+void FMDummy1::setSelectedChars(string selectedChars) {
+	if (selectedChars == "all") this->allChars = true;
+	else {
+		this->allChars = false;
+		this->ordChars = breakByDelimeter(selectedChars, ',', this->ordCharsLen);
+	}
 }
 
 void FMDummy1::setFunctions() {
@@ -25,12 +37,9 @@ void FMDummy1::setFunctions() {
 	}
 }
 
-void FMDummy1::setSelectedChars(string selectedChars) {
-	if (selectedChars == "all") this->allChars = true;
-	else {
-		this->allChars = false;
-		this->ordChars = breakByDelimeter(selectedChars, ',', this->ordCharsLen);
-	}
+void FMDummy1::free() {
+	this->freeMemory();
+	this->initialize();
 }
 
 void FMDummy1::initialize() {
@@ -42,7 +51,7 @@ void FMDummy1::initialize() {
 	this->raw_bwtWithRanksLen = 0;
 
 	this->c = NULL;
-	this->type = FMDummy1::TYPE_512c;
+	this->type = FMDummy1::TYPE_256c;
 	this->ordCharsLen = 0;
 	this->ordChars = NULL;
 	this->allChars = true;
@@ -53,18 +62,17 @@ void FMDummy1::initialize() {
 }
 
 void FMDummy1::freeMemory() {
-	for (unsigned int i = 0; i < this->ordCharsLen; ++i) {
+	for (unsigned int i = 0; i < 256; ++i) {
 		if (this->raw_bwtWithRanks[i] != NULL) delete[] this->raw_bwtWithRanks[i];
 	}
 	if (this->bwtWithRanks != NULL) delete[] this->bwtWithRanks;
 	if (this->ordChars != NULL) delete[] this->ordChars;
 }
 
-void FMDummy1::build(char *textFileName) {
+void FMDummy1::build(unsigned char* text, unsigned int textLen) {
+	checkNullChar(text, textLen);
 	if (this->allChars) {
-		unsigned int textLen;
 		if (this->verbose) cout << "Counting char frequencies ... " << flush;
-		unsigned char *text = readText(textFileName, textLen, 0, true);
 		unsigned int charsFreq[256];
 		for (unsigned int i = 0; i < 256; ++i) charsFreq[i] = 0;
 		this->ordCharsLen = 0;
@@ -72,21 +80,18 @@ void FMDummy1::build(char *textFileName) {
 			if (charsFreq[(unsigned int)text[i]] == 0) ++this->ordCharsLen;
 			++charsFreq[(unsigned int)text[i]];
 		}
-		delete[] text;
 		if (this->verbose) cout << "Done" << endl;
 		if (this->ordCharsLen > 16) {
-			cout << "Error building index: text file cannot contain more than 16 unique symbols" << endl;
+			cout << "Error building index: text cannot contain more than 16 unique symbols" << endl;
 			exit(1);
 		}
 		this->ordChars = new unsigned int[this->ordCharsLen];
 		unsigned int counter = 0;
 		for (unsigned int i = 0; i < 256; ++i) if (charsFreq[i] > 0) this->ordChars[counter++] = i;
 		this->textSize = textLen;
-	} else {
-		this->textSize = getFileSize(textFileName, 1);
 	}
 	unsigned int bwtLen;
-	unsigned char *bwt = getBwt(textFileName, bwtLen, 0, this->verbose);
+	unsigned char *bwt = getBWT(text, textLen, bwtLen, 0, this->verbose);
 	if (this->verbose) cout << "Compacting BWT for selected chars ... " << flush;
 	unsigned int bwtDenseLen = (bwtLen / 8);
 	if (bwtLen % 8 > 0) ++bwtDenseLen;
@@ -95,7 +100,7 @@ void FMDummy1::build(char *textFileName) {
 	unsigned long long *bwtDenseInLong[256];
 	for (unsigned int i = 0; i < this->ordCharsLen; ++i) {
 		int ordChar = this->ordChars[i];
-		unsigned char *bwtDense = getBinDenseForChar(textFileName, bwt, bwtLen, ordChar);
+		unsigned char *bwtDense = getBinDenseForChar(bwt, bwtLen, ordChar);
 		bwtDenseInLong[ordChar] = new unsigned long long[bwtDenseInLongLen + 8];
 		for (long long i = 0; i < bwtDenseInLongLen; ++i) {
 			bwtDenseInLong[ordChar][i] = ((unsigned long long)bwtDense[8 * i + 7] << 56) | ((unsigned long long)bwtDense[8 * i + 6] << 48) | ((unsigned long long)bwtDense[8 * i + 5] << 40) | ((unsigned long long)bwtDense[8 * i + 4] << 32) | ((unsigned long long)bwtDense[8 * i + 3] << 24) | ((unsigned long long)bwtDense[8 * i + 2] << 16) | ((unsigned long long)bwtDense[8 * i + 1] << 8) | (unsigned long long)bwtDense[8 * i];
@@ -108,7 +113,7 @@ void FMDummy1::build(char *textFileName) {
 	delete[] bwt;
 	if (this->verbose) cout << "Done" << endl;
 
-	this->c = getArrayC(textFileName, verbose);
+	this->c = getArrayC(text, textLen, verbose);
 
 	if (this->verbose) cout << "Interweaving BWT with ranks ... " << flush;
 	this->bwtWithRanks = builder(bwtDenseInLong, bwtDenseInLongLen, this->raw_bwtWithRanks, this->ordChars, this->ordCharsLen, this->raw_bwtWithRanksLen);
@@ -118,7 +123,22 @@ void FMDummy1::build(char *textFileName) {
 		delete[] bwtDenseInLong[this->ordChars[i]];
 	}
 	if (this->verbose) cout << "Index successfully built" << endl;
+}
 
+unsigned int FMDummy1::getIndexSize() {
+	return (sizeof(this->type) + sizeof(this->ordCharsLen) + this->ordCharsLen * sizeof(unsigned char) + sizeof(this->allChars) + 257 * sizeof(unsigned int) + 256 * sizeof(unsigned long long*) + this->ordCharsLen * this->raw_bwtWithRanksLen * sizeof(unsigned long long));
+}
+
+unsigned int FMDummy1::getTextSize() {
+	return this->textSize;
+}
+
+unsigned int FMDummy1::count(unsigned char *pattern, unsigned int patternLen) {
+	return this->countOperation(pattern, patternLen, this->c, this->bwtWithRanks);
+}
+
+unsigned int *FMDummy1::locate(unsigned char *pattern, unsigned int patternLen) {
+	return 0;
 }
 
 void FMDummy1::save(char *fileName) {
@@ -139,6 +159,7 @@ void FMDummy1::save(char *fileName) {
 	fclose(outFile);
 	if (this->verbose) cout << "Done" << endl;
 }
+
 void FMDummy1::load(char *fileName) {
 	this->free();
 	FILE* inFile;
@@ -170,28 +191,11 @@ void FMDummy1::load(char *fileName) {
 	if (this->verbose) cout << "Done" << endl;
 }
 
-void FMDummy1::free() {
-	this->freeMemory();
-	this->initialize();
-}
 
-unsigned int FMDummy1::getIndexSize() {
-	return (sizeof(this->type) + sizeof(this->ordCharsLen) + this->ordCharsLen * sizeof(unsigned char) + sizeof(this->allChars) + 257 * sizeof(unsigned int) + 256 * sizeof(unsigned long long*) + this->ordCharsLen * this->raw_bwtWithRanksLen * sizeof(unsigned long long));
-}
 
-unsigned int FMDummy1::getTextSize() {
-	return this->textSize;
-}
+/*SHARED FUNCTIONS*/
 
-unsigned int FMDummy1::count(unsigned char *pattern, unsigned int patternLen) {
-	return this->countOperation(pattern, patternLen, this->c, this->bwtWithRanks);
-}
-
-unsigned int *FMDummy1::locate(unsigned char *pattern, unsigned int patternLen) {
-	return 0;
-}
-
-unsigned char *getBinDenseForChar(char* textFileName, unsigned char *bwt, unsigned int bwtLen, int ordChar) {
+unsigned char *getBinDenseForChar(unsigned char *bwt, unsigned int bwtLen, int ordChar) {
 	unsigned int bwtDenseLen = bwtLen / 8;
 	if (bwtLen % 8 > 0) ++bwtDenseLen;
 	unsigned char *bwtDense = new unsigned char[bwtDenseLen];
@@ -208,26 +212,6 @@ unsigned char *getBinDenseForChar(char* textFileName, unsigned char *bwt, unsign
 
 	if (bwtLen % 8 > 0) bwtDense[curr] = (unsigned char)temp;
 	return bwtDense;
-}
-
-unsigned int *getArrayC(char *textFileName, bool verbose) {
-	if (verbose) cout << "Creating array C for " << textFileName << " ... " << flush;
-	unsigned int textLen;
-	unsigned char *text = readText(textFileName, textLen, 0, true);
-	unsigned int* C = new unsigned int[257];
-	for (int i = 0; i < 257; ++i) {
-		C[i] = 0;
-	}
-	for (unsigned int i = 0; i < textLen; ++i) {
-		++C[text[i] + 1];
-	}
-	C[0] = 1;
-	for (int i = 0; i < 256; ++i) {
-		C[i + 1] += C[i];
-	}
-	delete[] text;
-	if (verbose) cout << "Done" << endl;
-	return C;
 }
 
 unsigned long long** buildRank_64_256(unsigned long long** bwtInLong, unsigned int bwtInLongLen, unsigned long long** raw_bwtWithRanks, unsigned int *ordChars, unsigned int ordCharsLen, unsigned int &raw_bwtWithRanksLen) {
