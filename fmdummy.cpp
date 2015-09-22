@@ -21,19 +21,19 @@ void FMDummy1::setSelectedChars(string selectedChars) {
 	if (selectedChars == "all") this->allChars = true;
 	else {
 		this->allChars = false;
-		this->ordChars = breakByDelimeter(selectedChars, ',', this->ordCharsLen);
+		this->ordChars = breakByDelimeter(selectedChars, '.', this->ordCharsLen);
 	}
 }
 
 void FMDummy1::setFunctions() {
 	switch (this->type) {
 	case FMDummy1::TYPE_512c:
-		this->builder = &buildRank_64_512_counter40;
-		this->countOperation = &count_64_512_counter40;
+		this->builder = &buildRank_512_counter40;
+		this->countOperation = &count_512_counter40;
 		break;
 	default:
-		this->builder = &buildRank_64_256_counter48;
-		this->countOperation = &count_64_256_counter48;
+		this->builder = &buildRank_256_counter48;
+		this->countOperation = &count_256_counter48;
 	}
 }
 
@@ -71,6 +71,7 @@ void FMDummy1::freeMemory() {
 
 void FMDummy1::build(unsigned char* text, unsigned int textLen) {
 	checkNullChar(text, textLen);
+	this->textSize = textLen;
 	if (this->allChars) {
 		if (this->verbose) cout << "Counting char frequencies ... " << flush;
 		unsigned int charsFreq[256];
@@ -88,7 +89,6 @@ void FMDummy1::build(unsigned char* text, unsigned int textLen) {
 		this->ordChars = new unsigned int[this->ordCharsLen];
 		unsigned int counter = 0;
 		for (unsigned int i = 0; i < 256; ++i) if (charsFreq[i] > 0) this->ordChars[counter++] = i;
-		this->textSize = textLen;
 	}
 	unsigned int bwtLen;
 	unsigned char *bwt = getBWT(text, textLen, bwtLen, 0, this->verbose);
@@ -102,11 +102,11 @@ void FMDummy1::build(unsigned char* text, unsigned int textLen) {
 		int ordChar = this->ordChars[i];
 		unsigned char *bwtDense = getBinDenseForChar(bwt, bwtLen, ordChar);
 		bwtDenseInLong[ordChar] = new unsigned long long[bwtDenseInLongLen + 8];
-		for (long long i = 0; i < bwtDenseInLongLen; ++i) {
-			bwtDenseInLong[ordChar][i] = ((unsigned long long)bwtDense[8 * i + 7] << 56) | ((unsigned long long)bwtDense[8 * i + 6] << 48) | ((unsigned long long)bwtDense[8 * i + 5] << 40) | ((unsigned long long)bwtDense[8 * i + 4] << 32) | ((unsigned long long)bwtDense[8 * i + 3] << 24) | ((unsigned long long)bwtDense[8 * i + 2] << 16) | ((unsigned long long)bwtDense[8 * i + 1] << 8) | (unsigned long long)bwtDense[8 * i];
+		for (unsigned long long j = 0; j < bwtDenseInLongLen; ++j) {
+			bwtDenseInLong[ordChar][j] = ((unsigned long long)bwtDense[8 * j + 7] << 56) | ((unsigned long long)bwtDense[8 * j + 6] << 48) | ((unsigned long long)bwtDense[8 * j + 5] << 40) | ((unsigned long long)bwtDense[8 * j + 4] << 32) | ((unsigned long long)bwtDense[8 * j + 3] << 24) | ((unsigned long long)bwtDense[8 * j + 2] << 16) | ((unsigned long long)bwtDense[8 * j + 1] << 8) | (unsigned long long)bwtDense[8 * j];
 		}
-		for (long long i = bwtDenseInLongLen; i < bwtDenseInLongLen + 8; ++i) {
-			bwtDenseInLong[ordChar][i] = 0ULL;
+		for (unsigned long long j = bwtDenseInLongLen; j < bwtDenseInLongLen + 8; ++j) {
+			bwtDenseInLong[ordChar][j] = 0ULL;
 		}
 		delete[] bwtDense;
 	}
@@ -134,7 +134,7 @@ unsigned int FMDummy1::getTextSize() {
 }
 
 unsigned int FMDummy1::count(unsigned char *pattern, unsigned int patternLen) {
-	return this->countOperation(pattern, patternLen, this->c, this->bwtWithRanks);
+	return this->countOperation(pattern, patternLen - 1, this->c, this->bwtWithRanks, this->c[pattern[patternLen - 1]] + 1, this->c[pattern[patternLen - 1] + 1]);
 }
 
 unsigned int *FMDummy1::locate(unsigned char *pattern, unsigned int patternLen) {
@@ -191,7 +191,226 @@ void FMDummy1::load(char *fileName) {
 	if (this->verbose) cout << "Done" << endl;
 }
 
+/*FMDUMMY2*/
 
+void FMDummy2::setType(string indexType, string schema) {
+	if (indexType == "512c") this->type = FMDummy2::TYPE_512c;
+	else this->type = FMDummy2::TYPE_256c;
+	if (schema == "CB") this->schema = FMDummy2::SCHEMA_CB;
+	else this->schema = FMDummy2::SCHEMA_SCBO;
+	this->setFunctions();
+}
+
+void FMDummy2::setBitsPerChar(string bitsPerChar) {
+	if (bitsPerChar == "3") this->bitsPerChar = FMDummy2::BITS_3;
+	else this->bitsPerChar = FMDummy2::BITS_4;
+}
+
+void FMDummy2::setFunctions() {
+	switch (this->type) {
+	case FMDummy2::TYPE_512c:
+		this->builder = &buildRank_512_counter40;
+		switch (this->schema) {
+		case FMDummy2::SCHEMA_CB:
+			this->countOperation = &count_CB_512_counter40;
+			break;
+		default:
+			this->countOperation = &count_SCBO_512_counter40;
+		}
+		break;
+	default:
+		this->builder = &buildRank_256_counter48;
+		switch (this->schema) {
+		case FMDummy2::SCHEMA_CB:
+			this->countOperation = &count_CB_256_counter48;
+			break;
+		default:
+			this->countOperation = &count_SCBO_256_counter48;
+		}
+	}
+}
+
+void FMDummy2::free() {
+	this->freeMemory();
+	this->initialize();
+}
+
+void FMDummy2::initialize() {
+	for (int i = 0; i < 256; ++i) {
+		this->raw_bwtWithRanks[i] = NULL;
+	}
+	this->bwtWithRanks = NULL;
+	this->raw_bwtWithRanksLen = 0;
+
+	for (int i = 0; i < 256; ++i) {
+		this->encodedChars[i] = NULL;
+	}
+	for (int i = 0; i < 256; ++i) {
+		this->encodedCharsLen[i] = 0;
+	}
+
+	this->c = NULL;
+	this->type = FMDummy2::TYPE_256c;
+	this->schema = FMDummy2::SCHEMA_SCBO;
+	this->bitsPerChar = FMDummy2::BITS_4;
+	this->bInC = 0;
+	this->textSize = 0;
+
+	this->builder = NULL;
+	this->countOperation = NULL;
+}
+
+void FMDummy2::freeMemory() {
+	for (unsigned int i = 0; i < 256; ++i) {
+		if (this->raw_bwtWithRanks[i] != NULL) delete[] this->raw_bwtWithRanks[i];
+		if (this->encodedChars[i] != NULL) delete[] this->encodedChars[i];
+	}
+	if (this->bwtWithRanks != NULL) delete[] this->bwtWithRanks;
+}
+
+void FMDummy2::build(unsigned char *text, unsigned int textLen) {
+	checkNullChar(text, textLen);
+	this->textSize = textLen;
+	unsigned int encodedTextLen;
+	unsigned char *encodedText = NULL;
+	unsigned int b = 0;
+	switch (this->schema) {
+	case FMDummy2::SCHEMA_SCBO:
+		encodedText = getEncodedInSCBO(this->bitsPerChar, text, textLen, encodedTextLen, this->encodedChars, this->encodedCharsLen);
+		break;
+	case FMDummy2::SCHEMA_CB:
+		encodedText = getEncodedInCB(this->bitsPerChar, text, textLen, encodedTextLen, this->encodedChars, this->encodedCharsLen, b);
+		break;
+	}
+	unsigned int bwtLen;
+	unsigned int ordCharsLen = (unsigned int)pow(2.0, (double)this->bitsPerChar);
+	unsigned char *bwt = getBWT(encodedText, encodedTextLen, bwtLen, ordCharsLen, this->verbose);
+	if (this->verbose) cout << "Compacting BWT ... " << flush;
+	unsigned int bwtDenseLen = (bwtLen / 8);
+	if (bwtLen % 8 > 0) ++bwtDenseLen;
+	unsigned int bwtDenseInLongLen = bwtDenseLen / sizeof(unsigned long long);
+	if (bwtDenseLen % sizeof(unsigned long long) > 0) ++bwtDenseInLongLen;
+	unsigned long long *bwtDenseInLong[256];
+	unsigned int *ordChars = new unsigned int[ordCharsLen];
+	for (unsigned int i = 0; i < ordCharsLen; ++i) {
+		ordChars[i] = i;
+		unsigned char *bwtDense = getBinDenseForChar(bwt, bwtLen, i);
+		bwtDenseInLong[i] = new unsigned long long[bwtDenseInLongLen + 8];
+		for (unsigned long long j = 0; j < bwtDenseInLongLen; ++j) {
+			bwtDenseInLong[i][j] = ((unsigned long long)bwtDense[8 * j + 7] << 56) | ((unsigned long long)bwtDense[8 * j + 6] << 48) | ((unsigned long long)bwtDense[8 * j + 5] << 40) | ((unsigned long long)bwtDense[8 * j + 4] << 32) | ((unsigned long long)bwtDense[8 * j + 3] << 24) | ((unsigned long long)bwtDense[8 * j + 2] << 16) | ((unsigned long long)bwtDense[8 * j + 1] << 8) | (unsigned long long)bwtDense[8 * j];
+		}
+		for (unsigned long long j = bwtDenseInLongLen; j < bwtDenseInLongLen + 8; ++j) {
+			bwtDenseInLong[i][j] = 0ULL;
+		}
+		delete[] bwtDense;
+	}
+	delete[] bwt;
+	if (this->verbose) cout << "Done" << endl;
+
+	this->c = getArrayC(encodedText, encodedTextLen, verbose);
+	if (this->schema == FMDummy2::SCHEMA_CB) this->bInC = this->c[b];
+
+	if (this->verbose) cout << "Interweaving BWT with ranks ... " << flush;
+	this->bwtWithRanks = builder(bwtDenseInLong, bwtDenseInLongLen, this->raw_bwtWithRanks, ordChars, ordCharsLen, this->raw_bwtWithRanksLen);
+	if (this->verbose) cout << "Done" << endl;
+
+	for (unsigned int i = 0; i < ordCharsLen; ++i) {
+		delete[] bwtDenseInLong[i];
+	}
+	delete[] ordChars;
+	delete[] encodedText;
+	if (this->verbose) cout << "Index successfully built" << endl;
+}
+
+unsigned int FMDummy2::getIndexSize() {
+	unsigned int encodedCharsLenSum = 0;
+	for (int i = 0; i < 256; ++i) {
+		encodedCharsLenSum += this->encodedCharsLen[i];
+	}
+	unsigned int size = (sizeof(this->type) + 257 * sizeof(unsigned int) + 256 * sizeof(unsigned long long*) + (unsigned int)pow(2.0, (double)this->bitsPerChar) * this->raw_bwtWithRanksLen * sizeof(unsigned long long) + 256 * sizeof(unsigned int) + encodedCharsLenSum * sizeof(unsigned char));
+	if (this->schema == FMDummy2::SCHEMA_CB) size += sizeof(unsigned int);
+	return size;
+}
+
+unsigned int FMDummy2::getTextSize() {
+	return this->textSize;
+}
+
+unsigned int FMDummy2::count(unsigned char *pattern, unsigned int patternLen) {
+	bool wrongEncoding = false;
+	unsigned int encodedPatternLen;
+	unsigned char *encodedPattern = encodePattern(pattern, patternLen, this->encodedChars, this->encodedCharsLen, encodedPatternLen, wrongEncoding);
+	unsigned int count;
+	if (wrongEncoding) count = 0;
+	else count = this->countOperation(encodedPattern, encodedPatternLen, this->c, this->bwtWithRanks, this->bInC);
+	delete[] encodedPattern;
+	return count;
+}
+
+unsigned int *FMDummy2::locate(unsigned char *pattern, unsigned int patternLen) {
+	return 0;
+}
+
+void FMDummy2::save(char *fileName) {
+	if (this->verbose) cout << "Saving index in " << fileName << " ... " << flush;
+	FILE* outFile;
+	outFile = fopen(fileName, "w");
+	fwrite(&this->verbose, (size_t)sizeof(bool), (size_t)1, outFile);
+	fwrite(&this->type, (size_t)sizeof(int), (size_t)1, outFile);
+	fwrite(&this->schema, (size_t)sizeof(int), (size_t)1, outFile);
+	fwrite(&this->bitsPerChar, (size_t)sizeof(int), (size_t)1, outFile);
+	fwrite(&this->textSize, (size_t)sizeof(unsigned int), (size_t)1, outFile);
+	fwrite(this->c, (size_t)sizeof(unsigned int), (size_t)257, outFile);
+	fwrite(this->encodedCharsLen, (size_t)sizeof(unsigned int), (size_t)256, outFile);
+	for (int i = 0; i < 256; ++i) {
+		if (this->encodedChars[i] != NULL) fwrite(this->encodedChars[i], (size_t)sizeof(unsigned char), (size_t)this->encodedCharsLen[i], outFile);
+	}
+	unsigned int maxChar = (unsigned int)pow(2.0, (double)this->bitsPerChar);
+	fwrite(&this->raw_bwtWithRanksLen, (size_t)sizeof(unsigned int), (size_t)1, outFile);
+	for (unsigned int i = 0; i < maxChar; ++i) {
+		fwrite(this->raw_bwtWithRanks[i], (size_t)sizeof(unsigned long long), (size_t)this->raw_bwtWithRanksLen, outFile);
+	}
+	if (this->schema == FMDummy2::SCHEMA_CB) fwrite(&this->bInC, (size_t)sizeof(unsigned int), (size_t)1, outFile);
+	fclose(outFile);
+	if (this->verbose) cout << "Done" << endl;
+}
+
+void FMDummy2::load(char *fileName) {
+	this->free();
+	FILE* inFile;
+	inFile = fopen(fileName, "rb");
+	fread(&this->verbose, (size_t)sizeof(bool), (size_t)1, inFile);
+	if (this->verbose) cout << "Loading index from " << fileName << " ... " << flush;
+	fread(&this->type, (size_t)sizeof(int), (size_t)1, inFile);
+	fread(&this->schema, (size_t)sizeof(int), (size_t)1, inFile);
+	this->setFunctions();
+	fread(&this->bitsPerChar, (size_t)sizeof(int), (size_t)1, inFile);
+	fread(&this->textSize, (size_t)sizeof(unsigned int), (size_t)1, inFile);
+	this->c = new unsigned int[257];
+	fread(this->c, (size_t)sizeof(unsigned int), (size_t)257, inFile);
+	fread(this->encodedCharsLen, (size_t)sizeof(unsigned int), (size_t)256, inFile);
+	for (int i = 0; i < 256; ++i) {
+		if (this->encodedCharsLen[i] == 0) continue;
+		this->encodedChars[i] = new unsigned char[this->encodedCharsLen[i]];
+		fread(this->encodedChars[i], (size_t)sizeof(unsigned char), (size_t)this->encodedCharsLen[i], inFile);
+	}
+	unsigned int maxChar = (unsigned int)pow(2.0, (double)this->bitsPerChar);
+	fread(&this->raw_bwtWithRanksLen, (size_t)sizeof(unsigned int), (size_t)1, inFile);
+	this->bwtWithRanks = new unsigned long long*[256];
+	for (unsigned int i = 0; i < maxChar; ++i) {
+		this->raw_bwtWithRanks[i] = new unsigned long long[this->raw_bwtWithRanksLen];
+		fread(this->raw_bwtWithRanks[i], (size_t)sizeof(unsigned long long), (size_t)this->raw_bwtWithRanksLen, inFile);
+		unsigned long long *res = raw_bwtWithRanks[i];
+		while ((unsigned long long)res % 128) {
+			++res;
+		}
+		this->bwtWithRanks[i] = res;
+	}
+	if (this->schema == FMDummy2::SCHEMA_CB) fread(&this->bInC, (size_t)sizeof(unsigned int), (size_t)1, inFile);
+	fclose(inFile);
+	if (this->verbose) cout << "Done" << endl;
+
+}
 
 /*SHARED FUNCTIONS*/
 
@@ -214,7 +433,7 @@ unsigned char *getBinDenseForChar(unsigned char *bwt, unsigned int bwtLen, int o
 	return bwtDense;
 }
 
-unsigned long long** buildRank_64_256(unsigned long long** bwtInLong, unsigned int bwtInLongLen, unsigned long long** raw_bwtWithRanks, unsigned int *ordChars, unsigned int ordCharsLen, unsigned int &raw_bwtWithRanksLen) {
+unsigned long long** buildRank_256(unsigned long long** bwtInLong, unsigned int bwtInLongLen, unsigned long long** raw_bwtWithRanks, unsigned int *ordChars, unsigned int ordCharsLen, unsigned int &raw_bwtWithRanksLen) {
 	//rank should be 32bit
 	unsigned long long *p;
 	unsigned int rank;
@@ -248,7 +467,7 @@ unsigned long long** buildRank_64_256(unsigned long long** bwtInLong, unsigned i
 	return result;
 }
 
-unsigned long long** buildRank_64_256_counter48(unsigned long long** bwtInLong, unsigned int bwtInLongLen, unsigned long long** raw_bwtWithRanks, unsigned int *ordChars, unsigned int ordCharsLen, unsigned int &raw_bwtWithRanksLen) {
+unsigned long long** buildRank_256_counter48(unsigned long long** bwtInLong, unsigned int bwtInLongLen, unsigned long long** raw_bwtWithRanks, unsigned int *ordChars, unsigned int ordCharsLen, unsigned int &raw_bwtWithRanksLen) {
 	unsigned long long *p, pops, rank, b1, b2;
 	unsigned long long **result = new unsigned long long*[256];
 	raw_bwtWithRanksLen = (bwtInLongLen + (bwtInLongLen * 64) / 192 + 1 + 16);
@@ -286,7 +505,7 @@ unsigned long long** buildRank_64_256_counter48(unsigned long long** bwtInLong, 
 	return result;
 }
 
-unsigned long long** buildRank_64_512(unsigned long long** bwtInLong, unsigned int bwtInLongLen, unsigned long long** raw_bwtWithRanks, unsigned int *ordChars, unsigned int ordCharsLen, unsigned int &raw_bwtWithRanksLen) {
+unsigned long long** buildRank_512(unsigned long long** bwtInLong, unsigned int bwtInLongLen, unsigned long long** raw_bwtWithRanks, unsigned int *ordChars, unsigned int ordCharsLen, unsigned int &raw_bwtWithRanksLen) {
 	//rank should be 32bit
 	unsigned long long *p;
 	unsigned int rank;
@@ -320,7 +539,7 @@ unsigned long long** buildRank_64_512(unsigned long long** bwtInLong, unsigned i
 	return result;
 }
 
-unsigned long long** buildRank_64_512_counter40(unsigned long long** bwtInLong, unsigned int bwtInLongLen, unsigned long long** raw_bwtWithRanks, unsigned int *ordChars, unsigned int ordCharsLen, unsigned int &raw_bwtWithRanksLen) {
+unsigned long long** buildRank_512_counter40(unsigned long long** bwtInLong, unsigned int bwtInLongLen, unsigned long long** raw_bwtWithRanks, unsigned int *ordChars, unsigned int ordCharsLen, unsigned int &raw_bwtWithRanksLen) {
 	unsigned long long *p, pop1, pop2, pop3, rank, b1, b2, b3;
 	unsigned long long **result = new unsigned long long*[256];
 	raw_bwtWithRanksLen = (bwtInLongLen + (bwtInLongLen * 64) / 448 + 1 + 16);
@@ -357,7 +576,7 @@ unsigned long long** buildRank_64_512_counter40(unsigned long long** bwtInLong, 
 	return result;
 }
 
-unsigned int getRank_64_256(unsigned char c, unsigned int i, unsigned long long** bwtWithRanks) {
+unsigned int getRank_256(unsigned char c, unsigned int i, unsigned long long** bwtWithRanks) {
 	// rank should be 32bit
 	unsigned long long* p;
 	unsigned int rank;
@@ -381,7 +600,7 @@ unsigned int getRank_64_256(unsigned char c, unsigned int i, unsigned long long*
 	return rank;
 }
 
-unsigned int count_64_256(unsigned char *Q, unsigned int m, unsigned int *C, unsigned long long** bwtWithRanks){
+unsigned int count_256(unsigned char *Q, unsigned int m, unsigned int *C, unsigned long long** bwtWithRanks){
 	int i = m - 1;
 	unsigned char c = Q[i];
 	unsigned int firstVal = C[c] + 1;
@@ -391,9 +610,9 @@ unsigned int count_64_256(unsigned char *Q, unsigned int m, unsigned int *C, uns
 
 	while (firstVal <= lastVal && i > 1) {
 		c = Q[i - 1];
-		firstVal = C[c] + getRank_64_256(c, firstVal - 1, bwtWithRanks) + 1;
+		firstVal = C[c] + getRank_256(c, firstVal - 1, bwtWithRanks) + 1;
 		__builtin_prefetch(bwtWithRanks[Q[i - 2]] + 4 * ((firstVal - 1) / 192), 0, 3);
-		lastVal = C[c] + getRank_64_256(c, lastVal, bwtWithRanks);
+		lastVal = C[c] + getRank_256(c, lastVal, bwtWithRanks);
 		__builtin_prefetch(bwtWithRanks[Q[i - 2]] + 4 * (lastVal / 192), 0, 3);
 		--i;
 	}
@@ -401,15 +620,15 @@ unsigned int count_64_256(unsigned char *Q, unsigned int m, unsigned int *C, uns
 	if (firstVal <= lastVal)
 	{
 		c = Q[i - 1];
-		firstVal = C[c] + getRank_64_256(c, firstVal - 1, bwtWithRanks) + 1;
-		lastVal = C[c] + getRank_64_256(c, lastVal, bwtWithRanks);
+		firstVal = C[c] + getRank_256(c, firstVal - 1, bwtWithRanks) + 1;
+		lastVal = C[c] + getRank_256(c, lastVal, bwtWithRanks);
 	}
 
 	if (firstVal > lastVal) return 0;
 	else return lastVal - firstVal + 1;
 }
 
-unsigned int getRank_64_256_counter48(unsigned char c, unsigned int i, unsigned long long** bwtWithRanks) {
+unsigned int getRank_256_counter48(unsigned char c, unsigned int i, unsigned long long** bwtWithRanks) {
 	unsigned int j = i / 192;
 	unsigned long long* p = bwtWithRanks[c] + 4 * j;
 	unsigned int rank = (*p) & 0x00000000FFFFFFFFULL;
@@ -433,34 +652,39 @@ unsigned int getRank_64_256_counter48(unsigned char c, unsigned int i, unsigned 
 	return rank;
 }
 
-unsigned int count_64_256_counter48(unsigned char *Q, unsigned int m, unsigned int *C, unsigned long long** bwtWithRanks){
-	int i = m - 1;
-	unsigned char c = Q[i];
-	unsigned int firstVal = C[c] + 1;
+unsigned int count_256_counter48(unsigned char *Q, unsigned int i, unsigned int *C, unsigned long long** bwtWithRanks, unsigned int firstVal, unsigned int lastVal) {
+	unsigned char c;
 	__builtin_prefetch(bwtWithRanks[Q[i - 1]] + 4 * ((firstVal - 1) / 192), 0, 3);
-	unsigned int lastVal = C[c + 1];
 	__builtin_prefetch(bwtWithRanks[Q[i - 1]] + 4 * (lastVal / 192), 0, 3);
 
 	while (firstVal <= lastVal && i > 1) {
 		c = Q[i - 1];
-		firstVal = C[c] + getRank_64_256_counter48(c, firstVal - 1, bwtWithRanks) + 1;
+		firstVal = C[c] + getRank_256_counter48(c, firstVal - 1, bwtWithRanks) + 1;
 		__builtin_prefetch(bwtWithRanks[Q[i - 2]] + 4 * ((firstVal - 1) / 192), 0, 3);
-		lastVal = C[c] + getRank_64_256_counter48(c, lastVal, bwtWithRanks);
+		lastVal = C[c] + getRank_256_counter48(c, lastVal, bwtWithRanks);
 		__builtin_prefetch(bwtWithRanks[Q[i - 2]] + 4 * (lastVal / 192), 0, 3);
 		--i;
 	}
 
 	if (firstVal <= lastVal) {
 		c = Q[i - 1];
-		firstVal = C[c] + getRank_64_256_counter48(c, firstVal - 1, bwtWithRanks) + 1;
-		lastVal = C[c] + getRank_64_256_counter48(c, lastVal, bwtWithRanks);
+		firstVal = C[c] + getRank_256_counter48(c, firstVal - 1, bwtWithRanks) + 1;
+		lastVal = C[c] + getRank_256_counter48(c, lastVal, bwtWithRanks);
 	}
 
 	if (firstVal > lastVal) return 0;
 	else return lastVal - firstVal + 1;
 }
 
-unsigned int getRank_64_512(unsigned char c, unsigned int i, unsigned long long** bwtWithRanks) {
+unsigned int count_SCBO_256_counter48(unsigned char *Q, unsigned int i, unsigned int *C, unsigned long long** bwtWithRanks, unsigned int bInC) {
+	return count_256_counter48(Q, i - 1, C, bwtWithRanks, C[Q[i - 1]] + 1, C[Q[i - 1] + 1]);
+}
+
+unsigned int count_CB_256_counter48(unsigned char *Q, unsigned int i, unsigned int *C, unsigned long long** bwtWithRanks, unsigned int bInC) {
+	return count_256_counter48(Q, i, C, bwtWithRanks, 1, bInC);
+}
+
+unsigned int getRank_512(unsigned char c, unsigned int i, unsigned long long** bwtWithRanks) {
 	// rank should be 32bit
 	unsigned long long* p;
 	unsigned int rank, j = i / 448;
@@ -495,7 +719,7 @@ unsigned int getRank_64_512(unsigned char c, unsigned int i, unsigned long long*
 	return rank;
 }
 
-unsigned int count_64_512(unsigned char *Q, unsigned int m, unsigned int *C, unsigned long long** bwtWithRanks){
+unsigned int count_512(unsigned char *Q, unsigned int m, unsigned int *C, unsigned long long** bwtWithRanks){
 	int i = m - 1;
 	unsigned char c = Q[i];
 	unsigned int firstVal = C[c] + 1;
@@ -505,24 +729,24 @@ unsigned int count_64_512(unsigned char *Q, unsigned int m, unsigned int *C, uns
 
 	while (firstVal <= lastVal && i > 1) {
 		c = Q[i - 1];
-		firstVal = C[c] + getRank_64_512(c, firstVal - 1, bwtWithRanks) + 1;
+		firstVal = C[c] + getRank_512(c, firstVal - 1, bwtWithRanks) + 1;
 		__builtin_prefetch(bwtWithRanks[Q[i - 2]] + 8 * ((firstVal - 1) / 448), 0, 3);
-		lastVal = C[c] + getRank_64_512(c, lastVal, bwtWithRanks);
+		lastVal = C[c] + getRank_512(c, lastVal, bwtWithRanks);
 		__builtin_prefetch(bwtWithRanks[Q[i - 2]] + 8 * (lastVal / 448), 0, 3);
 		--i;
 	}
 
 	if (firstVal <= lastVal) {
 		c = Q[i - 1];
-		firstVal = C[c] + getRank_64_512(c, firstVal - 1, bwtWithRanks) + 1;
-		lastVal = C[c] + getRank_64_512(c, lastVal, bwtWithRanks);
+		firstVal = C[c] + getRank_512(c, firstVal - 1, bwtWithRanks) + 1;
+		lastVal = C[c] + getRank_512(c, lastVal, bwtWithRanks);
 	}
 
 	if (firstVal > lastVal) return 0;
 	else return lastVal - firstVal + 1;
 }
 
-unsigned int getRank_64_512_counter40(unsigned char c, unsigned int i, unsigned long long** bwtWithRanks) {
+unsigned int getRank_512_counter40(unsigned char c, unsigned int i, unsigned long long** bwtWithRanks) {
 
 	unsigned int j = i / 448;
 	unsigned long long* p = bwtWithRanks[c] + 8 * j;
@@ -567,29 +791,395 @@ unsigned int getRank_64_512_counter40(unsigned char c, unsigned int i, unsigned 
 	return rank;
 }
 
-unsigned int count_64_512_counter40(unsigned char *Q, unsigned int m, unsigned int *C, unsigned long long** bwtWithRanks){
-	int i = m - 1;
+unsigned int count_512_counter40(unsigned char *Q, unsigned int i, unsigned int *C, unsigned long long** bwtWithRanks, unsigned int firstVal, unsigned int lastVal){
 	unsigned char c = Q[i];
-	unsigned int firstVal = C[c] + 1;
 	__builtin_prefetch(bwtWithRanks[Q[i - 1]] + 8 * ((firstVal - 1) / 448), 0, 3);
-	unsigned int lastVal = C[c + 1];
 	__builtin_prefetch(bwtWithRanks[Q[i - 1]] + 8 * (lastVal / 448), 0, 3);
 
 	while (firstVal <= lastVal && i > 1) {
 		c = Q[i - 1];
-		firstVal = C[c] + getRank_64_512_counter40(c, firstVal - 1, bwtWithRanks) + 1;
+		firstVal = C[c] + getRank_512_counter40(c, firstVal - 1, bwtWithRanks) + 1;
 		__builtin_prefetch(bwtWithRanks[Q[i - 2]] + 8 * ((firstVal - 1) / 448), 0, 3);
-		lastVal = C[c] + getRank_64_512_counter40(c, lastVal, bwtWithRanks);
+		lastVal = C[c] + getRank_512_counter40(c, lastVal, bwtWithRanks);
 		__builtin_prefetch(bwtWithRanks[Q[i - 2]] + 8 * (lastVal / 448), 0, 3);
 		--i;
 	}
 
 	if (firstVal <= lastVal) {
 		c = Q[i - 1];
-		firstVal = C[c] + getRank_64_512_counter40(c, firstVal - 1, bwtWithRanks) + 1;
-		lastVal = C[c] + getRank_64_512_counter40(c, lastVal, bwtWithRanks);
+		firstVal = C[c] + getRank_512_counter40(c, firstVal - 1, bwtWithRanks) + 1;
+		lastVal = C[c] + getRank_512_counter40(c, lastVal, bwtWithRanks);
 	}
 
 	if (firstVal > lastVal) return 0;
 	else return lastVal - firstVal + 1;
 }
+
+unsigned int count_SCBO_512_counter40(unsigned char *Q, unsigned int i, unsigned int *C, unsigned long long** bwtWithRanks, unsigned int bInC) {
+	return count_512_counter40(Q, i - 1, C, bwtWithRanks, C[Q[i - 1]] + 1, C[Q[i - 1] + 1]);
+}
+
+unsigned int count_CB_512_counter40(unsigned char *Q, unsigned int i, unsigned int *C, unsigned long long** bwtWithRanks, unsigned int bInC) {
+	return count_512_counter40(Q, i, C, bwtWithRanks, 1, bInC);
+}
+
+bool sortCharsCount(unsigned int* i, unsigned int* j) {
+	return (i[1] > j[1]);
+}
+
+unsigned char *getEncodedInSCBO(int bits, unsigned char *text, unsigned int textLen, unsigned int &encodedTextLen, unsigned char **encodedChars, unsigned int *encodedCharsLen) {
+
+	int max = (int)pow(2.0, (double)bits);
+
+	unsigned int charsCount[256][2];
+	for (int i = 0; i < 256; ++i) {
+		charsCount[i][0] = i;
+		charsCount[i][1] = 0;
+	}
+	for (unsigned int i = 0; i < textLen; ++i) {
+		charsCount[text[i]][1]++;
+	}
+
+	unsigned int charsLen = 0;
+	for (int i = 0; i < 256; ++i) {
+		if (charsCount[i][1] != 0) ++charsLen;
+	}
+
+	vector<unsigned int*> charsCountVector(charsCount, charsCount + 256);
+	sort(charsCountVector.begin(), charsCountVector.end(), sortCharsCount);
+
+	unsigned char chars[256];
+	int i = 0;
+	for (vector<unsigned int*>::iterator it = charsCountVector.begin(); it != charsCountVector.end(); ++it, ++i) {
+		chars[i] = **it;
+	}
+
+	unsigned int totalTotal = (unsigned int)(-1);
+	unsigned int best[4] = {0, 0, 0, 0};
+	bool notFound = true;
+
+	for (int o = 1; o < max - 2; ++o) {
+		for (int b = 1; b < max - 2; ++b) {
+			for (int c = 1; c < max - 2; ++c) {
+				for (int s = 1; s < max - 2; ++s) {
+					if (o + b + c + s != max) continue;
+					int sig = charsLen;
+					unsigned int total = 0;
+					unsigned int curr = 0;
+					if (sig > 0) {
+						for (int i = 0; i < o; ++i) {
+							total += charsCountVector[curr][1] * 1;
+							++curr;
+							if (curr >= charsLen) break;
+						}
+						sig -= o;
+					}
+					if (sig > 0) {
+						for (int i = 0; i < b * s; ++i) {
+							total += charsCountVector[curr][1] * 2;
+							++curr;
+							if (curr >= charsLen) break;
+						}
+						sig -= b * s;
+					}
+					if (sig > 0) {
+						for (int i = 0; i < b * c * s; ++i) {
+							total += charsCountVector[curr][1] * 3;
+							++curr;
+							if (curr >= charsLen) break;
+						}
+						sig -= b * c * s;
+					}
+					if (sig > 0) {
+						for (int i = 0; i < b * c * c * s; ++i) {
+							total += charsCountVector[curr][1] * 4;
+							++curr;
+							if (curr >= charsLen) break;
+						}
+						sig -= b * c * c * s;
+					}
+					if (sig > 0) {
+						for (int i = 0; i < b * c * c * c * s; ++i) {
+							total += charsCountVector[curr][1] * 5;
+							++curr;
+							if (curr >= charsLen) break;
+						}
+						sig -= b * c * c * c * s;
+					}
+					if (sig > 0) continue;
+					if (total < totalTotal) {
+						notFound = false;
+						totalTotal = total;
+						best[0] = o;
+						best[1] = b;
+						best[2] = s;
+						best[3] = c;
+					}
+				}
+			}
+		}
+	}
+	if (notFound) {
+		cout << "Error building index: text contains more symbols than can be encoded in SCBO schema on " << bits << " bits" << endl;
+		exit(1);
+	}
+
+	unsigned int o = best[0];
+	unsigned int b = best[1];
+	unsigned int s = best[2];
+	unsigned int c = best[3];
+
+	unsigned int bStart = o;
+	unsigned int sStart = bStart + b;
+	unsigned int cStart = sStart + s;
+
+	unsigned int off1, off2, off3, off4, off5;
+
+	for (unsigned int i = 0; i < charsLen; ++i) {
+		if (i < o) {
+			encodedChars[chars[i]] = new unsigned char[1];
+			encodedChars[chars[i]][0] = i;
+			encodedCharsLen[chars[i]] = 1;
+		}
+		else if (i < o + b * s) {
+			int j = i - o;
+			encodedChars[chars[i]] = new unsigned char[2];
+			encodedChars[chars[i]][0] = bStart + j / s;
+			encodedChars[chars[i]][1] = sStart + j % s;
+			encodedCharsLen[chars[i]] = 2;
+		}
+		else if (i < o + b * s + b * c * s) {
+			int j = i - o - b * s;
+			off3 = j % s;
+			off2 = (j / s) % c;
+			off1 = j / (s * c);
+			encodedChars[chars[i]] = new unsigned char[3];
+			encodedChars[chars[i]][0] = bStart + off1;
+			encodedChars[chars[i]][1] = cStart + off2;
+			encodedChars[chars[i]][2] = sStart + off3;
+			encodedCharsLen[chars[i]] = 3;
+		}
+		else if (i < o + b * s + b * c * s + b * c * c * s) {
+			int j = i - o - b * s - b * c * s;
+			off4 = j % s;
+			off3 = (j / s) % c;
+			off2 = (j / (s * c)) % c;
+			off1 = j / (s * c * c);
+			encodedChars[chars[i]] = new unsigned char[4];
+			encodedChars[chars[i]][0] = bStart + off1;
+			encodedChars[chars[i]][1] = cStart + off2;
+			encodedChars[chars[i]][2] = cStart + off3;
+			encodedChars[chars[i]][3] = sStart + off4;
+			encodedCharsLen[chars[i]] = 4;
+		}
+		else {
+			int j = i - o - b * s - b * c * s - b * c * c * s;
+			off5 = j % s;
+			off4 = (j / s) % c;
+			off3 = (j / (s * c)) % c;
+			off2 = (j / (s * c * c)) % c;
+			off1 = j / (s * c * c * c);
+			encodedChars[chars[i]] = new unsigned char[5];
+			encodedChars[chars[i]][0] = bStart + off1;
+			encodedChars[chars[i]][1] = cStart + off2;
+			encodedChars[chars[i]][2] = cStart + off3;
+			encodedChars[chars[i]][3] = cStart + off4;
+			encodedChars[chars[i]][4] = sStart + off5;
+			encodedCharsLen[chars[i]] = 5;
+		}
+	}
+
+	unsigned char *encodedText = new unsigned char[totalTotal];
+	encodedTextLen = 0;
+
+	for (unsigned int i = 0; i < textLen; ++i) {
+		unsigned char ch = text[i];
+		for (unsigned int j = 0; j < encodedCharsLen[ch]; ++j) {
+			encodedText[encodedTextLen++] = encodedChars[ch][j];
+		}
+	}
+
+	return encodedText;
+}
+
+unsigned char *getEncodedInCB(int bits, unsigned char *text, unsigned int textLen, unsigned int &encodedTextLen, unsigned char **encodedChars, unsigned int *encodedCharsLen, unsigned int &b) {
+
+	int max = (int)pow(2.0, (double)bits);
+
+	unsigned int charsCount[256][2];
+	for (int i = 0; i < 256; ++i) {
+		charsCount[i][0] = i;
+		charsCount[i][1] = 0;
+	}
+	for (unsigned int i = 0; i < textLen; ++i) {
+		charsCount[text[i]][1]++;
+	}
+
+	unsigned int charsLen = 0;
+	for (int i = 0; i < 256; ++i) {
+		if (charsCount[i][1] != 0) ++charsLen;
+	}
+
+	vector<unsigned int*> charsCountVector(charsCount, charsCount + 256);
+	sort(charsCountVector.begin(), charsCountVector.end(), sortCharsCount);
+
+	unsigned char chars[256];
+	int i = 0;
+	for (vector<unsigned int*>::iterator it = charsCountVector.begin(); it != charsCountVector.end(); ++it, ++i) {
+		chars[i] = **it;
+	}
+
+	unsigned int totalTotal = (unsigned int)(-1);
+	unsigned int best[2] = {0, 0};
+	bool notFound = true;
+
+	for (int b = 1; b < max; ++b) {
+		for (int c = 1; c < max; ++c) {
+			if (b + c != max) continue;
+			int sig = charsLen;
+			unsigned int total = 0;
+			unsigned int curr = 0;
+			if (sig > 0) {
+				for (int i = 0; i < b; ++i) {
+					total += charsCountVector[curr][1] * 1;
+					++curr;
+					if (curr >= charsLen) break;
+				}
+				sig -= b;
+			}
+			if (sig > 0) {
+				for (int i = 0; i < b * c; ++i) {
+					total += charsCountVector[curr][1] * 2;
+					++curr;
+					if (curr >= charsLen) break;
+				}
+				sig -= b * c;
+			}
+			if (sig > 0) {
+				for (int i = 0; i < b * c * c; ++i) {
+					total += charsCountVector[curr][1] * 3;
+					++curr;
+					if (curr >= charsLen) break;
+				}
+				sig -= b * c * c;
+			}
+			if (sig > 0) {
+				for (int i = 0; i < b * c * c * c; ++i) {
+					total += charsCountVector[curr][1] * 4;
+					++curr;
+					if (curr >= charsLen) break;
+				}
+				sig -= b * c * c * c;
+			}
+			if (sig > 0) {
+				for (int i = 0; i < b * c * c * c * c; ++i) {
+					total += charsCountVector[curr][1] * 5;
+					++curr;
+					if (curr >= charsLen) break;
+				}
+				sig -= b * c * c * c * c;
+			}
+			if (sig > 0) continue;
+			if (total < totalTotal) {
+				notFound = false;
+				totalTotal = total;
+				best[0] = b;
+				best[1] = c;
+			}
+		}
+	}
+	if (notFound) {
+		cout << "Error building index: text contains more symbols than can be encoded in CB schema on " << bits << " bits" << endl;
+		exit(1);
+	}
+	b = best[0];
+	unsigned int c = best[1];
+
+	unsigned int bStart = 0;
+	unsigned int cStart = b;
+
+	unsigned int off1, off2, off3, off4, off5;
+
+	for (unsigned int i = 0; i < charsLen; ++i) {
+		if (i < b) {
+			encodedChars[chars[i]] = new unsigned char[1];
+			encodedChars[chars[i]][0] = i;
+			encodedCharsLen[chars[i]] = 1;
+		}
+		else if (i < b + b * c) {
+			int j = i - b;
+			encodedChars[chars[i]] = new unsigned char[2];
+			encodedChars[chars[i]][0] = bStart + j / c;
+			encodedChars[chars[i]][1] = cStart + j % c;
+			encodedCharsLen[chars[i]] = 2;
+		}
+		else if (i < b + b * c + b * c * c) {
+			int j = i - b - b * c;
+			off3 = j % c;
+			off2 = (j / c) % c;
+			off1 = j / (c * c);
+			encodedChars[chars[i]] = new unsigned char[3];
+			encodedChars[chars[i]][0] = bStart + off1;
+			encodedChars[chars[i]][1] = cStart + off2;
+			encodedChars[chars[i]][2] = cStart + off3;
+			encodedCharsLen[chars[i]] = 3;
+		}
+		else if (i < b + b * c + b * c * c + b * c * c * c) {
+			int j = i - b - b * c - b * c * c;
+			off4 = j % c;
+			off3 = (j / c) % c;
+			off2 = (j / (c * c)) % c;
+			off1 = j / (c * c * c);
+			encodedChars[chars[i]] = new unsigned char[4];
+			encodedChars[chars[i]][0] = bStart + off1;
+			encodedChars[chars[i]][1] = cStart + off2;
+			encodedChars[chars[i]][2] = cStart + off3;
+			encodedChars[chars[i]][3] = cStart + off4;
+			encodedCharsLen[chars[i]] = 4;
+		}
+		else {
+			int j = i - b - b * c - b * c * c - b * c * c * c;
+			off5 = j % c;
+			off4 = (j / c) % c;
+			off3 = (j / (c * c)) % c;
+			off2 = (j / (c * c * c)) % c;
+			off1 = j / (c * c * c * c);
+			encodedChars[chars[i]] = new unsigned char[5];
+			encodedChars[chars[i]][0] = bStart + off1;
+			encodedChars[chars[i]][1] = cStart + off2;
+			encodedChars[chars[i]][2] = cStart + off3;
+			encodedChars[chars[i]][3] = cStart + off4;
+			encodedChars[chars[i]][4] = cStart + off5;
+			encodedCharsLen[chars[i]] = 5;
+		}
+	}
+
+	unsigned char *encodedText = new unsigned char[totalTotal];
+	encodedTextLen = 0;
+
+	for (unsigned int i = 0; i < textLen; ++i) {
+		unsigned char ch = text[i];
+		for (unsigned int j = 0; j < encodedCharsLen[ch]; ++j) {
+			encodedText[encodedTextLen++] = encodedChars[ch][j];
+		}
+	}
+
+	return encodedText;
+}
+
+unsigned char* encodePattern(unsigned char* pattern, unsigned int patternLen, unsigned char** encodedChars, unsigned int* encodedCharsLen, unsigned int &encodedPatternLen, bool &wrongEncoding) {
+	unsigned char* encodedPattern = new unsigned char[5 * patternLen + 1];
+	unsigned char* p = pattern;
+	encodedPatternLen = 0;
+	for (; p < pattern + patternLen; ++p) {
+		if (encodedCharsLen[*p] == 0) {
+			wrongEncoding = true;
+			break;
+		}
+		for (unsigned int i = 0; i < encodedCharsLen[*p]; ++i) {
+			encodedPattern[encodedPatternLen++] = encodedChars[*p][i];
+		}
+	}
+	return encodedPattern;
+}
+

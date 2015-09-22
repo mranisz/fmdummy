@@ -6,6 +6,7 @@ private:
 	char *textFileName;
 	unsigned int queriesNum;
 	unsigned int m;
+	string selectedChars;
 	unsigned int ordCharsLen = 0;
 	unsigned int *ordChars = NULL;
 	unsigned char **patterns;

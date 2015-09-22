@@ -16,7 +16,7 @@ void Patterns::initialize() {
 
 void Patterns::initializePatterns() {
 	stringstream ss;
-	ss << "patterns-" << this->textFileName << "-" << this->m << "-"  << this->queriesNum << ".dat";
+	ss << "patterns-" << this->textFileName << "-" << this->m << "-" << this->queriesNum << "-" << this->selectedChars << ".dat";
 	string s = ss.str();
 	char *patternFileName = (char *)(s.c_str());
 	unsigned int textLen, queriesFirstIndexArrayLen;
@@ -100,7 +100,7 @@ void Patterns::initializePatterns() {
 
 void Patterns::initializeSACounts() {
 	stringstream ss;
-	ss << "counts-" << this->textFileName << "-" << this->m << "-"  << this->queriesNum << ".dat";
+	ss << "counts-" << this->textFileName << "-" << this->m << "-" << this->queriesNum << " " << this->selectedChars << ".dat";
 	string s = ss.str();
 	char *countsFileName = (char *)(s.c_str());
 
@@ -109,25 +109,28 @@ void Patterns::initializeSACounts() {
 		unsigned char *text = readFileChar(this->textFileName, textLen, 0);
 
 		unsigned int saLen;
-		unsigned int *sa = getSA(text, textLen, saLen, 0, false);
+		unsigned int *sa = getSA(text, textLen, saLen, 0, true);
 
+		cout << "Getting counts from SA ... " << flush;
 		this->counts = new unsigned int[this->queriesNum];
-
 		for (unsigned int i = 0; i < this->queriesNum; ++i) {
 			this->counts[i] = this->getSACount(sa, text, saLen, this->patterns[i], this->m);
 		}
-
+		delete[] text;
+		delete[] sa;
+		cout << "Done" << endl;
+		cout << "Saving counts in " << countsFileName << " ... " << flush;
 		FILE* outFile;
 		outFile = fopen(countsFileName, "w");
 		fwrite(this->counts, (size_t)4, (size_t)(this->queriesNum), outFile);
 		fclose(outFile);
-
-		delete[] text;
-		delete[] sa;
+		cout << "Done" << endl;
 
 	} else {
+		cout << "Reading counts from " << countsFileName << " ... " << flush;
 		unsigned int countsLen;
 		this->counts = readFileInt(countsFileName, countsLen, 0);
+		cout << "Done" << endl;
 	}
 }
 
@@ -185,14 +188,17 @@ unsigned int *Patterns::getSACounts() {
 }
 
 void Patterns::setSelectedChars(string selectedChars) {
-	if (selectedChars != "all") this->ordChars = breakByDelimeter(selectedChars, ',', this->ordCharsLen);
+	this->selectedChars = selectedChars;
+	if (selectedChars != "all") this->ordChars = breakByDelimeter(selectedChars, '.', this->ordCharsLen);
 }
 
 unsigned int Patterns::getErrorCountsNumber(unsigned int *countsToCheck) {
 	if (this->counts == NULL) this->initializeSACounts();
+	cout << "Checking counts consistency ... " << flush;
 	unsigned int errorCountsNumber = 0;
 	for (unsigned int i = 0; i < this->queriesNum; ++i) {
 		if (countsToCheck[i] != this->counts[i]) ++errorCountsNumber;
 	}
+	cout << "Done" << endl;
 	return errorCountsNumber;
 }

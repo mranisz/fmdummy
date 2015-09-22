@@ -13,33 +13,35 @@ using namespace std;
 CStopWatch timer;
 
 void getUsage() {
-	cout << "Parameters:" << endl;
-	cout << "fmDummy option fileName q m [bits|k|selectedChars]" << endl;
+	cout << "Choose index you want to test:" << endl;
+	cout << "FMDummy1: ./testFMDummy 1 256c|512c selectedChars fileName q m" << endl;
+	cout << "FMDummy2: ./testFMDummy 2 256c|512c SCBO|CB 3|4 fileName q m" << endl;
+	cout << "FMDummy3: ./testFMDummy 3 512|1024 fileName q m" << endl;
 	cout << "where:" << endl;
-	cout << "fmDummy - FM Dummy index type [1|2|2CB|3|WT2|WT4|WT8]" << endl;
-	cout << "option: [256c|512c] for type [1|2|2CB] or [512|1024] for type [3|WT2|WT4|WT8] or [512-hash|1024-hash] for type [WT2|WT4|WT8] or [512c|1024c|512c-hash|1024c-hash] for WT2 or [512-SSE2|1024-SSE2] for type [WT4|WT8]" << endl;
 	cout << "fileName - name of text file" << endl;
 	cout << "q - number of patterns (queries)" << endl;
 	cout << "m - pattern length" << endl;
-	cout << "bits (optional, only for fmDummy2CB, default bits = 4) - number of bits used to coded a character" << endl;
-	cout << "k (optional, only for hash, default bits = 4)" << endl;
-	cout << "selectedChars (only for fmDummy1) - up to 15 ordinal character values separated by commas which should be used in alphabet" << endl << endl;
+	cout << "selectedChars - up to 15 ordinal character values separated by dots or \"all\" if you want to build index on all characters from the text" << endl << endl;
 }
 
-void fmDummy1(string indexType, string selectedChars, char *textFileName, unsigned int m, unsigned int queriesNum);
+void fmDummy1(string indexType, string selectedChars, char *textFileName, unsigned int queriesNum, unsigned int m);
+void fmDummy2(string indexType, string encodedSchema, string bits, char *textFileName, unsigned int queriesNum, unsigned int m);
 
 int main(int argc, char *argv[]) {
-	if (argc < 6) {
-		getUsage();
-		return 1;
-	}
-
 	if ((string)argv[1] == "1") {
-		fmDummy1(string(argv[2]), string(argv[6]), argv[3], atoi(argv[5]), atoi(argv[4]));
+		if (argc < 7) {
+			getUsage();
+			exit(1);
+		}
+		fmDummy1(string(argv[2]), string(argv[3]), argv[4], atoi(argv[5]), atoi(argv[6]));
 	}
-//	else if ((string)argv[1] == "2") {
-//		fmDummy2(argv[2], argv[3], atoi(argv[5]), atoi(argv[4]), argv[6]);
-//	}
+	else if ((string)argv[1] == "2") {
+		if (argc < 8) {
+			getUsage();
+			exit(1);
+		}
+		fmDummy2(string(argv[2]), string(argv[3]), string(argv[4]), argv[5], atoi(argv[6]), atoi(argv[7]));
+	}
 //	else if ((string)argv[1] == "2CB") {
 //		if (argc >= 8) fmDummy2CB(argv[2], argv[3], atoi(argv[5]), atoi(argv[4]), argv[6], atoi(argv[7]));
 //		else fmDummy2CB(argv[2], argv[3], atoi(argv[5]), atoi(argv[4]), argv[6], 4);
@@ -58,11 +60,11 @@ int main(int argc, char *argv[]) {
 //	}
 	else {
 		getUsage();
-		return 1;
+		exit(1);
 	}
 }
 
-void fmDummy1(string indexType, string selectedChars, char *textFileName, unsigned int m, unsigned int queriesNum) {
+void fmDummy1(string indexType, string selectedChars, char *textFileName, unsigned int queriesNum, unsigned int m) {
 
 	Patterns *P = new Patterns(textFileName, queriesNum, m, selectedChars);
 	unsigned char **patterns = P->getPatterns();
@@ -71,7 +73,7 @@ void fmDummy1(string indexType, string selectedChars, char *textFileName, unsign
 	unsigned int textLen;
 	FMDummy1 *FMD1;
 	stringstream ss;
-	ss << textFileName << "-" << indexType << ".fm1_idx";
+	ss << textFileName << "-" << indexType << "-" << selectedChars << ".fm1_idx";
 	string s = ss.str();
 	char *indexFileName = (char *)(s.c_str());
 
@@ -87,8 +89,8 @@ void fmDummy1(string indexType, string selectedChars, char *textFileName, unsign
 	}
 
 	unsigned int *indexCounts = new unsigned int[queriesNum];
-	timer.startTimer();
 
+	timer.startTimer();
 	for (unsigned int i = 0; i < queriesNum; ++i) {
 		indexCounts[i] = FMD1->count(patterns[i], m);
 	}
@@ -97,21 +99,75 @@ void fmDummy1(string indexType, string selectedChars, char *textFileName, unsign
 	string resultFileName = "results/fmdummy/" + string(textFileName) + "_count_FMDummy1.txt";
 	fstream resultFile(resultFileName.c_str(), ios::out | ios::binary | ios::app);
 	double size = (double)FMD1->getIndexSize() / (double)FMD1->getTextSize();
-	cout << "count FMDummy1_" << indexType << " " << textFileName << " m=" << m << " queries=" << queriesNum << " time=" << timer.getElapsedTime() << " size=" << size << "n";
-	resultFile << m << " " << queriesNum << " " << indexType << " " << timer.getElapsedTime() << " " << size;
+	cout << "count FMDummy1_" << indexType << " " << selectedChars << " " << textFileName << " m=" << m << " queries=" << queriesNum << " size=" << size << "n time=" << timer.getElapsedTime() << endl;
+	resultFile << m << " " << queriesNum << " " << indexType << " " << selectedChars << " " << size << " " << timer.getElapsedTime();
 
 	unsigned int differences = P->getErrorCountsNumber(indexCounts);
 	if (differences > 0) {
-		cout << " DIFFERENCES: " << differences;
+		cout << "DIFFERENCES: " << differences << endl;
 		resultFile << " DIFFERENCES: " << differences;
+	} else {
+		cout << "Differences: " << differences << endl;
 	}
-
-	cout << endl;
 	resultFile << endl;
 	resultFile.close();
 
 	if (text != NULL) delete[] text;
 	delete[] indexCounts;
 	delete FMD1;
+	delete P;
+}
+
+void fmDummy2(string indexType, string encodedSchema, string bits, char *textFileName, unsigned int queriesNum, unsigned int m) {
+
+	Patterns *P = new Patterns(textFileName, queriesNum, m);
+	unsigned char **patterns = P->getPatterns();
+
+	unsigned char* text = NULL;
+	unsigned int textLen;
+	FMDummy2 *FMD2;
+	stringstream ss;
+	ss << textFileName << "-" << indexType << "-" << encodedSchema << "-" << bits << ".fm2_idx";
+	string s = ss.str();
+	char *indexFileName = (char *)(s.c_str());
+
+	if (fileExists(indexFileName)) {
+		FMD2 = new FMDummy2();
+		FMD2->load(indexFileName);
+	} else {
+		FMD2 = new FMDummy2(indexType, encodedSchema, bits);
+		FMD2->setVerbose(true);
+		text = readText(textFileName, textLen, 0);
+		FMD2->build(text, textLen);
+		FMD2->save(indexFileName);
+	}
+
+	unsigned int *indexCounts = new unsigned int[queriesNum];
+
+	timer.startTimer();
+	for (unsigned int i = 0; i < queriesNum; ++i) {
+		indexCounts[i] = FMD2->count(patterns[i], m);
+	}
+	timer.stopTimer();
+
+	string resultFileName = "results/fmdummy/" + string(textFileName) + "_count_FMDummy2.txt";
+	fstream resultFile(resultFileName.c_str(), ios::out | ios::binary | ios::app);
+	double size = (double)FMD2->getIndexSize() / (double)FMD2->getTextSize();
+	cout << "count FMDummy2_" << indexType << " " << encodedSchema << " " << bits << " " << textFileName << " m=" << m << " queries=" << queriesNum << " size=" << size << "n time=" << timer.getElapsedTime() << endl;
+	resultFile << m << " " << queriesNum << " " << indexType << " " << encodedSchema << " " << bits << " " << size << " " << timer.getElapsedTime();
+
+	unsigned int differences = P->getErrorCountsNumber(indexCounts);
+	if (differences > 0) {
+		cout << "DIFFERENCES: " << differences << endl;
+		resultFile << " DIFFERENCES: " << differences;
+	} else {
+		cout << "Differences: " << differences << endl;
+	}
+	resultFile << endl;
+	resultFile.close();
+
+	if (text != NULL) delete[] text;
+	delete[] indexCounts;
+	delete FMD2;
 	delete P;
 }
