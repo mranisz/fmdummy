@@ -26,6 +26,7 @@ void getUsage() {
 
 void fmDummy1(string indexType, string selectedChars, char *textFileName, unsigned int queriesNum, unsigned int m);
 void fmDummy2(string indexType, string encodedSchema, string bits, char *textFileName, unsigned int queriesNum, unsigned int m);
+void fmDummy3(string indexType, char *textFileName, unsigned int queriesNum, unsigned int m);
 
 int main(int argc, char *argv[]) {
 	if ((string)argv[1] == "1") {
@@ -42,13 +43,13 @@ int main(int argc, char *argv[]) {
 		}
 		fmDummy2(string(argv[2]), string(argv[3]), string(argv[4]), argv[5], atoi(argv[6]), atoi(argv[7]));
 	}
-//	else if ((string)argv[1] == "2CB") {
-//		if (argc >= 8) fmDummy2CB(argv[2], argv[3], atoi(argv[5]), atoi(argv[4]), argv[6], atoi(argv[7]));
-//		else fmDummy2CB(argv[2], argv[3], atoi(argv[5]), atoi(argv[4]), argv[6], 4);
-//	}
-//	else if ((string)argv[1] == "3") {
-//		fmDummy3(argv[2], argv[3], atoi(argv[5]), atoi(argv[4]), argv[6]);
-//	}
+	else if ((string)argv[1] == "3") {
+		if (argc < 5) {
+			getUsage();
+			exit(1);
+		}
+		fmDummy3(string(argv[2]), argv[3], atoi(argv[4]), atoi(argv[5]));
+	}
 //	else if ((string)argv[1] == "WT2") {
 //		fmDummyWT2(argv[2], argv[3], atoi(argv[5]), atoi(argv[4]), argv[6], k);
 //	}
@@ -65,7 +66,6 @@ int main(int argc, char *argv[]) {
 }
 
 void fmDummy1(string indexType, string selectedChars, char *textFileName, unsigned int queriesNum, unsigned int m) {
-
 	Patterns *P = new Patterns(textFileName, queriesNum, m, selectedChars);
 	unsigned char **patterns = P->getPatterns();
 
@@ -119,7 +119,6 @@ void fmDummy1(string indexType, string selectedChars, char *textFileName, unsign
 }
 
 void fmDummy2(string indexType, string encodedSchema, string bits, char *textFileName, unsigned int queriesNum, unsigned int m) {
-
 	Patterns *P = new Patterns(textFileName, queriesNum, m);
 	unsigned char **patterns = P->getPatterns();
 
@@ -169,5 +168,58 @@ void fmDummy2(string indexType, string encodedSchema, string bits, char *textFil
 	if (text != NULL) delete[] text;
 	delete[] indexCounts;
 	delete FMD2;
+	delete P;
+}
+
+void fmDummy3(string indexType, char *textFileName, unsigned int queriesNum, unsigned int m) {
+	Patterns *P = new Patterns(textFileName, queriesNum, m, "65.67.71.84");
+	unsigned char **patterns = P->getPatterns();
+
+	unsigned char* text = NULL;
+	unsigned int textLen;
+	FMDummy3 *FMD3;
+	stringstream ss;
+	ss << textFileName << "-" << indexType << ".fm3_idx";
+	string s = ss.str();
+	char *indexFileName = (char *)(s.c_str());
+
+	if (fileExists(indexFileName)) {
+		FMD3 = new FMDummy3();
+		FMD3->load(indexFileName);
+	} else {
+		FMD3 = new FMDummy3(indexType);
+		FMD3->setVerbose(true);
+		text = readText(textFileName, textLen, 0);
+		FMD3->build(text, textLen);
+		FMD3->save(indexFileName);
+	}
+
+	unsigned int *indexCounts = new unsigned int[queriesNum];
+
+	timer.startTimer();
+	for (unsigned int i = 0; i < queriesNum; ++i) {
+		indexCounts[i] = FMD3->count(patterns[i], m);
+	}
+	timer.stopTimer();
+
+	string resultFileName = "results/fmdummy/" + string(textFileName) + "_count_FMDummy3.txt";
+	fstream resultFile(resultFileName.c_str(), ios::out | ios::binary | ios::app);
+	double size = (double)FMD3->getIndexSize() / (double)FMD3->getTextSize();
+	cout << "count FMDummy3_" << indexType << " " << textFileName << " m=" << m << " queries=" << queriesNum << " size=" << size << "n time=" << timer.getElapsedTime() << endl;
+	resultFile << m << " " << queriesNum << " " << indexType << " " << size << " " << timer.getElapsedTime();
+
+	unsigned int differences = P->getErrorCountsNumber(indexCounts);
+	if (differences > 0) {
+		cout << "DIFFERENCES: " << differences << endl;
+		resultFile << " DIFFERENCES: " << differences;
+	} else {
+		cout << "Differences: " << differences << endl;
+	}
+	resultFile << endl;
+	resultFile.close();
+
+	if (text != NULL) delete[] text;
+	delete[] indexCounts;
+	delete FMD3;
 	delete P;
 }
