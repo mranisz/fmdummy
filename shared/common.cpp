@@ -8,8 +8,8 @@
 
 using namespace std;
 
-unsigned long long getFileSize(char* inFileName, int elemSize) {
-	FILE* InFile;
+unsigned long long getFileSize(char *inFileName, int elemSize) {
+	FILE *InFile;
 	InFile = fopen(inFileName, "rb");
 	if (InFile == NULL) {
 		cout << "Can't open file " << inFileName << endl;
@@ -28,8 +28,8 @@ unsigned long long getFileSize(char* inFileName, int elemSize) {
 	return fileSize / elemSize;
 }
 
-FILE* openFile(char* inFileName, int elemSize, unsigned int &len) {
-	FILE* InFile;
+FILE *openFile(char *inFileName, int elemSize, unsigned int &len) {
+	FILE *InFile;
 	InFile = fopen(inFileName, "rb");
 	if (InFile == NULL) {
 		cout << "Can't open file " << inFileName << endl;
@@ -53,9 +53,9 @@ FILE* openFile(char* inFileName, int elemSize, unsigned int &len) {
 	return InFile;
 }
 
-unsigned char* readFileChar(char* inFileName, unsigned int &len, unsigned int addLen) {
-	FILE* InFile = openFile(inFileName, 1, len);
-	unsigned char* S = new unsigned char[len + addLen];
+unsigned char *readFileChar(char *inFileName, unsigned int &len, unsigned int addLen) {
+	FILE *InFile = openFile(inFileName, 1, len);
+	unsigned char *S = new unsigned char[len + addLen];
 	if (fread(S, (size_t)1, (size_t)len, InFile) != (size_t)len) {
 		cout << "Error reading file " << inFileName << endl;
 		exit(1);
@@ -64,9 +64,9 @@ unsigned char* readFileChar(char* inFileName, unsigned int &len, unsigned int ad
 	return S;
 }
 
-unsigned int *readFileInt(char* inFileName, unsigned int &len, unsigned int addLen) {
-	FILE* InFile = openFile(inFileName, 4, len);
-	unsigned int* S = new unsigned int[len + addLen];
+unsigned int *readFileInt(char *inFileName, unsigned int &len, unsigned int addLen) {
+	FILE *InFile = openFile(inFileName, 4, len);
+	unsigned int *S = new unsigned int[len + addLen];
 	if (fread(S, (size_t)4, (size_t)len, InFile) != (size_t)len) {
 		cout << "Error reading file " << inFileName << endl;
 		exit(1);
@@ -75,9 +75,9 @@ unsigned int *readFileInt(char* inFileName, unsigned int &len, unsigned int addL
 	return S;
 }
 
-unsigned long long *readFileLong(char* inFileName, unsigned int &len, unsigned int addLen) {
-	FILE* InFile = openFile(inFileName, 8, len);
-	unsigned long long* S = new unsigned long long[len + addLen];
+unsigned long long *readFileLong(char *inFileName, unsigned int &len, unsigned int addLen) {
+	FILE *InFile = openFile(inFileName, 8, len);
+	unsigned long long *S = new unsigned long long[len + addLen];
 	if (fread(S, (size_t)8, (size_t)len, InFile) != (size_t)len) {
 		cout << "Error reading file " << inFileName << endl;
 		exit(1);
@@ -86,8 +86,8 @@ unsigned long long *readFileLong(char* inFileName, unsigned int &len, unsigned i
 	return S;
 }
 
-bool fileExists(char* inFileName) {
-	FILE* InFile;
+bool fileExists(char *inFileName) {
+	FILE *InFile;
 	InFile = fopen(inFileName, "rb");
 	if (InFile == NULL) {
 		return false;
@@ -109,8 +109,8 @@ bool fileExists(char* inFileName) {
 	return true;
 }
 
-unsigned char *readText(char* inFileName, unsigned int &textLen, unsigned char eof) {
-	unsigned char* S = readFileChar(inFileName, textLen, 1);
+unsigned char *readText(char *inFileName, unsigned int &textLen, unsigned char eof) {
+	unsigned char *S = readFileChar(inFileName, textLen, 1);
 	S[textLen] = eof;
 	return S;
 }
@@ -124,7 +124,7 @@ void checkNullChar(unsigned char *text, unsigned int textLen) {
 	}
 }
 
-unsigned int *getSA(unsigned char* text, unsigned int textLen, unsigned int &saLen, unsigned int addLen, bool verbose) {
+unsigned int *getSA(unsigned char *text, unsigned int textLen, unsigned int &saLen, unsigned int addLen, bool verbose) {
 	saLen = textLen + 1;
 	if (verbose) cout << "Creating SA ... " << flush;
 	unsigned int *sa = new unsigned int[saLen + addLen];
@@ -152,12 +152,9 @@ unsigned char *getBWT(unsigned char *text, unsigned int textLen, unsigned int &b
 	return bwt;
 }
 
-unsigned int *getArrayC(unsigned char *text, unsigned int textLen, bool verbose) {
+void fillArrayC(unsigned char *text, unsigned int textLen, unsigned int* C, bool verbose) {
 	if (verbose) cout << "Creating array C ... " << flush;
-	unsigned int* C = new unsigned int[257];
-	for (int i = 0; i < 257; ++i) {
-		C[i] = 0;
-	}
+	for (int i = 0; i < 257; ++i) C[i] = 0;
 	for (unsigned int i = 0; i < textLen; ++i) {
 		++C[text[i] + 1];
 	}
@@ -166,7 +163,6 @@ unsigned int *getArrayC(unsigned char *text, unsigned int textLen, bool verbose)
 		C[i + 1] += C[i];
 	}
 	if (verbose) cout << "Done" << endl;
-	return C;
 }
 
 unsigned int *breakByDelimeter(string seq, char delim, unsigned int &tokensLen) {

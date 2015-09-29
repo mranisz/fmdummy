@@ -75,7 +75,7 @@ void Patterns::initializePatterns() {
 		}
 		cout << "Done" << endl;
 		cout << "Saving patterns in " << patternFileName << " ... " << flush;
-		FILE* outFile;
+		FILE *outFile;
 		outFile = fopen(patternFileName, "w");
 		fwrite(queriesFirstIndexArray, (size_t)4, (size_t)(this->queriesNum), outFile);
 		fclose(outFile);
@@ -120,7 +120,7 @@ void Patterns::initializeSACounts() {
 		delete[] sa;
 		cout << "Done" << endl;
 		cout << "Saving counts in " << countsFileName << " ... " << flush;
-		FILE* outFile;
+		FILE *outFile;
 		outFile = fopen(countsFileName, "w");
 		fwrite(this->counts, (size_t)4, (size_t)(this->queriesNum), outFile);
 		fclose(outFile);
