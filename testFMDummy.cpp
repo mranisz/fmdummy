@@ -33,6 +33,11 @@ void fmDummy3(string indexType, char *textFileName, unsigned int queriesNum, uns
 void fmDummyWT(string wtType, string indexType, char *textFileName, unsigned int queriesNum, unsigned int m);
 
 int main(int argc, char *argv[]) {
+	if (argc < 3) {
+		getUsage();
+		return 1;
+	}
+
 	if ((string)argv[1] == "1") {
 		if (argc < 7) {
 			getUsage();

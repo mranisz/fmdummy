@@ -169,24 +169,61 @@ void FMDummy1::load(char *fileName) {
 	this->free();
 	FILE *inFile;
 	inFile = fopen(fileName, "rb");
-	fread(&this->verbose, (size_t)sizeof(bool), (size_t)1, inFile);
+	size_t result;
+	result = fread(&this->verbose, (size_t)sizeof(bool), (size_t)1, inFile);
+	if (result != 1) {
+		cout << "Error loading index from " << fileName << endl;
+		exit(1);
+	}
 	if (this->verbose) cout << "Loading index from " << fileName << " ... " << flush;
-	fread(&this->type, (size_t)sizeof(int), (size_t)1, inFile);
+	result = fread(&this->type, (size_t)sizeof(int), (size_t)1, inFile);
+	if (result != 1) {
+		cout << "Error loading index from " << fileName << endl;
+		exit(1);
+	}
 	this->setFunctions();
-	fread(&this->allChars, (size_t)sizeof(bool), (size_t)1, inFile);
-	fread(&this->ordCharsLen, (size_t)sizeof(unsigned int), (size_t)1, inFile);
+	result = fread(&this->allChars, (size_t)sizeof(bool), (size_t)1, inFile);
+	if (result != 1) {
+		cout << "Error loading index from " << fileName << endl;
+		exit(1);
+	}
+	result = fread(&this->ordCharsLen, (size_t)sizeof(unsigned int), (size_t)1, inFile);
+	if (result != 1) {
+		cout << "Error loading index from " << fileName << endl;
+		exit(1);
+	}
 	this->ordChars = new unsigned int[this->ordCharsLen];
-	fread(this->ordChars, (size_t)sizeof(unsigned int), (size_t)this->ordCharsLen, inFile);
-	fread(&this->textSize, (size_t)sizeof(unsigned int), (size_t)1, inFile);
-	fread(this->c, (size_t)sizeof(unsigned int), (size_t)257, inFile);
-	fread(&this->bwtWithRanksLen, (size_t)sizeof(unsigned int), (size_t)1, inFile);
+	result = fread(this->ordChars, (size_t)sizeof(unsigned int), (size_t)this->ordCharsLen, inFile);
+	if (result != this->ordCharsLen) {
+		cout << "Error loading index from " << fileName << endl;
+		exit(1);
+	}
+	result = fread(&this->textSize, (size_t)sizeof(unsigned int), (size_t)1, inFile);
+	if (result != 1) {
+		cout << "Error loading index from " << fileName << endl;
+		exit(1);
+	}
+	result = fread(this->c, (size_t)sizeof(unsigned int), (size_t)257, inFile);
+	if (result != 257) {
+		cout << "Error loading index from " << fileName << endl;
+		exit(1);
+	}
+	result = fread(&this->bwtWithRanksLen, (size_t)sizeof(unsigned int), (size_t)1, inFile);
+	if (result != 1) {
+		cout << "Error loading index from " << fileName << endl;
+		exit(1);
+	}
 	this->alignedBWTWithRanks = new unsigned long long*[256];
 	for (unsigned int i = 0; i < this->ordCharsLen; ++i) {
 		unsigned int c = this->ordChars[i];
 		this->bwtWithRanks[c] = new unsigned long long[this->bwtWithRanksLen];
 		this->alignedBWTWithRanks[c] = this->bwtWithRanks[c];
 		while ((unsigned long long)(this->alignedBWTWithRanks[c]) % 128) ++(this->alignedBWTWithRanks[c]);
-		fread(this->alignedBWTWithRanks[c], (size_t)sizeof(unsigned long long), (size_t)(this->bwtWithRanksLen - 16), inFile);
+		result = fread(this->alignedBWTWithRanks[c], (size_t)sizeof(unsigned long long), (size_t)(this->bwtWithRanksLen - 16), inFile);
+		if (result != (this->bwtWithRanksLen - 16)) {
+			cout << "Error loading index from " << fileName << endl;
+			exit(1);
+		}
 	}
 	fclose(inFile);
 	if (this->verbose) cout << "Done" << endl;
@@ -404,31 +441,78 @@ void FMDummy2::load(char *fileName) {
 	this->free();
 	FILE *inFile;
 	inFile = fopen(fileName, "rb");
-	fread(&this->verbose, (size_t)sizeof(bool), (size_t)1, inFile);
+	size_t result;
+	result = fread(&this->verbose, (size_t)sizeof(bool), (size_t)1, inFile);
+	if (result != 1) {
+		cout << "Error loading index from " << fileName << endl;
+		exit(1);
+	}
 	if (this->verbose) cout << "Loading index from " << fileName << " ... " << flush;
-	fread(&this->type, (size_t)sizeof(int), (size_t)1, inFile);
-	fread(&this->schema, (size_t)sizeof(int), (size_t)1, inFile);
+	result = fread(&this->type, (size_t)sizeof(int), (size_t)1, inFile);
+	if (result != 1) {
+		cout << "Error loading index from " << fileName << endl;
+		exit(1);
+	}
+	result = fread(&this->schema, (size_t)sizeof(int), (size_t)1, inFile);
+	if (result != 1) {
+		cout << "Error loading index from " << fileName << endl;
+		exit(1);
+	}
 	this->setFunctions();
-	fread(&this->bitsPerChar, (size_t)sizeof(int), (size_t)1, inFile);
-	fread(&this->textSize, (size_t)sizeof(unsigned int), (size_t)1, inFile);
-	fread(this->c, (size_t)sizeof(unsigned int), (size_t)257, inFile);
-	fread(this->encodedCharsLen, (size_t)sizeof(unsigned int), (size_t)256, inFile);
+	result = fread(&this->bitsPerChar, (size_t)sizeof(int), (size_t)1, inFile);
+	if (result != 1) {
+		cout << "Error loading index from " << fileName << endl;
+		exit(1);
+	}
+	result = fread(&this->textSize, (size_t)sizeof(unsigned int), (size_t)1, inFile);
+	if (result != 1) {
+		cout << "Error loading index from " << fileName << endl;
+		exit(1);
+	}
+	result = fread(this->c, (size_t)sizeof(unsigned int), (size_t)257, inFile);
+	if (result != 257) {
+		cout << "Error loading index from " << fileName << endl;
+		exit(1);
+	}
+	result = fread(this->encodedCharsLen, (size_t)sizeof(unsigned int), (size_t)256, inFile);
+	if (result != 256) {
+		cout << "Error loading index from " << fileName << endl;
+		exit(1);
+	}
 	this->setMaxEncodedCharsLen();
 	for (int i = 0; i < 256; ++i) {
 		if (this->encodedCharsLen[i] == 0) continue;
 		this->encodedChars[i] = new unsigned char[this->encodedCharsLen[i]];
-		fread(this->encodedChars[i], (size_t)sizeof(unsigned char), (size_t)this->encodedCharsLen[i], inFile);
+		result = fread(this->encodedChars[i], (size_t)sizeof(unsigned char), (size_t)this->encodedCharsLen[i], inFile);
+		if (result != this->encodedCharsLen[i]) {
+			cout << "Error loading index from " << fileName << endl;
+			exit(1);
+		}
 	}
 	unsigned int maxChar = (unsigned int)pow(2.0, (double)this->bitsPerChar);
-	fread(&this->bwtWithRanksLen, (size_t)sizeof(unsigned int), (size_t)1, inFile);
+	result = fread(&this->bwtWithRanksLen, (size_t)sizeof(unsigned int), (size_t)1, inFile);
+	if (result != 1) {
+		cout << "Error loading index from " << fileName << endl;
+		exit(1);
+	}
 	this->alignedBWTWithRanks = new unsigned long long*[256];
 	for (unsigned int i = 0; i < maxChar; ++i) {
 		this->bwtWithRanks[i] = new unsigned long long[this->bwtWithRanksLen];
 		this->alignedBWTWithRanks[i] = this->bwtWithRanks[i];
 		while ((unsigned long long)(this->alignedBWTWithRanks[i]) % 128) ++(this->alignedBWTWithRanks[i]);
-		fread(this->alignedBWTWithRanks[i], (size_t)sizeof(unsigned long long), (size_t)(this->bwtWithRanksLen - 16), inFile);
+		result = fread(this->alignedBWTWithRanks[i], (size_t)sizeof(unsigned long long), (size_t)(this->bwtWithRanksLen - 16), inFile);
+		if (result != (this->bwtWithRanksLen - 16)) {
+			cout << "Error loading index from " << fileName << endl;
+			exit(1);
+		}
 	}
-	if (this->schema == FMDummy2::SCHEMA_CB) fread(&this->bInC, (size_t)sizeof(unsigned int), (size_t)1, inFile);
+	if (this->schema == FMDummy2::SCHEMA_CB) {
+		result = fread(&this->bInC, (size_t)sizeof(unsigned int), (size_t)1, inFile);
+		if (result != 1) {
+			cout << "Error loading index from " << fileName << endl;
+			exit(1);
+		}
+	}
 	fclose(inFile);
 	if (this->verbose) cout << "Done" << endl;
 
@@ -630,18 +714,47 @@ void FMDummy3::load(char *fileName) {
 	this->free();
 	FILE *inFile;
 	inFile = fopen(fileName, "rb");
-	fread(&this->verbose, (size_t)sizeof(bool), (size_t)1, inFile);
+	size_t result;
+	result = fread(&this->verbose, (size_t)sizeof(bool), (size_t)1, inFile);
+	if (result != 1) {
+		cout << "Error loading index from " << fileName << endl;
+		exit(1);
+	}
 	if (this->verbose) cout << "Loading index from " << fileName << " ... " << flush;
-	fread(&this->type, (size_t)sizeof(int), (size_t)1, inFile);
+	result = fread(&this->type, (size_t)sizeof(int), (size_t)1, inFile);
+	if (result != 1) {
+		cout << "Error loading index from " << fileName << endl;
+		exit(1);
+	}
 	this->setFunctions();
-	fread(&this->textSize, (size_t)sizeof(unsigned int), (size_t)1, inFile);
-	fread(this->c, (size_t)sizeof(unsigned int), (size_t)257, inFile);
-	fread(this->lut, (size_t)sizeof(unsigned int), (size_t)(256 * 125), inFile);
-	fread(&this->bwtWithRanksLen, (size_t)sizeof(unsigned int), (size_t)1, inFile);
+	result = fread(&this->textSize, (size_t)sizeof(unsigned int), (size_t)1, inFile);
+	if (result != 1) {
+		cout << "Error loading index from " << fileName << endl;
+		exit(1);
+	}
+	result = fread(this->c, (size_t)sizeof(unsigned int), (size_t)257, inFile);
+	if (result != 257) {
+		cout << "Error loading index from " << fileName << endl;
+		exit(1);
+	}
+	result = fread(this->lut, (size_t)sizeof(unsigned int), (size_t)(256 * 125), inFile);
+	if (result != (256 * 125)) {
+		cout << "Error loading index from " << fileName << endl;
+		exit(1);
+	}
+	result = fread(&this->bwtWithRanksLen, (size_t)sizeof(unsigned int), (size_t)1, inFile);
+	if (result != 1) {
+		cout << "Error loading index from " << fileName << endl;
+		exit(1);
+	}
 	this->bwtWithRanks = new unsigned char[this->bwtWithRanksLen];
 	this->alignedBWTWithRanks = this->bwtWithRanks;
 	while ((unsigned long long)this->alignedBWTWithRanks % 128) ++this->alignedBWTWithRanks;
-	fread(this->alignedBWTWithRanks, (size_t)sizeof(unsigned char), (size_t)(this->bwtWithRanksLen - 128), inFile);
+	result = fread(this->alignedBWTWithRanks, (size_t)sizeof(unsigned char), (size_t)(this->bwtWithRanksLen - 128), inFile);
+	if (result != (this->bwtWithRanksLen - 128)) {
+		cout << "Error loading index from " << fileName << endl;
+		exit(1);
+	}
 	fclose(inFile);
 	if (this->verbose) cout << "Done" << endl;
 }
@@ -678,15 +791,32 @@ void WT::save(FILE *outFile) {
 
 void WT::load(FILE *inFile) {
 	bool isNotNullNode;
-	fread(&this->bitsLen, (size_t)sizeof(unsigned int), (size_t)1, inFile);
+	size_t result;
+	result = fread(&this->bitsLen, (size_t)sizeof(unsigned int), (size_t)1, inFile);
+	if (result != 1) {
+		cout << "Error loading index" << endl;
+		exit(1);
+	}
 	this->bits = new unsigned long long[this->bitsLen];
 	this->alignedBits = this->bits;
 	while ((unsigned long long)(this->alignedBits) % 128) ++(this->alignedBits);
-	fread(this->alignedBits, (size_t)sizeof(unsigned long long), (size_t)(this->bitsLen - 16), inFile);
-	fread(&this->nodesLen, (size_t)sizeof(unsigned int), (size_t)1, inFile);
+	result = fread(this->alignedBits, (size_t)sizeof(unsigned long long), (size_t)(this->bitsLen - 16), inFile);
+	if (result != (this->bitsLen - 16)) {
+		cout << "Error loading index" << endl;
+		exit(1);
+	}
+	result = fread(&this->nodesLen, (size_t)sizeof(unsigned int), (size_t)1, inFile);
+	if (result != 1) {
+		cout << "Error loading index" << endl;
+		exit(1);
+	}
 	this->nodes = new WT *[this->nodesLen];
 	for (unsigned int i = 0; i < this->nodesLen; ++i) {
-		fread(&isNotNullNode, (size_t)sizeof(bool), (size_t)1, inFile);
+		result = fread(&isNotNullNode, (size_t)sizeof(bool), (size_t)1, inFile);
+		if (result != 1) {
+			cout << "Error loading index" << endl;
+			exit(1);
+		}
 		if (isNotNullNode) {
 			this->nodes[i] = new WT();
 			this->nodes[i]->load(inFile);
@@ -1142,15 +1272,44 @@ void FMDummyWT::load(char *fileName) {
 	this->free();
 	FILE *inFile;
 	inFile = fopen(fileName, "rb");
-	fread(&this->verbose, (size_t)sizeof(bool), (size_t)1, inFile);
+	size_t result;
+	result = fread(&this->verbose, (size_t)sizeof(bool), (size_t)1, inFile);
+	if (result != 1) {
+		cout << "Error loading index from " << fileName << endl;
+		exit(1);
+	}
 	if (this->verbose) cout << "Loading index from " << fileName << " ... " << flush;
-	fread(&this->wtType, (size_t)sizeof(int), (size_t)1, inFile);
-	fread(&this->type, (size_t)sizeof(int), (size_t)1, inFile);
+	result = fread(&this->wtType, (size_t)sizeof(int), (size_t)1, inFile);
+	if (result != 1) {
+		cout << "Error loading index from " << fileName << endl;
+		exit(1);
+	}
+	result = fread(&this->type, (size_t)sizeof(int), (size_t)1, inFile);
+	if (result != 1) {
+		cout << "Error loading index from " << fileName << endl;
+		exit(1);
+	}
 	this->setFunctions();
-	fread(&this->textSize, (size_t)sizeof(unsigned int), (size_t)1, inFile);
-	fread(this->c, (size_t)sizeof(unsigned int), (size_t)257, inFile);
-	fread(this->code, (size_t)sizeof(unsigned long long), (size_t)256, inFile);
-	fread(this->codeLen, (size_t)sizeof(unsigned int), (size_t)256, inFile);
+	result = fread(&this->textSize, (size_t)sizeof(unsigned int), (size_t)1, inFile);
+	if (result != 1) {
+		cout << "Error loading index from " << fileName << endl;
+		exit(1);
+	}
+	result = fread(this->c, (size_t)sizeof(unsigned int), (size_t)257, inFile);
+	if (result != 257) {
+		cout << "Error loading index from " << fileName << endl;
+		exit(1);
+	}
+	result = fread(this->code, (size_t)sizeof(unsigned long long), (size_t)256, inFile);
+	if (result != 256) {
+		cout << "Error loading index from " << fileName << endl;
+		exit(1);
+	}
+	result = fread(this->codeLen, (size_t)sizeof(unsigned int), (size_t)256, inFile);
+	if (result != 256) {
+		cout << "Error loading index from " << fileName << endl;
+		exit(1);
+	}
 	this->wt = new WT();
 	this->wt->load(inFile);
 	fclose(inFile);
