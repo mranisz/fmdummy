@@ -73,6 +73,7 @@ private:
 	unsigned long long **alignedBWTWithRanks;
 	unsigned char *encodedChars[256];
 	unsigned int encodedCharsLen[256];
+	unsigned int maxEncodedCharsLen;
 	unsigned int c[257];
 	unsigned int bInC;
 
@@ -89,6 +90,7 @@ private:
 	void initialize();
 	void setType(string indexType, string schema);
 	void setBitsPerChar(string bitsPerChar);
+	void setMaxEncodedCharsLen();
 	void setFunctions();
 
 public:
@@ -289,7 +291,7 @@ unsigned int count_SCBO_512_counter40(unsigned char *pattern, unsigned int patte
 unsigned int count_CB_512_counter40(unsigned char *pattern, unsigned int patternLen, unsigned int *C, unsigned long long** bwtWithRanks, unsigned int bInC);
 unsigned char *getEncodedInSCBO(int bits, unsigned char *text, unsigned int textLen, unsigned int &encodedTextLen, unsigned char **encodedChars, unsigned int *encodedCharsLen);
 unsigned char *getEncodedInCB(int bits, unsigned char *text, unsigned int textLen, unsigned int &encodedTextLen, unsigned char **encodedChars, unsigned int *encodedCharsLen, unsigned int &b);
-unsigned char* encodePattern(unsigned char* pattern, unsigned int patternLen, unsigned char** encodedChars, unsigned int* encodedCharsLen, unsigned int &encodedPatternLen, bool &wrongEncoding);
+unsigned char* encodePattern(unsigned char* pattern, unsigned int patternLen, unsigned char** encodedChars, unsigned int* encodedCharsLen, unsigned int maxEncodedCharsLen, unsigned int &encodedPatternLen, bool &wrongEncoding);
 unsigned char *encode125(unsigned char* text, unsigned int textLen, unsigned int *selectedOrdChars, unsigned int &encodedTextLen);
 void fill125LUT(unsigned int *selectedOrdChars, unsigned int lut[][125]);
 unsigned int count_512_enc125(unsigned char *pattern, unsigned int i, unsigned int *C, unsigned char *bwtWithRanks, unsigned int lut[][125], unsigned int firstVal, unsigned int lastVal);

@@ -141,7 +141,8 @@ unsigned char *getBWT(unsigned char *text, unsigned int textLen, unsigned int &b
 	unsigned int *sa = getSA(text, textLen, saLen, 0, verbose);
 	if (verbose) cout << "Creating BWT ... " << flush;
 	bwtLen = textLen + 1;
-	unsigned char *bwt = new unsigned char[bwtLen];
+	unsigned char *bwt = new unsigned char[bwtLen + 1];
+	bwt[bwtLen] = eof;
 	bwt[0] = text[textLen - 1];
 	for (unsigned int i = 1; i < saLen; ++i) {
 		if (sa[i] == 0) bwt[i] = eof;

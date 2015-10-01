@@ -99,6 +99,7 @@ void FMDummy1::build(unsigned char* text, unsigned int textLen) {
 	unsigned int bwtLen;
 	unsigned char *bwt = getBWT(text, textLen, bwtLen, 0, this->verbose);
 	if (this->verbose) cout << "Compacting BWT for selected chars ... " << flush;
+	++bwtLen;
 	unsigned int bwtDenseLen = (bwtLen / 8);
 	if (bwtLen % 8 > 0) ++bwtDenseLen;
 	unsigned int bwtDenseInLongLen = bwtDenseLen / sizeof(unsigned long long);
@@ -125,9 +126,7 @@ void FMDummy1::build(unsigned char* text, unsigned int textLen) {
 	this->alignedBWTWithRanks = builder(bwtDenseInLong, bwtDenseInLongLen, this->ordChars, this->ordCharsLen, this->bwtWithRanks, this->bwtWithRanksLen);
 	if (this->verbose) cout << "Done" << endl;
 
-	for (unsigned int i = 0; i < this->ordCharsLen; ++i) {
-		delete[] bwtDenseInLong[this->ordChars[i]];
-	}
+	for (unsigned int i = 0; i < this->ordCharsLen; ++i) delete[] bwtDenseInLong[this->ordChars[i]];
 	if (this->verbose) cout << "Index successfully built" << endl;
 }
 
@@ -216,6 +215,11 @@ void FMDummy2::setBitsPerChar(string bitsPerChar) {
 	else this->bitsPerChar = FMDummy2::BITS_4;
 }
 
+void FMDummy2::setMaxEncodedCharsLen() {
+	this->maxEncodedCharsLen = 0;
+	for (int i = 0; i < 256; ++i) if (this->encodedCharsLen[i] > this->maxEncodedCharsLen) this->maxEncodedCharsLen = this->encodedCharsLen[i];
+}
+
 void FMDummy2::setFunctions() {
 	switch (this->type) {
 	case FMDummy2::TYPE_512:
@@ -263,6 +267,7 @@ void FMDummy2::initialize() {
 	this->bwtWithRanksLen = 0;
 	for (int i = 0; i < 256; ++i) this->encodedChars[i] = NULL;
 	for (int i = 0; i < 256; ++i) this->encodedCharsLen[i] = 0;
+	this->maxEncodedCharsLen = 0;
 	for (int i = 0; i < 257; ++i) this->c[i] = 0;
 	this->bInC = 0;
 
@@ -300,10 +305,12 @@ void FMDummy2::build(unsigned char *text, unsigned int textLen) {
 		if (this->verbose) cout << "Done" << endl;
 		break;
 	}
+	this->setMaxEncodedCharsLen();
 	unsigned int bwtLen;
 	unsigned int ordCharsLen = (unsigned int)pow(2.0, (double)this->bitsPerChar);
 	unsigned char *bwt = getBWT(encodedText, encodedTextLen, bwtLen, ordCharsLen, this->verbose);
 	if (this->verbose) cout << "Compacting BWT ... " << flush;
+	++bwtLen;
 	unsigned int bwtDenseLen = (bwtLen / 8);
 	if (bwtLen % 8 > 0) ++bwtDenseLen;
 	unsigned int bwtDenseInLongLen = bwtDenseLen / sizeof(unsigned long long);
@@ -332,11 +339,10 @@ void FMDummy2::build(unsigned char *text, unsigned int textLen) {
 	this->alignedBWTWithRanks = builder(bwtDenseInLong, bwtDenseInLongLen, ordChars, ordCharsLen, this->bwtWithRanks, this->bwtWithRanksLen);
 	if (this->verbose) cout << "Done" << endl;
 
-	for (unsigned int i = 0; i < ordCharsLen; ++i) {
-		delete[] bwtDenseInLong[i];
-	}
+	for (unsigned int i = 0; i < ordCharsLen; ++i) delete[] bwtDenseInLong[i];
 	delete[] ordChars;
 	delete[] encodedText;
+
 	if (this->verbose) cout << "Index successfully built" << endl;
 }
 
@@ -345,7 +351,7 @@ unsigned int FMDummy2::getIndexSize() {
 	for (int i = 0; i < 256; ++i) {
 		encodedCharsLenSum += this->encodedCharsLen[i];
 	}
-	unsigned int size = (sizeof(this->type) + 257 * sizeof(unsigned int) + 256 * sizeof(unsigned long long*) + (unsigned int)pow(2.0, (double)this->bitsPerChar) * this->bwtWithRanksLen * sizeof(unsigned long long) + 256 * sizeof(unsigned int) + encodedCharsLenSum * sizeof(unsigned char));
+	unsigned int size = (sizeof(this->type) + sizeof(this->maxEncodedCharsLen) + 257 * sizeof(unsigned int) + 256 * sizeof(unsigned long long*) + (unsigned int)pow(2.0, (double)this->bitsPerChar) * this->bwtWithRanksLen * sizeof(unsigned long long) + 256 * sizeof(unsigned int) + encodedCharsLenSum * sizeof(unsigned char));
 	if (this->schema == FMDummy2::SCHEMA_CB) size += sizeof(unsigned int);
 	size = (unsigned int)pow(2.0, (double)this->bitsPerChar) * this->bwtWithRanksLen * sizeof(unsigned long long);
 	return size;
@@ -358,7 +364,7 @@ unsigned int FMDummy2::getTextSize() {
 unsigned int FMDummy2::count(unsigned char *pattern, unsigned int patternLen) {
 	bool wrongEncoding = false;
 	unsigned int encodedPatternLen;
-	unsigned char *encodedPattern = encodePattern(pattern, patternLen, this->encodedChars, this->encodedCharsLen, encodedPatternLen, wrongEncoding);
+	unsigned char *encodedPattern = encodePattern(pattern, patternLen, this->encodedChars, this->encodedCharsLen, this->maxEncodedCharsLen, encodedPatternLen, wrongEncoding);
 	unsigned int count;
 	if (wrongEncoding) count = 0;
 	else count = this->countOperation(encodedPattern, encodedPatternLen, this->c, this->alignedBWTWithRanks, this->bInC);
@@ -407,6 +413,7 @@ void FMDummy2::load(char *fileName) {
 	fread(&this->textSize, (size_t)sizeof(unsigned int), (size_t)1, inFile);
 	fread(this->c, (size_t)sizeof(unsigned int), (size_t)257, inFile);
 	fread(this->encodedCharsLen, (size_t)sizeof(unsigned int), (size_t)256, inFile);
+	this->setMaxEncodedCharsLen();
 	for (int i = 0; i < 256; ++i) {
 		if (this->encodedCharsLen[i] == 0) continue;
 		this->encodedChars[i] = new unsigned char[this->encodedCharsLen[i]];
@@ -565,6 +572,7 @@ void FMDummy3::build(unsigned char *text, unsigned int textLen) {
 	unsigned int bwtLen;
 	unsigned char *bwt = getBWT(convertedText, textLen, bwtLen, 0, this->verbose);
 	if (this->verbose) cout << "Encoding BWT ... " << flush;
+	++bwtLen;
 	unsigned int selectedOrdChars[4] = { (unsigned int)'A', (unsigned int)'C', (unsigned int)'G', (unsigned int)'T' };
 	unsigned int bwtEnc125Len;
 	unsigned char *bwtEnc125 = encode125(bwt, bwtLen, selectedOrdChars, bwtEnc125Len);
@@ -1182,13 +1190,13 @@ unsigned long long** buildRank_256_counter48(unsigned long long** bwtInLong, uns
 		p = bwtInLong[c];
 		rank = 0;
 		pops = 0;
-		for (unsigned long long i = 0; p < bwtInLong[c] + bwtInLongLen; p += 3, ++i) {
+		for (unsigned int j = 0; p < bwtInLong[c] + bwtInLongLen; p += 3, ++j) {
 			pops = __builtin_popcountll(*p);
 			b1 = (pops << 56);
 			pops += __builtin_popcountll(*(p + 1));
 			b2 = (pops << 48);
 			pops += __builtin_popcountll(*(p + 2));
-			resRank[i] = rank + b1 + b2;
+			resRank[j] = rank + b1 + b2;
 			rank += pops;
 			pops = 0;
 		}
@@ -1196,9 +1204,9 @@ unsigned long long** buildRank_256_counter48(unsigned long long** bwtInLong, uns
 		alignedBWTWithRanks[c] = bwtWithRanks[c];
 		while ((unsigned long long)alignedBWTWithRanks[c] % 128) ++(alignedBWTWithRanks[c]);
 		p = bwtInLong[c];
-		long long counter = 0;
-		for (long long i = 0; p < bwtInLong[c] + bwtInLongLen; ++p, ++i) {
-			if (i % 3 == 0) alignedBWTWithRanks[c][counter++] = resRank[i / 3];
+		unsigned int counter = 0;
+		for (unsigned int j = 0; p < bwtInLong[c] + bwtInLongLen; ++p, ++j) {
+			if (j % 3 == 0) alignedBWTWithRanks[c][counter++] = resRank[j / 3];
 			alignedBWTWithRanks[c][counter++] = *p;
 		}
 		delete[] resRank;
@@ -1217,23 +1225,23 @@ unsigned long long** buildRank_512_counter40(unsigned long long** bwtInLong, uns
 		unsigned long long *resRank = new unsigned long long[(bwtInLongLen * 64) / 448 + 1];
 		p = bwtInLong[c];
 		rank = 0;
-		for (unsigned long long i = 0; p < bwtInLong[c] + bwtInLongLen; p += 7, ++i) {
+		for (unsigned int j = 0; p < bwtInLong[c] + bwtInLongLen; p += 7, ++j) {
 			pop1 = __builtin_popcountll(*p) + __builtin_popcountll(*(p + 1));
 			b1 = (pop1 << 56);
 			pop2 = __builtin_popcountll(*(p + 2)) + __builtin_popcountll(*(p + 3));
 			b2 = (pop2 << 48);
 			pop3 = __builtin_popcountll(*(p + 4)) + __builtin_popcountll(*(p + 5));
 			b3 = (pop3 << 40);
-			resRank[i] = rank + b1 + b2 + b3;
+			resRank[j] = rank + b1 + b2 + b3;
 			rank += pop1 + pop2 + pop3 + __builtin_popcountll(*(p + 6));
 		}
 		bwtWithRanks[c] = new unsigned long long[bwtWithRanksLen];
 		alignedBWTWithRanks[c] = bwtWithRanks[c];
 		while ((unsigned long long)alignedBWTWithRanks[c] % 128) ++(alignedBWTWithRanks[c]);
 		p = bwtInLong[c];
-		long long counter = 0;
-		for (long long i = 0; p < bwtInLong[c] + bwtInLongLen; ++p, ++i) {
-			if (i % 7 == 0) alignedBWTWithRanks[c][counter++] = resRank[i / 7];
+		unsigned int counter = 0;
+		for (unsigned int j = 0; p < bwtInLong[c] + bwtInLongLen; ++p, ++j) {
+			if (j % 7 == 0) alignedBWTWithRanks[c][counter++] = resRank[j / 7];
 			alignedBWTWithRanks[c][counter++] = *p;
 		}
 		delete[] resRank;
@@ -1243,7 +1251,7 @@ unsigned long long** buildRank_512_counter40(unsigned long long** bwtInLong, uns
 
 unsigned int getRank_256_counter48(unsigned char c, unsigned int i, unsigned long long** bwtWithRanks) {
 	unsigned int j = i / 192;
-	unsigned long long* p = bwtWithRanks[c] + 4 * j;
+	unsigned long long *p = bwtWithRanks[c] + 4 * j;
 	unsigned int rank = (*p) & 0x00000000FFFFFFFFULL;
 	unsigned int b1 = ((*p) >> 56) & 0x00000000000000FFULL;  // popcount for 64-bit prefix
 	unsigned int b2 = ((*p) >> 48) & 0x00000000000000FFULL;  // popcount for 128-bit prefix
@@ -1300,7 +1308,7 @@ unsigned int count_CB_256_counter48(unsigned char *pattern, unsigned int pattern
 unsigned int getRank_512_counter40(unsigned char c, unsigned int i, unsigned long long** bwtWithRanks) {
 
 	unsigned int j = i / 448;
-	unsigned long long* p = bwtWithRanks[c] + 8 * j;
+	unsigned long long *p = bwtWithRanks[c] + 8 * j;
 	unsigned int rank = (*p) & 0x00000000FFFFFFFFULL;
 	unsigned int b1 = ((*p) >> 56) & 0x00000000000000FFULL;  // popcount for 128-bit prefix
 	unsigned int b2 = b1 + (((*p) >> 48) & 0x00000000000000FFULL);  // popcount for 256-bit prefix
@@ -1407,7 +1415,6 @@ unsigned char *getEncodedInSCBO(int bits, unsigned char *text, unsigned int text
 
 	unsigned int totalTotal = (unsigned int)(-1);
 	unsigned int best[4] = {0, 0, 0, 0};
-	bool notFound = true;
 
 	for (int o = 1; o < max - 2; ++o) {
 		for (int b = 1; b < max - 2; ++b) {
@@ -1417,49 +1424,29 @@ unsigned char *getEncodedInSCBO(int bits, unsigned char *text, unsigned int text
 					int sig = charsLen;
 					unsigned int total = 0;
 					unsigned int curr = 0;
+					unsigned int upperBound = o;
+					unsigned int symbolLen = 1;
 					if (sig > 0) {
-						for (int i = 0; i < o; ++i) {
-							total += charsCountVector[curr][1] * 1;
+						for (unsigned int i = 0; i < upperBound; ++i) {
+							total += charsCountVector[curr][1] * symbolLen;
 							++curr;
 							if (curr >= charsLen) break;
 						}
-						sig -= o;
+						sig -= upperBound;
+						upperBound = b * s;
+						++symbolLen;
 					}
-					if (sig > 0) {
-						for (int i = 0; i < b * s; ++i) {
-							total += charsCountVector[curr][1] * 2;
+					while (sig > 0) {
+						for (unsigned int i = 0; i < upperBound; ++i) {
+							total += charsCountVector[curr][1] * symbolLen;
 							++curr;
 							if (curr >= charsLen) break;
 						}
-						sig -= b * s;
+						sig -= upperBound;
+						upperBound *= c;
+						++symbolLen;
 					}
-					if (sig > 0) {
-						for (int i = 0; i < b * c * s; ++i) {
-							total += charsCountVector[curr][1] * 3;
-							++curr;
-							if (curr >= charsLen) break;
-						}
-						sig -= b * c * s;
-					}
-					if (sig > 0) {
-						for (int i = 0; i < b * c * c * s; ++i) {
-							total += charsCountVector[curr][1] * 4;
-							++curr;
-							if (curr >= charsLen) break;
-						}
-						sig -= b * c * c * s;
-					}
-					if (sig > 0) {
-						for (int i = 0; i < b * c * c * c * s; ++i) {
-							total += charsCountVector[curr][1] * 5;
-							++curr;
-							if (curr >= charsLen) break;
-						}
-						sig -= b * c * c * c * s;
-					}
-					if (sig > 0) continue;
 					if (total < totalTotal) {
-						notFound = false;
 						totalTotal = total;
 						best[0] = o;
 						best[1] = b;
@@ -1469,10 +1456,6 @@ unsigned char *getEncodedInSCBO(int bits, unsigned char *text, unsigned int text
 				}
 			}
 		}
-	}
-	if (notFound) {
-		cout << "Error building index: text contains more symbols than can be encoded in SCBO schema on " << bits << " bits" << endl;
-		exit(1);
 	}
 
 	unsigned int o = best[0];
@@ -1484,59 +1467,39 @@ unsigned char *getEncodedInSCBO(int bits, unsigned char *text, unsigned int text
 	unsigned int sStart = bStart + b;
 	unsigned int cStart = sStart + s;
 
-	unsigned int off1, off2, off3, off4, off5;
-
 	for (unsigned int i = 0; i < charsLen; ++i) {
 		if (i < o) {
 			encodedChars[chars[i]] = new unsigned char[1];
 			encodedChars[chars[i]][0] = i;
 			encodedCharsLen[chars[i]] = 1;
+			continue;
 		}
-		else if (i < o + b * s) {
+		if (i < o + b * s) {
 			int j = i - o;
 			encodedChars[chars[i]] = new unsigned char[2];
 			encodedChars[chars[i]][0] = bStart + j / s;
 			encodedChars[chars[i]][1] = sStart + j % s;
 			encodedCharsLen[chars[i]] = 2;
+			continue;
 		}
-		else if (i < o + b * s + b * c * s) {
-			int j = i - o - b * s;
-			off3 = j % s;
-			off2 = (j / s) % c;
-			off1 = j / (s * c);
-			encodedChars[chars[i]] = new unsigned char[3];
-			encodedChars[chars[i]][0] = bStart + off1;
-			encodedChars[chars[i]][1] = cStart + off2;
-			encodedChars[chars[i]][2] = sStart + off3;
-			encodedCharsLen[chars[i]] = 3;
-		}
-		else if (i < o + b * s + b * c * s + b * c * c * s) {
-			int j = i - o - b * s - b * c * s;
-			off4 = j % s;
-			off3 = (j / s) % c;
-			off2 = (j / (s * c)) % c;
-			off1 = j / (s * c * c);
-			encodedChars[chars[i]] = new unsigned char[4];
-			encodedChars[chars[i]][0] = bStart + off1;
-			encodedChars[chars[i]][1] = cStart + off2;
-			encodedChars[chars[i]][2] = cStart + off3;
-			encodedChars[chars[i]][3] = sStart + off4;
-			encodedCharsLen[chars[i]] = 4;
-		}
-		else {
-			int j = i - o - b * s - b * c * s - b * c * c * s;
-			off5 = j % s;
-			off4 = (j / s) % c;
-			off3 = (j / (s * c)) % c;
-			off2 = (j / (s * c * c)) % c;
-			off1 = j / (s * c * c * c);
-			encodedChars[chars[i]] = new unsigned char[5];
-			encodedChars[chars[i]][0] = bStart + off1;
-			encodedChars[chars[i]][1] = cStart + off2;
-			encodedChars[chars[i]][2] = cStart + off3;
-			encodedChars[chars[i]][3] = cStart + off4;
-			encodedChars[chars[i]][4] = sStart + off5;
-			encodedCharsLen[chars[i]] = 5;
+		unsigned int temp1 = b * s;
+		unsigned int symbolLen = 3;
+		unsigned int temp2 = 0;
+		while (true) {
+			temp2 = b * s * (unsigned int)pow((double)c, (double)(symbolLen - 2));
+			if (i < o + temp1 + temp2) {
+				int j = i - o - temp1;
+				encodedChars[chars[i]] = new unsigned char[symbolLen];
+				encodedChars[chars[i]][0] = bStart + j / (s * (unsigned int)pow((double)c, (double)(symbolLen - 2)));
+				for (unsigned int k = 1; k < symbolLen - 1; ++k) {
+					encodedChars[chars[i]][k] = cStart + (j / (s * (unsigned int)pow((double)c, (double)(symbolLen - 2 - k)))) % c;
+				}
+				encodedChars[chars[i]][symbolLen - 1] = sStart + j % s;
+				encodedCharsLen[chars[i]] = symbolLen;
+				break;
+			}
+			temp1 += temp2;
+			++symbolLen;
 		}
 	}
 
@@ -1582,7 +1545,6 @@ unsigned char *getEncodedInCB(int bits, unsigned char *text, unsigned int textLe
 
 	unsigned int totalTotal = (unsigned int)(-1);
 	unsigned int best[2] = {0, 0};
-	bool notFound = true;
 
 	for (int b = 1; b < max; ++b) {
 		for (int c = 1; c < max; ++c) {
@@ -1590,118 +1552,57 @@ unsigned char *getEncodedInCB(int bits, unsigned char *text, unsigned int textLe
 			int sig = charsLen;
 			unsigned int total = 0;
 			unsigned int curr = 0;
-			if (sig > 0) {
-				for (int i = 0; i < b; ++i) {
-					total += charsCountVector[curr][1] * 1;
+			unsigned int upperBound = b;
+			unsigned int symbolLen = 1;
+			while (sig > 0) {
+				for (unsigned int i = 0; i < upperBound; ++i) {
+					total += charsCountVector[curr][1] * symbolLen;
 					++curr;
 					if (curr >= charsLen) break;
 				}
-				sig -= b;
+				sig -= upperBound;
+				upperBound *= c;
+				++symbolLen;
 			}
-			if (sig > 0) {
-				for (int i = 0; i < b * c; ++i) {
-					total += charsCountVector[curr][1] * 2;
-					++curr;
-					if (curr >= charsLen) break;
-				}
-				sig -= b * c;
-			}
-			if (sig > 0) {
-				for (int i = 0; i < b * c * c; ++i) {
-					total += charsCountVector[curr][1] * 3;
-					++curr;
-					if (curr >= charsLen) break;
-				}
-				sig -= b * c * c;
-			}
-			if (sig > 0) {
-				for (int i = 0; i < b * c * c * c; ++i) {
-					total += charsCountVector[curr][1] * 4;
-					++curr;
-					if (curr >= charsLen) break;
-				}
-				sig -= b * c * c * c;
-			}
-			if (sig > 0) {
-				for (int i = 0; i < b * c * c * c * c; ++i) {
-					total += charsCountVector[curr][1] * 5;
-					++curr;
-					if (curr >= charsLen) break;
-				}
-				sig -= b * c * c * c * c;
-			}
-			if (sig > 0) continue;
 			if (total < totalTotal) {
-				notFound = false;
 				totalTotal = total;
 				best[0] = b;
 				best[1] = c;
 			}
 		}
 	}
-	if (notFound) {
-		cout << "Error building index: text contains more symbols than can be encoded in CB schema on " << bits << " bits" << endl;
-		exit(1);
-	}
+
 	b = best[0];
 	unsigned int c = best[1];
 
 	unsigned int bStart = 0;
 	unsigned int cStart = b;
 
-	unsigned int off1, off2, off3, off4, off5;
-
 	for (unsigned int i = 0; i < charsLen; ++i) {
 		if (i < b) {
 			encodedChars[chars[i]] = new unsigned char[1];
 			encodedChars[chars[i]][0] = i;
 			encodedCharsLen[chars[i]] = 1;
+			continue;
 		}
-		else if (i < b + b * c) {
-			int j = i - b;
-			encodedChars[chars[i]] = new unsigned char[2];
-			encodedChars[chars[i]][0] = bStart + j / c;
-			encodedChars[chars[i]][1] = cStart + j % c;
-			encodedCharsLen[chars[i]] = 2;
-		}
-		else if (i < b + b * c + b * c * c) {
-			int j = i - b - b * c;
-			off3 = j % c;
-			off2 = (j / c) % c;
-			off1 = j / (c * c);
-			encodedChars[chars[i]] = new unsigned char[3];
-			encodedChars[chars[i]][0] = bStart + off1;
-			encodedChars[chars[i]][1] = cStart + off2;
-			encodedChars[chars[i]][2] = cStart + off3;
-			encodedCharsLen[chars[i]] = 3;
-		}
-		else if (i < b + b * c + b * c * c + b * c * c * c) {
-			int j = i - b - b * c - b * c * c;
-			off4 = j % c;
-			off3 = (j / c) % c;
-			off2 = (j / (c * c)) % c;
-			off1 = j / (c * c * c);
-			encodedChars[chars[i]] = new unsigned char[4];
-			encodedChars[chars[i]][0] = bStart + off1;
-			encodedChars[chars[i]][1] = cStart + off2;
-			encodedChars[chars[i]][2] = cStart + off3;
-			encodedChars[chars[i]][3] = cStart + off4;
-			encodedCharsLen[chars[i]] = 4;
-		}
-		else {
-			int j = i - b - b * c - b * c * c - b * c * c * c;
-			off5 = j % c;
-			off4 = (j / c) % c;
-			off3 = (j / (c * c)) % c;
-			off2 = (j / (c * c * c)) % c;
-			off1 = j / (c * c * c * c);
-			encodedChars[chars[i]] = new unsigned char[5];
-			encodedChars[chars[i]][0] = bStart + off1;
-			encodedChars[chars[i]][1] = cStart + off2;
-			encodedChars[chars[i]][2] = cStart + off3;
-			encodedChars[chars[i]][3] = cStart + off4;
-			encodedChars[chars[i]][4] = cStart + off5;
-			encodedCharsLen[chars[i]] = 5;
+		unsigned int temp1 = b;
+		unsigned int symbolLen = 2;
+		unsigned int temp2 = 0;
+		while (true) {
+			temp2 = b * (unsigned int)pow((double)c, (double)(symbolLen - 1));
+			if (i < temp1 + temp2) {
+				int j = i - temp1;
+				encodedChars[chars[i]] = new unsigned char[symbolLen];
+				encodedChars[chars[i]][0] = bStart + j / (unsigned int)pow((double)c, (double)(symbolLen - 1));
+				for (unsigned int k = 1; k < symbolLen - 1; ++k) {
+					encodedChars[chars[i]][k] = cStart + (j / (unsigned int)pow((double)c, (double)(symbolLen - 1 - k))) % c;
+				}
+				encodedChars[chars[i]][symbolLen - 1] = cStart + j % c;
+				encodedCharsLen[chars[i]] = symbolLen;
+				break;
+			}
+			temp1 += temp2;
+			++symbolLen;
 		}
 	}
 
@@ -1718,8 +1619,8 @@ unsigned char *getEncodedInCB(int bits, unsigned char *text, unsigned int textLe
 	return encodedText;
 }
 
-unsigned char* encodePattern(unsigned char* pattern, unsigned int patternLen, unsigned char** encodedChars, unsigned int* encodedCharsLen, unsigned int &encodedPatternLen, bool &wrongEncoding) {
-	unsigned char* encodedPattern = new unsigned char[5 * patternLen + 1];
+unsigned char* encodePattern(unsigned char* pattern, unsigned int patternLen, unsigned char** encodedChars, unsigned int* encodedCharsLen, unsigned int maxEncodedCharsLen, unsigned int &encodedPatternLen, bool &wrongEncoding) {
+	unsigned char* encodedPattern = new unsigned char[maxEncodedCharsLen * patternLen + 1];
 	unsigned char* p = pattern;
 	encodedPatternLen = 0;
 	for (; p < pattern + patternLen; ++p) {
@@ -1727,9 +1628,7 @@ unsigned char* encodePattern(unsigned char* pattern, unsigned int patternLen, un
 			wrongEncoding = true;
 			break;
 		}
-		for (unsigned int i = 0; i < encodedCharsLen[*p]; ++i) {
-			encodedPattern[encodedPatternLen++] = encodedChars[*p][i];
-		}
+		for (unsigned int i = 0; i < encodedCharsLen[*p]; ++i) encodedPattern[encodedPatternLen++] = encodedChars[*p][i];
 	}
 	return encodedPattern;
 }
