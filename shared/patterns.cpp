@@ -1,5 +1,4 @@
 #include <cstdio>
-#include <string>
 #include <iostream>
 #include <sstream>
 #include <fstream>
@@ -7,8 +6,6 @@
 #include "common.h"
 #include "patterns.h"
 #include "../libs/asmlib.h"
-
-using namespace std;
 
 void Patterns::initialize() {
 	this->initializePatterns();
@@ -100,7 +97,7 @@ void Patterns::initializePatterns() {
 
 void Patterns::initializeSACounts() {
 	stringstream ss;
-	ss << "counts-" << this->textFileName << "-" << this->m << "-" << this->queriesNum << " " << this->selectedChars << ".dat";
+	ss << "counts-" << this->textFileName << "-" << this->m << "-" << this->queriesNum << "-" << this->selectedChars << ".dat";
 	string s = ss.str();
 	char *countsFileName = (char *)(s.c_str());
 

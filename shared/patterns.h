@@ -1,3 +1,7 @@
+#include <string>
+
+using namespace std;
+
 #ifndef SHARED_PATTERNS_H_
 #define SHARED_PATTERNS_H_
 

@@ -1,12 +1,9 @@
 #include <cstdio>
-#include <string>
 #include <iostream>
 #include <stdlib.h>
 #include <algorithm>
 #include "common.h"
 #include "sais.h"
-
-using namespace std;
 
 unsigned long long getFileSize(char *inFileName, int elemSize) {
 	FILE *InFile;

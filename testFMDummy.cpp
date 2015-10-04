@@ -24,7 +24,7 @@ void getUsage() {
 	cout << "fileName - name of text file" << endl;
 	cout << "q - number of patterns (queries)" << endl;
 	cout << "m - pattern length" << endl;
-	cout << "selectedChars - up to 15 ordinal character values separated by dots or \"all\" if you want to build index on all characters from the text" << endl << endl;
+	cout << "selectedChars - up to 16 ordinal character values separated by dots or \"all\" if you want to build index on all characters from the text" << endl << endl;
 }
 
 void fmDummy1(string indexType, string selectedChars, char *textFileName, unsigned int queriesNum, unsigned int m);
