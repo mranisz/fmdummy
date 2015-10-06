@@ -12,14 +12,14 @@ using namespace std;
 
 CStopWatch timer;
 
-void getUsage() {
+void getUsage(char **argv) {
 	cout << "Choose index you want to test:" << endl;
-	cout << "FMDummy1: ./testFMDummy 1 256|512 selectedChars fileName q m" << endl;
-	cout << "FMDummy2: ./testFMDummy 2 256|512 SCBO|CB 3|4 fileName q m" << endl;
-	cout << "FMDummy3: ./testFMDummy 3 512|1024 fileName q m" << endl;
-	cout << "FMDummyWT2: ./testFMDummy WT 2 512|1024 fileName q m" << endl;
-	cout << "FMDummyWT4: ./testFMDummy WT 4 512|1024 fileName q m" << endl;
-	cout << "FMDummyWT8: ./testFMDummy WT 8 512|1024 fileName q m" << endl;
+	cout << "FMDummy1: ./" << argv[0] << " 1 256|512 selectedChars fileName q m" << endl;
+	cout << "FMDummy2: ./" << argv[0] << " 2 256|512 SCBO|CB 3|4 fileName q m" << endl;
+	cout << "FMDummy3: ./" << argv[0] << " 3 512|1024 fileName q m" << endl;
+	cout << "FMDummyWT2: ./" << argv[0] << " WT 2 512|1024 fileName q m" << endl;
+	cout << "FMDummyWT4: ./" << argv[0] << " WT 4 512|1024 fileName q m" << endl;
+	cout << "FMDummyWT8: ./" << argv[0] << " WT 8 512|1024 fileName q m" << endl;
 	cout << "where:" << endl;
 	cout << "fileName - name of text file" << endl;
 	cout << "q - number of patterns (queries)" << endl;
@@ -34,40 +34,40 @@ void fmDummyWT(string wtType, string indexType, char *textFileName, unsigned int
 
 int main(int argc, char *argv[]) {
 	if (argc < 3) {
-		getUsage();
+		getUsage(argv);
 		return 1;
 	}
 
 	if ((string)argv[1] == "1") {
 		if (argc < 7) {
-			getUsage();
+			getUsage(argv);
 			exit(1);
 		}
 		fmDummy1(string(argv[2]), string(argv[3]), argv[4], atoi(argv[5]), atoi(argv[6]));
 	}
 	else if ((string)argv[1] == "2") {
 		if (argc < 8) {
-			getUsage();
+			getUsage(argv);
 			exit(1);
 		}
 		fmDummy2(string(argv[2]), string(argv[3]), string(argv[4]), argv[5], atoi(argv[6]), atoi(argv[7]));
 	}
 	else if ((string)argv[1] == "3") {
 		if (argc < 6) {
-			getUsage();
+			getUsage(argv);
 			exit(1);
 		}
 		fmDummy3(string(argv[2]), argv[3], atoi(argv[4]), atoi(argv[5]));
 	}
 	else if ((string)argv[1] == "WT") {
 		if (argc < 7) {
-			getUsage();
+			getUsage(argv);
 			exit(1);
 		}
 		fmDummyWT(string(argv[2]), string(argv[3]), argv[4], atoi(argv[5]), atoi(argv[6]));
 	}
 	else {
-		getUsage();
+		getUsage(argv);
 		exit(1);
 	}
 }

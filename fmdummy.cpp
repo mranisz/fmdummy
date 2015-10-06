@@ -955,12 +955,16 @@ WT *FMDummyWT::createWT2_512_counter40(unsigned char *text, unsigned int textLen
 		texts[i] = new unsigned char[textLen];
 	}
 
+	bool childExists = false;
 	for (unsigned int i = 0; i < textLen; ++i) {
 		if (this->codeLen[text[i]] > wtLevel) {
+			childExists = true;
 			int nextNode = (this->code[text[i]] >> wtLevel) & 1;
 			texts[nextNode][textLengths[nextNode]++] = text[i];
 		}
 	}
+
+	if (!childExists) return NULL;
 
 	WT *node = new WT(2);
 
@@ -1030,12 +1034,16 @@ WT *FMDummyWT::createWT2_1024_counter32(unsigned char *text, unsigned int textLe
 		texts[i] = new unsigned char[textLen];
 	}
 
+	bool childExists = false;
 	for (unsigned int i = 0; i < textLen; ++i) {
 		if (this->codeLen[text[i]] > wtLevel) {
+			childExists = true;
 			int nextNode = (this->code[text[i]] >> wtLevel) & 1;
 			texts[nextNode][textLengths[nextNode]++] = text[i];
 		}
 	}
+
+	if (!childExists) return NULL;
 
 	WT *node = new WT(2);
 
@@ -1107,12 +1115,16 @@ WT *FMDummyWT::createWT4(unsigned char *text, unsigned int textLen, unsigned int
 		texts[i] = new unsigned char[textLen];
 	}
 
+	bool childExists = false;
 	for (unsigned int i = 0; i < textLen; ++i) {
 		if (this->codeLen[text[i]] > wtLevel) {
+			childExists = true;
 			int nextNode = (this->code[text[i]] >> (2 * wtLevel)) & 3;
 			texts[nextNode][textLengths[nextNode]++] = text[i];
 		}
 	}
+
+	if (!childExists) return NULL;
 
 	WT *node = new WT(4);
 
@@ -1172,12 +1184,16 @@ WT *FMDummyWT::createWT8(unsigned char *text, unsigned int textLen, unsigned int
 		texts[i] = new unsigned char[textLen];
 	}
 
+	bool childExists = false;
 	for (unsigned int i = 0; i < textLen; ++i) {
 		if (this->codeLen[text[i]] > wtLevel) {
+			childExists = true;
 			int nextNode = (this->code[text[i]] >> (3 * wtLevel)) & 7;
 			texts[nextNode][textLengths[nextNode]++] = text[i];
 		}
 	}
+
+	if (!childExists) return NULL;
 
 	WT *node = new WT(8);
 
