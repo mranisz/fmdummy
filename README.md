@@ -1,7 +1,9 @@
 # fmdummy text indexes library
 
 ##What is it?
-The FMDummy text indexes are fast variants of the FM-index, a well-known compressed full-text index by Ferragina and Manzini (2000). We focus more on search speed than space use. One of the novelties is a rank solution with 1 cache miss in the worst case, which (to our knowledge) was not used earlier elsewhere. The current version handles only the count query (i.e., returns the number of occurrences of the given pattern).
+The FMDummy text indexes are fast variants of the FM-index, a well-known compressed full-text index by Ferragina and Manzini (2000). We focus more on search speed than space use. One of the novelties is a rank solution with 1 cache miss in the worst case, which (to our knowledge) was not used earlier elsewhere.
+
+The current version handles only the count query (i.e., returns the number of occurrences of the given pattern).
 
 ##Requirements
 The FMDummy text indexes require:
@@ -165,7 +167,6 @@ void fmDummy1(string indexType, string selectedChars, char *textFileName, unsign
 	}
 
 	if (text != NULL) delete[] text;
-	delete[] indexCounts;
 	delete FMD1;
 	delete P;
 }
