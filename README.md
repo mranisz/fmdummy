@@ -1,7 +1,7 @@
 # fmdummy text indexes library
 
 ##What is it?
-The FMDummy text indexes are ...
+The FMDummy text indexes are fast variants of the FM-index, a well-known compressed full-text index by Ferragina and Manzini (2000). We focus more on search speed than space use. One of the novelties is a rank solution with 1 cache miss in the worst case, which (to our knowledge) was not used earlier elsewhere. The current version handles only the count query (i.e., returns the number of occurrences of the given pattern).
 
 ##Requirements
 The FMDummy text indexes require:
@@ -19,7 +19,7 @@ make
 ##Usage
 To use the fmdummy libriary:
 - include "fmdummy/fmdummy.h" to your project
-- compile it with libriaries:
+- compile it with "-std=c++11 -O3 -mpopcnt" options and link it with libriaries:
   - fmdummy/libfmdummy.a
   - fmdummy/libs/libaelf64.a
 
@@ -41,11 +41,11 @@ void load(char *fileName);
 ```
 void free();
 ```
-- get the **index size** (size in memory):
+- get the **index size** in bytes (size in memory):
 ```
 unsigned int getIndexSize();
 ```
-- get the size of the text used to build the index:
+- get the size in bytes of the text used to build the index:
 ```
 unsigned int getTextSize();
 ```
@@ -66,7 +66,7 @@ Parameters:
       - "256" (default) - using 256b blocks: 64b of rank data and 192b of text data
       - "512" - using 512b blocks: 64b of rank data and 448b of text data
 - selectedChars:
-      - up to 16 ordinal character values separated by dots
+      - up to 16 ordinal character values separated by dots, e.g. "65.67.71.84"
       - "all" (default) - all characters from the text
 
 Constructors:
@@ -126,38 +126,52 @@ FMDummyWT(string wtType, string indexType);
 
 ##FMDummy1 usage example
 ```
-  //...
+#include <iostream>
+#include <string>
+#include <stdlib.h>
+#include "fmdummy/shared/common.h"
+#include "fmdummy/shared/patterns.h"
+#include "fmdummy/fmdummy.h"
+
+using namespace std;
+
+void fmDummy1(string indexType, string selectedChars, char *textFileName, unsigned int queriesNum, unsigned int patternLen) {
+
+	unsigned char* text = NULL;
+	unsigned int textLen;
 	FMDummy1 *FMD1;
-  //...
-  
+	string indexFileNameString = string("FMD1-") + (string)textFileName + "-" + indexType + "-" + selectedChars + ".idx";
+	char *indexFileName = (char *)indexFileNameString.c_str();
+
 	if (fileExists(indexFileName)) {
 		FMD1 = new FMDummy1();
 		FMD1->load(indexFileName);
 	} else {
 		FMD1 = new FMDummy1(indexType, selectedChars);
 		FMD1->setVerbose(true);
+		text = readText(textFileName, textLen, 0);
 		FMD1->build(text, textLen);
 		FMD1->save(indexFileName);
 	}
+	
+	double indexSize = (double)FMD1->getIndexSize();
+	cout << "Index size: " << indexSize << "B (" << (indexSize / (double)FMD1->getTextSize()) << "n)" << endl << endl;
 
-	unsigned int *indexCounts = new unsigned int[queriesNum];
-
-	timer.startTimer();
+	Patterns *P = new Patterns(textFileName, queriesNum, patternLen, selectedChars);
+	unsigned char **patterns = P->getPatterns();
+	
 	for (unsigned int i = 0; i < queriesNum; ++i) {
-		indexCounts[i] = FMD1->count(patterns[i], patternLen);
+		cout << "Pattern |" << patterns[i] << "| occurs " << FMD1->count(patterns[i], patternLen) << " times." << endl;
 	}
-	timer.stopTimer();
 
-	double size = (double)FMD1->getIndexSize() / (double)FMD1->getTextSize();
-	cout << "count FMDummy1_" << indexType << " " << selectedChars << " " << textFileName << " m=" << m << " queries=" << queriesNum << " size=" << size << "n time=" << timer.getElapsedTime() << endl;
-  
-  //..
+	if (text != NULL) delete[] text;
 	delete[] indexCounts;
 	delete FMD1;
+	delete P;
 }
 ```
 Using other fmdummy indexes is analogous.
-##External Resources used in fmdummy project
+##External resources used in fmdummy project
 - Yuta Mori suffix array building (sais)
 - A multi-platform library of highly optimized functions for C and C++ by Agner Fog (asmlib)
 

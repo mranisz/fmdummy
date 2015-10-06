@@ -1,7 +1,6 @@
 #include <iostream>
 #include <fstream>
 #include <string>
-#include <sstream>
 #include <stdlib.h>
 #include "shared/common.h"
 #include "shared/patterns.h"
@@ -73,16 +72,12 @@ int main(int argc, char *argv[]) {
 }
 
 void fmDummy1(string indexType, string selectedChars, char *textFileName, unsigned int queriesNum, unsigned int m) {
-	Patterns *P = new Patterns(textFileName, queriesNum, m, selectedChars);
-	unsigned char **patterns = P->getPatterns();
 
 	unsigned char* text = NULL;
 	unsigned int textLen;
 	FMDummy1 *FMD1;
-	stringstream ss;
-	ss << "FMD1-" << textFileName << "-" << indexType << "-" << selectedChars << ".idx";
-	string s = ss.str();
-	char *indexFileName = (char *)(s.c_str());
+	string indexFileNameString = string("FMD1-") + (string)textFileName + "-" + indexType + "-" + selectedChars + ".idx";
+	char *indexFileName = (char *)indexFileNameString.c_str();
 
 	if (fileExists(indexFileName)) {
 		FMD1 = new FMDummy1();
@@ -95,6 +90,8 @@ void fmDummy1(string indexType, string selectedChars, char *textFileName, unsign
 		FMD1->save(indexFileName);
 	}
 
+	Patterns *P = new Patterns(textFileName, queriesNum, m, selectedChars);
+	unsigned char **patterns = P->getPatterns();
 	unsigned int *indexCounts = new unsigned int[queriesNum];
 
 	timer.startTimer();
@@ -126,16 +123,12 @@ void fmDummy1(string indexType, string selectedChars, char *textFileName, unsign
 }
 
 void fmDummy2(string indexType, string encodedSchema, string bits, char *textFileName, unsigned int queriesNum, unsigned int m) {
-	Patterns *P = new Patterns(textFileName, queriesNum, m);
-	unsigned char **patterns = P->getPatterns();
 
 	unsigned char* text = NULL;
 	unsigned int textLen;
 	FMDummy2 *FMD2;
-	stringstream ss;
-	ss << "FMD2-" << textFileName << "-" << indexType << "-" << encodedSchema << "-" << bits << ".idx";
-	string s = ss.str();
-	char *indexFileName = (char *)(s.c_str());
+	string indexFileNameString = string("FMD2-") + (string)textFileName + "-" + indexType + "-" + encodedSchema + "-" + bits + ".idx";
+	char *indexFileName = (char *)indexFileNameString.c_str();
 
 	if (fileExists(indexFileName)) {
 		FMD2 = new FMDummy2();
@@ -148,6 +141,8 @@ void fmDummy2(string indexType, string encodedSchema, string bits, char *textFil
 		FMD2->save(indexFileName);
 	}
 
+	Patterns *P = new Patterns(textFileName, queriesNum, m);
+	unsigned char **patterns = P->getPatterns();
 	unsigned int *indexCounts = new unsigned int[queriesNum];
 
 	timer.startTimer();
@@ -179,16 +174,12 @@ void fmDummy2(string indexType, string encodedSchema, string bits, char *textFil
 }
 
 void fmDummy3(string indexType, char *textFileName, unsigned int queriesNum, unsigned int m) {
-	Patterns *P = new Patterns(textFileName, queriesNum, m, "65.67.71.84");
-	unsigned char **patterns = P->getPatterns();
 
 	unsigned char* text = NULL;
 	unsigned int textLen;
 	FMDummy3 *FMD3;
-	stringstream ss;
-	ss << "FMD3-" << textFileName << "-" << indexType << ".idx";
-	string s = ss.str();
-	char *indexFileName = (char *)(s.c_str());
+	string indexFileNameString = string("FMD3-") + (string)textFileName + "-" + indexType + ".idx";
+	char *indexFileName = (char *)indexFileNameString.c_str();
 
 	if (fileExists(indexFileName)) {
 		FMD3 = new FMDummy3();
@@ -201,6 +192,8 @@ void fmDummy3(string indexType, char *textFileName, unsigned int queriesNum, uns
 		FMD3->save(indexFileName);
 	}
 
+	Patterns *P = new Patterns(textFileName, queriesNum, m, "65.67.71.84");
+	unsigned char **patterns = P->getPatterns();
 	unsigned int *indexCounts = new unsigned int[queriesNum];
 
 	timer.startTimer();
@@ -232,16 +225,12 @@ void fmDummy3(string indexType, char *textFileName, unsigned int queriesNum, uns
 }
 
 void fmDummyWT(string wtType, string indexType, char *textFileName, unsigned int queriesNum, unsigned int m) {
-	Patterns *P = new Patterns(textFileName, queriesNum, m);
-	unsigned char **patterns = P->getPatterns();
 
 	unsigned char* text = NULL;
 	unsigned int textLen;
 	FMDummyWT *FMDWT;
-	stringstream ss;
-	ss << "FMDWT-" << textFileName << "-" << wtType << "-" << indexType << ".idx";
-	string s = ss.str();
-	char *indexFileName = (char *)(s.c_str());
+	string indexFileNameString = string("FMDWT-") + (string)textFileName + "-" + wtType + "-" + indexType + ".idx";
+	char *indexFileName = (char *)indexFileNameString.c_str();
 
 	if (fileExists(indexFileName)) {
 		FMDWT = new FMDummyWT();
@@ -254,6 +243,8 @@ void fmDummyWT(string wtType, string indexType, char *textFileName, unsigned int
 		FMDWT->save(indexFileName);
 	}
 
+	Patterns *P = new Patterns(textFileName, queriesNum, m);
+	unsigned char **patterns = P->getPatterns();
 	unsigned int *indexCounts = new unsigned int[queriesNum];
 
 	timer.startTimer();
