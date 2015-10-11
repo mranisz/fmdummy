@@ -5,7 +5,6 @@
 #include <random>
 #include "common.h"
 #include "patterns.h"
-#include "../libs/asmlib.h"
 
 void Patterns::initialize() {
 	this->initializePatterns();
@@ -145,34 +144,6 @@ unsigned int Patterns::getSACount(unsigned int *sa, unsigned char *text, unsigne
 	unsigned int beg = 0, end = 0;
 	binarySearch(sa, text, 0, saLen, pattern, patternLength, beg, end);
 	return end - beg;
-}
-
-void Patterns::binarySearch(unsigned int *sa, unsigned char *text, unsigned int lStart, unsigned int rStart, unsigned char *pattern, int patternLength, unsigned int &beg, unsigned int &end) {
-	unsigned int l = lStart;
-	unsigned int r = rStart;
-	unsigned int mid;
-	while (l < r) {
-		mid = (l + r) / 2;
-		if (A_strcmp((const char*)pattern, (const char*)(text + sa[mid])) > 0) {
-			l = mid + 1;
-		}
-		else {
-			r = mid;
-		}
-	}
-	beg = l;
-	r = rStart;
-	pattern[patternLength - 1]++;
-	while (l < r) {
-		mid = (l + r) / 2;
-		if (A_strcmp((const char*)pattern, (const char*)(text + sa[mid])) <= 0) {
-			r = mid;
-		}
-		else {
-			l = mid + 1;
-		}
-	}
-	end = r;
 }
 
 unsigned char **Patterns::getPatterns() {

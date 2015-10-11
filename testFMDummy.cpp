@@ -16,13 +16,14 @@ void getUsage(char **argv) {
 	cout << "FMDummy1: ./" << argv[0] << " 1 256|512 selectedChars fileName q m" << endl;
 	cout << "FMDummy2: ./" << argv[0] << " 2 256|512 SCBO|CB 3|4 fileName q m" << endl;
 	cout << "FMDummy3: ./" << argv[0] << " 3 512|1024 fileName q m" << endl;
-	cout << "FMDummyWT2: ./" << argv[0] << " WT 2 512|1024 fileName q m" << endl;
-	cout << "FMDummyWT4: ./" << argv[0] << " WT 4 512|1024 fileName q m" << endl;
-	cout << "FMDummyWT8: ./" << argv[0] << " WT 8 512|1024 fileName q m" << endl;
+	cout << "FMDummyWT: ./" << argv[0] << " WT 2|4|8 512|1024 fileName q m" << endl;
+	cout << "FMDummyWThash: ./" << argv[0] << " WThash 2|4|8 k loadFactor 512|1024 fileName q m" << endl;
 	cout << "where:" << endl;
 	cout << "fileName - name of text file" << endl;
 	cout << "q - number of patterns (queries)" << endl;
 	cout << "m - pattern length" << endl;
+	cout << "k - suffix length to be hashed (k > 0)" << endl;
+	cout << "loadFactor - load factor to hash table (range: (0.0, 100.0))" << endl;
 	cout << "selectedChars - up to 16 ordinal character values separated by dots or \"all\" if you want to build index on all characters from the text" << endl << endl;
 }
 
@@ -30,6 +31,7 @@ void fmDummy1(string indexType, string selectedChars, char *textFileName, unsign
 void fmDummy2(string indexType, string encodedSchema, string bits, char *textFileName, unsigned int queriesNum, unsigned int m);
 void fmDummy3(string indexType, char *textFileName, unsigned int queriesNum, unsigned int m);
 void fmDummyWT(string wtType, string indexType, char *textFileName, unsigned int queriesNum, unsigned int m);
+void fmDummyWThash(string wtType, string indexType, string k, string loadFactor, char *textFileName, unsigned int queriesNum, unsigned int m);
 
 int main(int argc, char *argv[]) {
 	if (argc < 3) {
@@ -64,6 +66,13 @@ int main(int argc, char *argv[]) {
 			exit(1);
 		}
 		fmDummyWT(string(argv[2]), string(argv[3]), argv[4], atoi(argv[5]), atoi(argv[6]));
+	}
+	else if ((string)argv[1] == "WThash") {
+		if (argc < 9) {
+			getUsage(argv);
+			exit(1);
+		}
+		fmDummyWThash(string(argv[2]), string(argv[3]), string(argv[4]), string(argv[5]), argv[6], atoi(argv[7]), atoi(argv[8]));
 	}
 	else {
 		getUsage(argv);
@@ -258,6 +267,57 @@ void fmDummyWT(string wtType, string indexType, char *textFileName, unsigned int
 	double size = (double)FMDWT->getIndexSize() / (double)FMDWT->getTextSize();
 	cout << "count FMDummyWT" << wtType << "_" << indexType << " " << textFileName << " m=" << m << " queries=" << queriesNum << " size=" << size << "n time=" << timer.getElapsedTime() << endl;
 	resultFile << m << " " << queriesNum << " " << wtType << " " << indexType << " " << size << " " << timer.getElapsedTime();
+
+	unsigned int differences = P->getErrorCountsNumber(indexCounts);
+	if (differences > 0) {
+		cout << "DIFFERENCES: " << differences << endl;
+		resultFile << " DIFFERENCES: " << differences;
+	} else {
+		cout << "Differences: " << differences << endl;
+	}
+	resultFile << endl;
+	resultFile.close();
+
+	if (text != NULL) delete[] text;
+	delete[] indexCounts;
+	delete FMDWT;
+	delete P;
+}
+
+void fmDummyWThash(string wtType, string indexType, string k, string loadFactor, char *textFileName, unsigned int queriesNum, unsigned int m) {
+
+	unsigned char* text = NULL;
+	unsigned int textLen;
+	FMDummyWT *FMDWT;
+	string indexFileNameString = string("FMDWThash-") + (string)textFileName + "-" + wtType + "-" + indexType + "-" +  k + "-" + loadFactor + ".idx";
+	char *indexFileName = (char *)indexFileNameString.c_str();
+
+	if (fileExists(indexFileName)) {
+		FMDWT = new FMDummyWT();
+		FMDWT->load(indexFileName);
+	} else {
+		FMDWT = new FMDummyWT(wtType, indexType, atoi(k.c_str()), atof(loadFactor.c_str()));
+		FMDWT->setVerbose(true);
+		text = readText(textFileName, textLen, 0);
+		FMDWT->build(text, textLen);
+		FMDWT->save(indexFileName);
+	}
+
+	Patterns *P = new Patterns(textFileName, queriesNum, m);
+	unsigned char **patterns = P->getPatterns();
+	unsigned int *indexCounts = new unsigned int[queriesNum];
+
+	timer.startTimer();
+	for (unsigned int i = 0; i < queriesNum; ++i) {
+		indexCounts[i] = FMDWT->count(patterns[i], m);
+	}
+	timer.stopTimer();
+
+	string resultFileName = "results/fmdummy/" + string(textFileName) + "_count_FMDummyWThash.txt";
+	fstream resultFile(resultFileName.c_str(), ios::out | ios::binary | ios::app);
+	double size = (double)FMDWT->getIndexSize() / (double)FMDWT->getTextSize();
+	cout << "count FMDummyWT" << wtType << "hash_" << indexType << "_" << k << "_" << loadFactor << " " << textFileName << " m=" << m << " queries=" << queriesNum << " size=" << size << "n time=" << timer.getElapsedTime() << endl;
+	resultFile << m << " " << queriesNum << " " << wtType << " " << indexType << " " << k << " " << loadFactor << " " << size << " " << timer.getElapsedTime();
 
 	unsigned int differences = P->getErrorCountsNumber(indexCounts);
 	if (differences > 0) {

@@ -4,6 +4,7 @@
 #include <algorithm>
 #include "common.h"
 #include "sais.h"
+#include "../libs/asmlib.h"
 
 unsigned long long getFileSize(char *inFileName, int elemSize) {
 	FILE *InFile;
@@ -133,9 +134,7 @@ unsigned int *getSA(unsigned char *text, unsigned int textLen, unsigned int &saL
 	return sa;
 }
 
-unsigned char *getBWT(unsigned char *text, unsigned int textLen, unsigned int &bwtLen, unsigned char eof, bool verbose) {
-	unsigned int saLen;
-	unsigned int *sa = getSA(text, textLen, saLen, 0, verbose);
+unsigned char *getBWT(unsigned char *text, unsigned int textLen, unsigned int *sa, unsigned int saLen, unsigned int &bwtLen, unsigned char eof, bool verbose) {
 	if (verbose) cout << "Creating BWT ... " << flush;
 	bwtLen = textLen + 1;
 	unsigned char *bwt = new unsigned char[bwtLen + 1];
@@ -145,8 +144,15 @@ unsigned char *getBWT(unsigned char *text, unsigned int textLen, unsigned int &b
 		if (sa[i] == 0) bwt[i] = eof;
 		else bwt[i] = text[sa[i] - 1];
 	}
-	delete[] sa;
 	if (verbose) cout << "Done" << endl;
+	return bwt;
+}
+
+unsigned char *getBWT(unsigned char *text, unsigned int textLen, unsigned int &bwtLen, unsigned char eof, bool verbose) {
+	unsigned int saLen;
+	unsigned int *sa = getSA(text, textLen, saLen, 0, verbose);
+	unsigned char *bwt = getBWT(text, textLen, sa, saLen, bwtLen, eof, verbose);
+	delete[] sa;
 	return bwt;
 }
 
@@ -194,4 +200,104 @@ unsigned int *breakByDelimeter(string seq, char delim, unsigned int &tokensLen) 
 	res[c2] = (unsigned int)atoi(token);
 	delete[] token;
 	return res;
+}
+
+void binarySearch(unsigned int *sa, unsigned char *text, unsigned int lStart, unsigned int rStart, unsigned char *pattern, int patternLength, unsigned int &beg, unsigned int &end) {
+	unsigned int l = lStart;
+	unsigned int r = rStart;
+	unsigned int mid;
+	while (l < r) {
+		mid = (l + r) / 2;
+		if (A_strcmp((const char*)pattern, (const char*)(text + sa[mid])) > 0) {
+			l = mid + 1;
+		}
+		else {
+			r = mid;
+		}
+	}
+	beg = l;
+	r = rStart;
+	pattern[patternLength - 1]++;
+	while (l < r) {
+		mid = (l + r) / 2;
+		if (A_strcmp((const char*)pattern, (const char*)(text + sa[mid])) <= 0) {
+			r = mid;
+		}
+		else {
+			l = mid + 1;
+		}
+	}
+	end = r;
+}
+
+void fillLUT1(unsigned int lut1[257], unsigned char *text, unsigned int *sa, unsigned int saLen) {
+	unsigned int beg, end;
+	unsigned char *lutPattern = new unsigned char[2];
+	lutPattern[1] = '\0';
+	lut1[0] = 0;
+	for (int i = 1; i < 256; ++i) {
+		lutPattern[0] = (unsigned char)i;
+		binarySearch(sa, text, 0, saLen, lutPattern, 1, beg, end);
+		if (beg == 0) {
+			lut1[i] = lut1[i - 1];
+		}
+		else {
+			lut1[i] = beg;
+		}
+	}
+	lut1[256] = saLen;
+}
+
+void fillLUT2(unsigned int lut2[256][257], unsigned char *text, unsigned int *sa, unsigned int saLen) {
+	unsigned int beg, end;
+	unsigned char *lutPattern = new unsigned char[3];
+	lutPattern[2] = '\0';
+	lut2[0][0] = 0;
+	for (int i = 0; i < 256; ++i) {
+		lutPattern[0] = (unsigned char)i;
+		for (int j = 1; j < 256; ++j) {
+			lutPattern[1] = (unsigned char)j;
+			binarySearch(sa, text, 0, saLen, lutPattern, 2, beg, end);
+			if (beg == 0) {
+				lut2[i][j] = lut2[i][j - 1];
+			}
+			else {
+				lut2[i][j] = beg;
+			}
+		}
+	}
+	for (int i = 0; i < 255; ++i) {
+		if (i < 255) lut2[i][256] = lut2[i + 1][0];
+	}
+	lut2[255][256] = saLen;
+}
+
+void fillLUT3(unsigned int lut3[256][256][257], unsigned char *text, unsigned int *sa, unsigned int saLen) {
+	unsigned int beg, end;
+	unsigned char *lutPattern = new unsigned char[4];
+	lutPattern[3] = '\0';
+	lut3[0][0][0] = 0;
+	for (int i = 0; i < 256; ++i) {
+		lutPattern[0] = (unsigned char)i;
+		for (int j = 0; j < 256; ++j) {
+			lutPattern[1] = (unsigned char)j;
+			for (int k = 1; k < 256; ++k) {
+				lutPattern[2] = (unsigned char)k;
+				binarySearch(sa, text, 0, saLen, lutPattern, 3, beg, end);
+				if (beg == 0) {
+					lut3[i][j][k] = lut3[i][j][k - 1];
+				}
+				else {
+					lut3[i][j][k] = beg;
+				}
+			}
+		}
+	}
+	for (int i = 0; i < 256; ++i) {
+		if (i < 255) lut3[i][255][256] = lut3[i + 1][255][0];
+		for (int j = 0; j < 256; ++j) {
+			if (j < 255) lut3[i][j][256] = lut3[i][j + 1][0];
+		}
+	}
+	lut3[255][255][256] = saLen;
 }

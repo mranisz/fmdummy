@@ -1,4 +1,4 @@
-#include <string>
+#include <string.h>
 
 using namespace std;
 
@@ -14,7 +14,15 @@ bool fileExists(char *inFileName);
 unsigned char *readText(char *inFileName, unsigned int &textLen, unsigned char eof);
 void checkNullChar(unsigned char *text, unsigned int textLen);
 unsigned int *getSA(unsigned char *text, unsigned int textLen, unsigned int &saLen, unsigned int addLen, bool verbose);
+unsigned char *getBWT(unsigned char *text, unsigned int textLen, unsigned int *sa, unsigned int saLen, unsigned int &bwtLen, unsigned char eof, bool verbose);
 unsigned char *getBWT(unsigned char *text, unsigned int textLen, unsigned int &bwtLen, unsigned char eof, bool verbose);
+unsigned int getUniqueSuffixNum(unsigned char *text, unsigned int textLen, unsigned int *sa, unsigned int saLen, unsigned int k);
+unsigned int getHashValue(unsigned char* str);
 void fillArrayC(unsigned char *text, unsigned int textLen, unsigned int* C, bool verbose);
 unsigned int *breakByDelimeter(string seq, char delim, unsigned int &tokensLen);
+void binarySearch(unsigned int *sa, unsigned char *text, unsigned int lStart, unsigned int rStart, unsigned char *pattern, int patternLength, unsigned int &beg, unsigned int &end);
+void fillLUT1(unsigned int lut1[257], unsigned char *text, unsigned int *sa, unsigned int saLen);
+void fillLUT2(unsigned int lut2[256][257], unsigned char *text, unsigned int *sa, unsigned int saLen);
+void fillLUT3(unsigned int lut3[256][256][257], unsigned char *text, unsigned int *sa, unsigned int saLen);
+
 #endif /* SHARED_COMMON_H_ */

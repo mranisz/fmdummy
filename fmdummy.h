@@ -1,6 +1,7 @@
 #include "shared/api.h"
+#include "shared/hash.h"
 #include <cstdio>
-#include <string>
+#include <string.h>
 #include <vector>
 
 using namespace std;
@@ -192,6 +193,7 @@ public:
 class WT {
 private:
 	void freeMemory();
+	void initialize();
 
 public:
 	unsigned long long *bits;
@@ -200,9 +202,12 @@ public:
 	WT** nodes;
 	unsigned int nodesLen;
 
-	WT() {}
+	WT() {
+		this->initialize();
+	}
 
 	WT(int wtType) {
+		this->initialize();
 		this->nodesLen = wtType;
 		this->nodes = new WT *[this->nodesLen];
 	};
@@ -210,6 +215,7 @@ public:
 	unsigned int getWTSize();
 	void save(FILE *outFile);
 	void load(FILE *inFile);
+	void free();
 
 	~WT() {
 		this->freeMemory();
@@ -224,23 +230,35 @@ private:
 	unsigned long long code[256];
 	unsigned int codeLen[256];
 	unsigned int c[257];
+	HT *ht;
 
 	int type;
 	int wtType;
 
 	unsigned int textSize;
 
-	unsigned int (*countOperation)(unsigned char *, unsigned int, unsigned int *, WT *, unsigned int, unsigned int, unsigned long long *, unsigned int *);
+	unsigned int (FMDummyWT::*countOperation)(unsigned char *, unsigned int);
 
 	void freeMemory();
 	void initialize();
 	void setType(string wtType, string indexType);
 	void setFunctions();
-	void createWT(unsigned char *text, unsigned int textLen);
 	WT *createWT2_512_counter40(unsigned char *text, unsigned int textLen, unsigned int wtLevel);
 	WT *createWT2_1024_counter32(unsigned char *text, unsigned int textLen, unsigned int wtLevel);
 	WT *createWT4(unsigned char *text, unsigned int textLen, unsigned int wtLevel);
 	WT *createWT8(unsigned char *text, unsigned int textLen, unsigned int wtLevel);
+	unsigned int count_WT2std_512_counter40(unsigned char *pattern, unsigned int patternLen);
+	unsigned int count_WT2hash_512_counter40(unsigned char *pattern, unsigned int patternLen);
+	unsigned int count_WT2std_1024_counter32(unsigned char *pattern, unsigned int patternLen);
+	unsigned int count_WT2hash_1024_counter32(unsigned char *pattern, unsigned int patternLen);
+	unsigned int count_WT4std_512(unsigned char *pattern, unsigned int patternLen);
+	unsigned int count_WT4hash_512(unsigned char *pattern, unsigned int patternLen);
+	unsigned int count_WT4std_1024(unsigned char *pattern, unsigned int patternLen);
+	unsigned int count_WT4hash_1024(unsigned char *pattern, unsigned int patternLen);
+	unsigned int count_WT8std_512(unsigned char *pattern, unsigned int patternLen);
+	unsigned int count_WT8hash_512(unsigned char *pattern, unsigned int patternLen);
+	unsigned int count_WT8std_1024(unsigned char *pattern, unsigned int patternLen);
+	unsigned int count_WT8hash_1024(unsigned char *pattern, unsigned int patternLen);
 
 public:
 	enum WTTypesConst {
@@ -260,6 +278,12 @@ public:
 
 	FMDummyWT(string wtType, string indexType) {
 		this->initialize();
+		this->setType(wtType, indexType);
+	}
+
+	FMDummyWT(string wtType, string indexType, unsigned int k, double loadFactor) {
+		this->initialize();
+		this->ht = new HT(k, loadFactor);
 		this->setType(wtType, indexType);
 	}
 

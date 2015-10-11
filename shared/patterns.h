@@ -1,4 +1,4 @@
-#include <string>
+#include <string.h>
 
 using namespace std;
 
@@ -21,7 +21,6 @@ private:
 	void initializePatterns();
 	void initializeSACounts();
 	unsigned int getSACount(unsigned int *sa, unsigned char *text, unsigned int saLen, unsigned char *pattern, int patternLength);
-	void binarySearch(unsigned int *sa, unsigned char *text, unsigned int lStart, unsigned int rStart, unsigned char *pattern, int patternLength, unsigned int &beg, unsigned int &end);
 	void setSelectedChars(string selectedChars);
 
 public:
