@@ -135,8 +135,9 @@ void HT::load(FILE *inFile) {
 	}
 }
 
-unsigned int HT::getUniqueSuffixNum(unsigned char *text, unsigned int textLen, unsigned int *sa, unsigned int saLen) {
+unsigned int HT::getUniqueSuffixNum(unsigned char *text, unsigned int textLen, unsigned int *sa, unsigned int saLen, unsigned int *ordChars, unsigned int ordCharsLen) {
 	unsigned int uniqueSuffixNum = 0;
+	bool selectedChars = (ordCharsLen != 0);
 
 	unsigned char *lastPattern = new unsigned char[this->k + 1];
 	for (unsigned int i = 0; i < this->k; ++i) lastPattern[i] = 255;
@@ -150,8 +151,25 @@ unsigned int HT::getUniqueSuffixNum(unsigned char *text, unsigned int textLen, u
 		pattern[this->k] = '\0';
 		if (strcmp((char *)pattern, (const char*)lastPattern) == 0) continue;
 		else {
-			++uniqueSuffixNum;
 			strcpy((char *)lastPattern, (const char*)pattern);
+			if (selectedChars) {
+				bool rejectPattern = false;
+				for (unsigned int j = 0; j < this->k; ++j) {
+					bool symbolInOrdChars = false;
+					for (unsigned int l = 0; l < ordCharsLen; ++l) {
+						if ((unsigned int)pattern[j] == ordChars[l]) {
+							symbolInOrdChars = true;
+							break;
+						}
+					}
+					if (!symbolInOrdChars) {
+						rejectPattern = true;
+						break;
+					}
+				}
+				if (rejectPattern) continue;
+			}
+			++uniqueSuffixNum;
 		}
 	}
 
@@ -186,9 +204,9 @@ void HT::fillHTData(unsigned char *text, unsigned int textLen, unsigned int *sa,
 		pattern[this->k] = '\0';
 		if (strcmp((char *)pattern, (const char *)lastPattern) == 0) continue;
 		else {
+			strcpy((char *)lastPattern, (const char *)pattern);
 			if (hash != this->bucketsNum) this->alignedBoundariesHT[2 * hash + 1] = i;
 			hash = getHashValue(pattern) % this->bucketsNum;
-			strcpy((char *)lastPattern, (const char *)pattern);
 		}
 		while (true) {
 			if (this->alignedBoundariesHT[2 * hash] == this->emptyValueHT) {
@@ -212,7 +230,8 @@ void HT::build(unsigned char *text, unsigned int textLen, unsigned int *sa, unsi
 	fillLUT2(this->lut2, text, sa, saLen);
 }
 
-void HT::fillHTDataWithEntries(unsigned char *text, unsigned int textLen, unsigned int *sa, unsigned int saLen) {
+void HT::fillHTDataWithEntries(unsigned char *text, unsigned int textLen, unsigned int *sa, unsigned int saLen, unsigned int *ordChars, unsigned int ordCharsLen) {
+	bool selectedChars = (ordCharsLen != 0);
 	this->emptyValueHT = saLen;
 	unsigned int hash = this->bucketsNum;
 	this->boundariesHT = new unsigned int[2 * this->bucketsNum + 32];
@@ -236,9 +255,29 @@ void HT::fillHTDataWithEntries(unsigned char *text, unsigned int textLen, unsign
 		pattern[this->k] = '\0';
 		if (strcmp((char *)pattern, (const char *)lastPattern) == 0) continue;
 		else {
-			if (hash != this->bucketsNum) this->alignedBoundariesHT[2 * hash + 1] = i;
-			hash = getHashValue(pattern) % this->bucketsNum;
 			strcpy((char *)lastPattern, (const char *)pattern);
+			if (hash != this->bucketsNum) this->alignedBoundariesHT[2 * hash + 1] = i;
+			if (selectedChars) {
+				bool rejectPattern = false;
+				for (unsigned int j = 0; j < this->k; ++j) {
+					bool symbolInOrdChars = false;
+					for (unsigned int l = 0; l < ordCharsLen; ++l) {
+						if ((unsigned int)pattern[j] == ordChars[l]) {
+							symbolInOrdChars = true;
+							break;
+						}
+					}
+					if (!symbolInOrdChars) {
+						rejectPattern = true;
+						break;
+					}
+				}
+				if (rejectPattern) {
+					hash = this->bucketsNum;
+					continue;
+				}
+			}
+			hash = getHashValue(pattern) % this->bucketsNum;
 		}
 		while (true) {
 			if (this->alignedBoundariesHT[2 * hash] == this->emptyValueHT) {
@@ -256,10 +295,10 @@ void HT::fillHTDataWithEntries(unsigned char *text, unsigned int textLen, unsign
 	delete[] pattern;
 }
 
-void HT::buildWithEntries(unsigned char *text, unsigned int textLen, unsigned int *sa, unsigned int saLen) {
-	unsigned int uniqueSuffixNum = this->getUniqueSuffixNum(text, textLen, sa, saLen);
+void HT::buildWithEntries(unsigned char *text, unsigned int textLen, unsigned int *sa, unsigned int saLen, unsigned int *ordChars, unsigned int ordCharsLen) {
+	unsigned int uniqueSuffixNum = this->getUniqueSuffixNum(text, textLen, sa, saLen, ordChars, ordCharsLen);
 	this->bucketsNum = (double)uniqueSuffixNum * (1.0 / this->loadFactor);
-	this->fillHTDataWithEntries(text, textLen, sa, saLen);
+	this->fillHTDataWithEntries(text, textLen, sa, saLen, ordChars, ordCharsLen);
 	fillLUT2(this->lut2, text, sa, saLen);
 }
 

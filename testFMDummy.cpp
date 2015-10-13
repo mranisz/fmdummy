@@ -14,6 +14,7 @@ CStopWatch timer;
 void getUsage(char **argv) {
 	cout << "Choose index you want to test:" << endl;
 	cout << "FMDummy1: ./" << argv[0] << " 1 256|512 selectedChars fileName q m" << endl;
+	cout << "FMDummy1hash: ./" << argv[0] << " 1hash 256|512 k loadFactor selectedChars fileName q m" << endl;
 	cout << "FMDummy2: ./" << argv[0] << " 2 256|512 SCBO|CB 3|4 fileName q m" << endl;
 	cout << "FMDummy3: ./" << argv[0] << " 3 512|1024 fileName q m" << endl;
 	cout << "FMDummyWT: ./" << argv[0] << " WT 2|4|8 512|1024 fileName q m" << endl;
@@ -28,6 +29,7 @@ void getUsage(char **argv) {
 }
 
 void fmDummy1(string indexType, string selectedChars, char *textFileName, unsigned int queriesNum, unsigned int m);
+void fmDummy1hash(string indexType, string selectedChars, string k, string loadFactor, char *textFileName, unsigned int queriesNum, unsigned int m);
 void fmDummy2(string indexType, string encodedSchema, string bits, char *textFileName, unsigned int queriesNum, unsigned int m);
 void fmDummy3(string indexType, char *textFileName, unsigned int queriesNum, unsigned int m);
 void fmDummyWT(string wtType, string indexType, char *textFileName, unsigned int queriesNum, unsigned int m);
@@ -45,6 +47,13 @@ int main(int argc, char *argv[]) {
 			exit(1);
 		}
 		fmDummy1(string(argv[2]), string(argv[3]), argv[4], atoi(argv[5]), atoi(argv[6]));
+	}
+	else if ((string)argv[1] == "1hash") {
+		if (argc < 9) {
+			getUsage(argv);
+			exit(1);
+		}
+		fmDummy1hash(string(argv[2]), string(argv[3]), string(argv[4]), string(argv[5]), argv[6], atoi(argv[7]), atoi(argv[8]));
 	}
 	else if ((string)argv[1] == "2") {
 		if (argc < 8) {
@@ -114,6 +123,57 @@ void fmDummy1(string indexType, string selectedChars, char *textFileName, unsign
 	double size = (double)FMD1->getIndexSize() / (double)FMD1->getTextSize();
 	cout << "count FMDummy1_" << indexType << " " << selectedChars << " " << textFileName << " m=" << m << " queries=" << queriesNum << " size=" << size << "n time=" << timer.getElapsedTime() << endl;
 	resultFile << m << " " << queriesNum << " " << indexType << " " << selectedChars << " " << size << " " << timer.getElapsedTime();
+
+	unsigned int differences = P->getErrorCountsNumber(indexCounts);
+	if (differences > 0) {
+		cout << "DIFFERENCES: " << differences << endl;
+		resultFile << " DIFFERENCES: " << differences;
+	} else {
+		cout << "Differences: " << differences << endl;
+	}
+	resultFile << endl;
+	resultFile.close();
+
+	if (text != NULL) delete[] text;
+	delete[] indexCounts;
+	delete FMD1;
+	delete P;
+}
+
+void fmDummy1hash(string indexType, string selectedChars, string k, string loadFactor, char *textFileName, unsigned int queriesNum, unsigned int m) {
+
+	unsigned char* text = NULL;
+	unsigned int textLen;
+	FMDummy1 *FMD1;
+	string indexFileNameString = string("FMD1hash-") + (string)textFileName + "-" + indexType + "-" + selectedChars + "-" +  k + "-" + loadFactor + ".idx";
+	char *indexFileName = (char *)indexFileNameString.c_str();
+
+	if (fileExists(indexFileName)) {
+		FMD1 = new FMDummy1();
+		FMD1->load(indexFileName);
+	} else {
+		FMD1 = new FMDummy1(indexType, selectedChars, atoi(k.c_str()), atof(loadFactor.c_str()));
+		FMD1->setVerbose(true);
+		text = readText(textFileName, textLen, 0);
+		FMD1->build(text, textLen);
+		FMD1->save(indexFileName);
+	}
+
+	Patterns *P = new Patterns(textFileName, queriesNum, m, selectedChars);
+	unsigned char **patterns = P->getPatterns();
+	unsigned int *indexCounts = new unsigned int[queriesNum];
+
+	timer.startTimer();
+	for (unsigned int i = 0; i < queriesNum; ++i) {
+		indexCounts[i] = FMD1->count(patterns[i], m);
+	}
+	timer.stopTimer();
+
+	string resultFileName = "results/fmdummy/" + string(textFileName) + "_count_FMDummy1hash.txt";
+	fstream resultFile(resultFileName.c_str(), ios::out | ios::binary | ios::app);
+	double size = (double)FMD1->getIndexSize() / (double)FMD1->getTextSize();
+	cout << "count FMDummy1hash_" << indexType << "_" << selectedChars << "_" << k << "_" << loadFactor << " " << textFileName << " m=" << m << " queries=" << queriesNum << " size=" << size << "n time=" << timer.getElapsedTime() << endl;
+	resultFile << m << " " << queriesNum << " " << indexType << " " << selectedChars << " " << k << " " << loadFactor << " " << size << " " << timer.getElapsedTime();
 
 	unsigned int differences = P->getErrorCountsNumber(indexCounts);
 	if (differences > 0) {

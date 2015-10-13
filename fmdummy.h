@@ -19,6 +19,7 @@ private:
 	unsigned int *ordChars;
 	unsigned int ordCharsLen;
 	unsigned int c[257];
+	HT *ht;
 
 	int type;
 	bool allChars;
@@ -26,13 +27,17 @@ private:
 	unsigned int textSize;
 
 	unsigned long long **(*builder)(unsigned long long **, unsigned int, unsigned int *, unsigned int, unsigned long long **, unsigned int &);
-	unsigned int (*countOperation)(unsigned char*, unsigned int, unsigned int *, unsigned long long **, unsigned int, unsigned int);
+	unsigned int (FMDummy1::*countOperation)(unsigned char *, unsigned int);
 
 	void freeMemory();
 	void initialize();
 	void setType(string indexType);
 	void setFunctions();
 	void setSelectedChars(string selectedChars);
+	unsigned int count_std_256_counter48(unsigned char *pattern, unsigned int patternLen);
+	unsigned int count_hash_256_counter48(unsigned char *pattern, unsigned int patternLen);
+	unsigned int count_std_512_counter40(unsigned char *pattern, unsigned int patternLen);
+	unsigned int count_hash_512_counter40(unsigned char *pattern, unsigned int patternLen);
 
 public:
 	enum IndexTypesConst {
@@ -42,12 +47,22 @@ public:
 
 	FMDummy1() {
 		this->initialize();
+		this->setFunctions();
 	}
 
 	FMDummy1(string indexType, string selectedChars) {
 		this->initialize();
 		this->setType(indexType);
 		this->setSelectedChars(selectedChars);
+		this->setFunctions();
+	}
+
+	FMDummy1(string indexType, string selectedChars, unsigned int k, double loadFactor) {
+		this->initialize();
+		this->ht = new HT(k, loadFactor);
+		this->setType(indexType);
+		this->setSelectedChars(selectedChars);
+		this->setFunctions();
 	}
 
 	~FMDummy1() {
@@ -112,12 +127,14 @@ public:
 
 	FMDummy2() {
 		this->initialize();
+		this->setFunctions();
 	}
 
 	FMDummy2(string indexType, string schema, string bitsPerChar) {
 		this->initialize();
 		this->setType(indexType, schema);
 		this->setBitsPerChar(bitsPerChar);
+		this->setFunctions();
 	}
 
 	~FMDummy2() {
@@ -166,11 +183,13 @@ public:
 
 	FMDummy3() {
 		this->initialize();
+		this->setFunctions();
 	}
 
 	FMDummy3(string indexType) {
 		this->initialize();
 		this->setType(indexType);
+		this->setFunctions();
 	}
 
 	~FMDummy3() {
@@ -274,17 +293,20 @@ public:
 
 	FMDummyWT() {
 		this->initialize();
+		this->setFunctions();
 	}
 
 	FMDummyWT(string wtType, string indexType) {
 		this->initialize();
 		this->setType(wtType, indexType);
+		this->setFunctions();
 	}
 
 	FMDummyWT(string wtType, string indexType, unsigned int k, double loadFactor) {
 		this->initialize();
 		this->ht = new HT(k, loadFactor);
 		this->setType(wtType, indexType);
+		this->setFunctions();
 	}
 
 	~FMDummyWT() {

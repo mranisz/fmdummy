@@ -20,7 +20,6 @@ void FMDummy1::setType(string indexType) {
 		cout << "Error: not valid index type" << endl;
 		exit(1);
 	}
-	this->setFunctions();
 }
 
 void FMDummy1::setSelectedChars(string selectedChars) {
@@ -32,18 +31,34 @@ void FMDummy1::setSelectedChars(string selectedChars) {
 }
 
 void FMDummy1::setFunctions() {
-	switch (this->type) {
-	case FMDummy1::TYPE_512:
-		this->builder = &buildRank_512_counter40;
-		this->countOperation = &count_512_counter40;
-		break;
-	case FMDummy1::TYPE_256:
-		this->builder = &buildRank_256_counter48;
-		this->countOperation = &count_256_counter48;
-		break;
-	default:
-		cout << "Error: not valid index type" << endl;
-		exit(1);
+	if (this->ht == NULL) {
+		switch (this->type) {
+		case FMDummy1::TYPE_512:
+			this->builder = &buildRank_512_counter40;
+			this->countOperation = &FMDummy1::count_std_512_counter40;
+			break;
+		case FMDummy1::TYPE_256:
+			this->builder = &buildRank_256_counter48;
+			this->countOperation = &FMDummy1::count_std_256_counter48;
+			break;
+		default:
+			cout << "Error: not valid index type" << endl;
+			exit(1);
+		}
+	} else {
+		switch (this->type) {
+		case FMDummy1::TYPE_512:
+			this->builder = &buildRank_512_counter40;
+			this->countOperation = &FMDummy1::count_hash_512_counter40;
+			break;
+		case FMDummy1::TYPE_256:
+			this->builder = &buildRank_256_counter48;
+			this->countOperation = &FMDummy1::count_hash_256_counter48;
+			break;
+		default:
+			cout << "Error: not valid index type" << endl;
+			exit(1);
+		}
 	}
 }
 
@@ -60,6 +75,7 @@ void FMDummy1::initialize() {
 	this->ordChars = NULL;
 	for (int i = 0; i < 257; ++i) this->c[i] = 0;
 
+	this->ht = NULL;
 	this->type = FMDummy1::TYPE_256;
 	this->allChars = true;
 
@@ -73,6 +89,7 @@ void FMDummy1::freeMemory() {
 	for (int i = 0; i < 256; ++i) if (this->bwtWithRanks[i] != NULL) delete[] this->bwtWithRanks[i];
 	if (this->alignedBWTWithRanks != NULL) delete[] this->alignedBWTWithRanks;
 	if (this->ordChars != NULL) delete[] this->ordChars;
+	if (this->ht != NULL) delete this->ht;
 }
 
 void FMDummy1::build(unsigned char* text, unsigned int textLen) {
@@ -97,7 +114,17 @@ void FMDummy1::build(unsigned char* text, unsigned int textLen) {
 		for (unsigned int i = 0; i < 256; ++i) if (charsFreq[i] > 0) this->ordChars[counter++] = i;
 	}
 	unsigned int bwtLen;
-	unsigned char *bwt = getBWT(text, textLen, bwtLen, 0, this->verbose);
+	unsigned char *bwt = NULL;
+	if (this->ht != NULL) {
+		unsigned int saLen;
+		unsigned int *sa = getSA(text, textLen, saLen, 0, this->verbose);
+		if (this->verbose) cout << "Creating hash table ... " << flush;
+		if (this->allChars) this->ht->buildWithEntries(text, textLen, sa, saLen);
+		else this->ht->buildWithEntries(text, textLen, sa, saLen, this->ordChars, this->ordCharsLen);
+		if (this->verbose) cout << "Done" << endl;
+		bwt = getBWT(text, textLen, sa, saLen, bwtLen, 0, this->verbose);
+		delete[] sa;
+	} else bwt = getBWT(text, textLen, bwtLen, 0, this->verbose);
 	if (this->verbose) cout << "Compacting BWT for selected chars ... " << flush;
 	++bwtLen;
 	unsigned int bwtDenseLen = (bwtLen / 8);
@@ -137,6 +164,7 @@ unsigned int FMDummy1::getIndexSize() {
 		size += (256 * sizeof(unsigned long long*));
 		size += (this->ordCharsLen * sizeof(unsigned char) + this->ordCharsLen * this->bwtWithRanksLen * sizeof(unsigned long long));
 	}
+	if (this->ht != NULL) size += this->ht->getHTSize();
 	return size;
 }
 
@@ -145,7 +173,35 @@ unsigned int FMDummy1::getTextSize() {
 }
 
 unsigned int FMDummy1::count(unsigned char *pattern, unsigned int patternLen) {
-	return this->countOperation(pattern, patternLen - 1, this->c, this->alignedBWTWithRanks, this->c[pattern[patternLen - 1]] + 1, this->c[pattern[patternLen - 1] + 1]);
+	return (this->*countOperation)(pattern, patternLen);
+}
+
+unsigned int FMDummy1::count_std_256_counter48(unsigned char *pattern, unsigned int patternLen) {
+	return count_256_counter48(pattern, patternLen - 1, this->c, this->alignedBWTWithRanks, this->c[pattern[patternLen - 1]] + 1, this->c[pattern[patternLen - 1] + 1]);
+}
+
+unsigned int FMDummy1::count_std_512_counter40(unsigned char *pattern, unsigned int patternLen) {
+	return count_512_counter40(pattern, patternLen - 1, this->c, this->alignedBWTWithRanks, this->c[pattern[patternLen - 1]] + 1, this->c[pattern[patternLen - 1] + 1]);
+}
+
+unsigned int FMDummy1::count_hash_256_counter48(unsigned char *pattern, unsigned int patternLen) {
+	if (this->ht->k <= patternLen) {
+		unsigned int leftBoundary, rightBoundary;
+		this->ht->getBoundariesWithEntries(pattern + (patternLen - this->ht->k), leftBoundary, rightBoundary);
+		return count_256_counter48(pattern, patternLen - this->ht->k, this->c, this->alignedBWTWithRanks, leftBoundary + 1, rightBoundary);
+	} else {
+		return this->count_std_256_counter48(pattern, patternLen);
+	}
+}
+
+unsigned int FMDummy1::count_hash_512_counter40(unsigned char *pattern, unsigned int patternLen) {
+	if (this->ht->k <= patternLen) {
+		unsigned int leftBoundary, rightBoundary;
+		this->ht->getBoundariesWithEntries(pattern + (patternLen - this->ht->k), leftBoundary, rightBoundary);
+		return count_512_counter40(pattern, patternLen - this->ht->k, this->c, this->alignedBWTWithRanks, leftBoundary + 1, rightBoundary);
+	} else {
+		return this->count_std_512_counter40(pattern, patternLen);
+	}
 }
 
 unsigned int *FMDummy1::locate(unsigned char *pattern, unsigned int patternLen) {
@@ -154,6 +210,8 @@ unsigned int *FMDummy1::locate(unsigned char *pattern, unsigned int patternLen) 
 
 void FMDummy1::save(char *fileName) {
 	if (this->verbose) cout << "Saving index in " << fileName << " ... " << flush;
+	bool nullPointer = false;
+	bool notNullPointer = true;
 	FILE *outFile;
 	outFile = fopen(fileName, "w");
 	fwrite(&this->verbose, (size_t)sizeof(bool), (size_t)1, outFile);
@@ -169,12 +227,18 @@ void FMDummy1::save(char *fileName) {
 			fwrite(this->alignedBWTWithRanks[this->ordChars[i]], (size_t)sizeof(unsigned long long), (size_t)(this->bwtWithRanksLen - 16), outFile);
 		}
 	}
+	if (this->ht == NULL) fwrite(&nullPointer, (size_t)sizeof(bool), (size_t)1, outFile);
+	else {
+		fwrite(&notNullPointer, (size_t)sizeof(bool), (size_t)1, outFile);
+		this->ht->save(outFile);
+	}
 	fclose(outFile);
 	if (this->verbose) cout << "Done" << endl;
 }
 
 void FMDummy1::load(char *fileName) {
 	this->free();
+	bool isNotNullPointer;
 	FILE *inFile;
 	inFile = fopen(fileName, "rb");
 	size_t result;
@@ -234,6 +298,15 @@ void FMDummy1::load(char *fileName) {
 			}
 		}
 	}
+	result = fread(&isNotNullPointer, (size_t)sizeof(bool), (size_t)1, inFile);
+	if (result != 1) {
+		cout << "Error loading index from " << fileName << endl;
+		exit(1);
+	}
+	if (isNotNullPointer) {
+		this->ht = new HT();
+		this->ht->load(inFile);
+	}
 	fclose(inFile);
 	this->setFunctions();
 	if (this->verbose) cout << "Done" << endl;
@@ -254,7 +327,6 @@ void FMDummy2::setType(string indexType, string schema) {
 		cout << "Error: not valid index schema" << endl;
 		exit(1);
 	}
-	this->setFunctions();
 }
 
 void FMDummy2::setBitsPerChar(string bitsPerChar) {
@@ -541,7 +613,6 @@ void FMDummy3::setType(string indexType) {
 		cout << "Error: not valid index type" << endl;
 		exit(1);
 	}
-	this->setFunctions();
 }
 
 void FMDummy3::setFunctions() {
@@ -875,7 +946,6 @@ void FMDummyWT::setType(string wtType, string indexType) {
 		cout << "Error: not valid index type" << endl;
 		exit(1);
 	}
-	this->setFunctions();
 }
 
 void FMDummyWT::setFunctions() {
@@ -988,8 +1058,8 @@ void FMDummyWT::initialize() {
 	}
 	for (int i = 0; i < 257; ++i) this->c[i] = 0;
 
-	this->type = FMDummyWT::TYPE_WT2;
-	this->wtType = FMDummyWT::TYPE_512;
+	this->wtType = FMDummyWT::TYPE_WT2;
+	this->type = FMDummyWT::TYPE_512;
 
 	this->textSize = 0;
 

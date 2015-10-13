@@ -7,9 +7,9 @@ private:
 	void initialize();
 	void setLoadFactor(double loadFactor);
 	void setK(unsigned int k);
-	unsigned int getUniqueSuffixNum(unsigned char *text, unsigned int textLen, unsigned int *sa, unsigned int saLen);
+	unsigned int getUniqueSuffixNum(unsigned char *text, unsigned int textLen, unsigned int *sa, unsigned int saLen, unsigned int *ordChars = NULL, unsigned int ordCharsLen = 0);
 	void fillHTData(unsigned char *text, unsigned int textLen, unsigned int *sa, unsigned int saLen);
-	void fillHTDataWithEntries(unsigned char *text, unsigned int textLen, unsigned int *sa, unsigned int saLen);
+	void fillHTDataWithEntries(unsigned char *text, unsigned int textLen, unsigned int *sa, unsigned int saLen, unsigned int *ordChars = NULL, unsigned int ordCharsLen = 0);
 
 public:
 	double loadFactor;
@@ -37,7 +37,7 @@ public:
 	unsigned int getHTSize();
 	unsigned int getHashValue(unsigned char* str);
 	void build(unsigned char *text, unsigned int textLen, unsigned int *sa, unsigned int saLen);
-	void buildWithEntries(unsigned char *text, unsigned int textLen, unsigned int *sa, unsigned int saLen);
+	void buildWithEntries(unsigned char *text, unsigned int textLen, unsigned int *sa, unsigned int saLen, unsigned int *ordChars = NULL, unsigned int ordCharsLen = 0);
 	void getBoundaries(unsigned char *pattern, unsigned char *text, unsigned int *sa, unsigned int &leftBoundary, unsigned int &rightBoundary);
 	void getBoundariesWithEntries(unsigned char *pattern, unsigned int &leftBoundary, unsigned int &rightBoundary);
 	void save(FILE *outFile);
