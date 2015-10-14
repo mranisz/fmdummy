@@ -12,12 +12,13 @@ using namespace std;
 CStopWatch timer;
 
 void getUsage(char **argv) {
-	cout << "Choose index you want to test:" << endl;
+	cout << "Select index you want to test:" << endl;
 	cout << "FMDummy1: ./" << argv[0] << " 1 256|512 selectedChars fileName q m" << endl;
 	cout << "FMDummy1hash: ./" << argv[0] << " 1hash 256|512 k loadFactor selectedChars fileName q m" << endl;
 	cout << "FMDummy2: ./" << argv[0] << " 2 256|512 SCBO|CB 3|4 fileName q m" << endl;
 	cout << "FMDummy2hash: ./" << argv[0] << " 2hash 256|512 SCBO|CB 3|4 k loadFactor fileName q m" << endl;
 	cout << "FMDummy3: ./" << argv[0] << " 3 512|1024 fileName q m" << endl;
+	cout << "FMDummy3hash: ./" << argv[0] << " 3 512|1024 k loadFactor fileName q m" << endl;
 	cout << "FMDummyWT: ./" << argv[0] << " WT 2|4|8 512|1024 fileName q m" << endl;
 	cout << "FMDummyWThash: ./" << argv[0] << " WThash 2|4|8 k loadFactor 512|1024 fileName q m" << endl;
 	cout << "where:" << endl;
@@ -34,6 +35,7 @@ void fmDummy1hash(string indexType, string selectedChars, string k, string loadF
 void fmDummy2(string indexType, string encodedSchema, string bits, char *textFileName, unsigned int queriesNum, unsigned int m);
 void fmDummy2hash(string indexType, string encodedSchema, string bits, string k, string loadFactor, char *textFileName, unsigned int queriesNum, unsigned int m);
 void fmDummy3(string indexType, char *textFileName, unsigned int queriesNum, unsigned int m);
+void fmDummy3hash(string indexType, string k, string loadFactor, char *textFileName, unsigned int queriesNum, unsigned int m);
 void fmDummyWT(string wtType, string indexType, char *textFileName, unsigned int queriesNum, unsigned int m);
 void fmDummyWThash(string wtType, string indexType, string k, string loadFactor, char *textFileName, unsigned int queriesNum, unsigned int m);
 
@@ -77,6 +79,13 @@ int main(int argc, char *argv[]) {
 			exit(1);
 		}
 		fmDummy3(string(argv[2]), argv[3], atoi(argv[4]), atoi(argv[5]));
+	}
+	else if ((string)argv[1] == "3hash") {
+		if (argc < 8) {
+			getUsage(argv);
+			exit(1);
+		}
+		fmDummy3hash(string(argv[2]), string(argv[3]), string(argv[4]), argv[5], atoi(argv[6]), atoi(argv[7]));
 	}
 	else if ((string)argv[1] == "WT") {
 		if (argc < 7) {
@@ -336,6 +345,57 @@ void fmDummy3(string indexType, char *textFileName, unsigned int queriesNum, uns
 	double size = (double)FMD3->getIndexSize() / (double)FMD3->getTextSize();
 	cout << "count FMDummy3_" << indexType << " " << textFileName << " m=" << m << " queries=" << queriesNum << " size=" << size << "n time=" << timer.getElapsedTime() << endl;
 	resultFile << m << " " << queriesNum << " " << indexType << " " << size << " " << timer.getElapsedTime();
+
+	unsigned int differences = P->getErrorCountsNumber(indexCounts);
+	if (differences > 0) {
+		cout << "DIFFERENCES: " << differences << endl;
+		resultFile << " DIFFERENCES: " << differences;
+	} else {
+		cout << "Differences: " << differences << endl;
+	}
+	resultFile << endl;
+	resultFile.close();
+
+	if (text != NULL) delete[] text;
+	delete[] indexCounts;
+	delete FMD3;
+	delete P;
+}
+
+void fmDummy3hash(string indexType, string k, string loadFactor, char *textFileName, unsigned int queriesNum, unsigned int m) {
+
+	unsigned char* text = NULL;
+	unsigned int textLen;
+	FMDummy3 *FMD3;
+	string indexFileNameString = string("FMD3hash-") + (string)textFileName + "-" + indexType + "-" +  k + "-" + loadFactor + ".idx";
+	char *indexFileName = (char *)indexFileNameString.c_str();
+
+	if (fileExists(indexFileName)) {
+		FMD3 = new FMDummy3();
+		FMD3->load(indexFileName);
+	} else {
+		FMD3 = new FMDummy3(indexType, atoi(k.c_str()), atof(loadFactor.c_str()));
+		FMD3->setVerbose(true);
+		text = readText(textFileName, textLen, 0);
+		FMD3->build(text, textLen);
+		FMD3->save(indexFileName);
+	}
+
+	Patterns *P = new Patterns(textFileName, queriesNum, m, "65.67.71.84");
+	unsigned char **patterns = P->getPatterns();
+	unsigned int *indexCounts = new unsigned int[queriesNum];
+
+	timer.startTimer();
+	for (unsigned int i = 0; i < queriesNum; ++i) {
+		indexCounts[i] = FMD3->count(patterns[i], m);
+	}
+	timer.stopTimer();
+
+	string resultFileName = "results/fmdummy/" + string(textFileName) + "_count_FMDummy3hash.txt";
+	fstream resultFile(resultFileName.c_str(), ios::out | ios::binary | ios::app);
+	double size = (double)FMD3->getIndexSize() / (double)FMD3->getTextSize();
+	cout << "count FMDummy3hash_" << indexType << "_" << k << "_" << loadFactor << " " << textFileName << " m=" << m << " queries=" << queriesNum << " size=" << size << "n time=" << timer.getElapsedTime() << endl;
+	resultFile << m << " " << queriesNum << " " << indexType << " " << k << " " << loadFactor << " " << size << " " << timer.getElapsedTime();
 
 	unsigned int differences = P->getErrorCountsNumber(indexCounts);
 	if (differences > 0) {

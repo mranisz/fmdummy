@@ -1,4 +1,5 @@
 #include "shared/api.h"
+#include "shared/wt.h"
 #include "shared/hash.h"
 #include <cstdio>
 #include <string.h>
@@ -178,12 +179,13 @@ private:
 	unsigned char *alignedBWTWithRanks;
 	unsigned int lut[256][125];
 	unsigned int c[257];
+	HT *ht;
 
 	int type;
 
 	unsigned int textSize;
 
-	unsigned int (*countOperation)(unsigned char *, unsigned int, unsigned int *, unsigned char *, unsigned int lut[][125], unsigned int, unsigned int);
+	unsigned int (FMDummy3::*countOperation)(unsigned char *, unsigned int);
 
 	void freeMemory();
 	void initialize();
@@ -191,6 +193,10 @@ private:
 	void setFunctions();
 	void buildRank_512_enc125(unsigned char *bwtEnc125, unsigned int bwtLen);
 	void buildRank_1024_enc125(unsigned char *bwtEnc125, unsigned int bwtLen);
+	unsigned int count_std_512_enc125(unsigned char *pattern, unsigned int patternLen);
+	unsigned int count_std_1024_enc125(unsigned char *pattern, unsigned int patternLen);
+	unsigned int count_hash_512_enc125(unsigned char *pattern, unsigned int patternLen);
+	unsigned int count_hash_1024_enc125(unsigned char *pattern, unsigned int patternLen);
 
 public:
 	enum IndexTypesConst {
@@ -209,6 +215,13 @@ public:
 		this->setFunctions();
 	}
 
+	FMDummy3(string indexType, unsigned int k, double loadFactor) {
+		this->initialize();
+		this->ht = new HT(k, loadFactor);
+		this->setType(indexType);
+		this->setFunctions();
+	}
+
 	~FMDummy3() {
 		this->freeMemory();
 	}
@@ -222,40 +235,6 @@ public:
 
 	unsigned int count(unsigned char *pattern, unsigned int patternLen);
 	unsigned int *locate(unsigned char *pattern, unsigned int patternLen);
-};
-
-/*WT*/
-
-class WT {
-private:
-	void freeMemory();
-	void initialize();
-
-public:
-	unsigned long long *bits;
-	unsigned int bitsLen;
-	unsigned long long *alignedBits;
-	WT** nodes;
-	unsigned int nodesLen;
-
-	WT() {
-		this->initialize();
-	}
-
-	WT(int wtType) {
-		this->initialize();
-		this->nodesLen = wtType;
-		this->nodes = new WT *[this->nodesLen];
-	};
-
-	unsigned int getWTSize();
-	void save(FILE *outFile);
-	void load(FILE *inFile);
-	void free();
-
-	~WT() {
-		this->freeMemory();
-	}
 };
 
 /*FMDUMMYWT*/
