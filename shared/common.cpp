@@ -134,24 +134,24 @@ unsigned int *getSA(unsigned char *text, unsigned int textLen, unsigned int &saL
 	return sa;
 }
 
-unsigned char *getBWT(unsigned char *text, unsigned int textLen, unsigned int *sa, unsigned int saLen, unsigned int &bwtLen, unsigned char eof, bool verbose) {
+unsigned char *getBWT(unsigned char *text, unsigned int textLen, unsigned int *sa, unsigned int saLen, unsigned int &bwtLen, bool verbose) {
 	if (verbose) cout << "Creating BWT ... " << flush;
 	bwtLen = textLen + 1;
 	unsigned char *bwt = new unsigned char[bwtLen + 1];
-	bwt[bwtLen] = eof;
+	bwt[bwtLen] = '\0';
 	bwt[0] = text[textLen - 1];
 	for (unsigned int i = 1; i < saLen; ++i) {
-		if (sa[i] == 0) bwt[i] = eof;
+		if (sa[i] == 0) bwt[i] = '\0';
 		else bwt[i] = text[sa[i] - 1];
 	}
 	if (verbose) cout << "Done" << endl;
 	return bwt;
 }
 
-unsigned char *getBWT(unsigned char *text, unsigned int textLen, unsigned int &bwtLen, unsigned char eof, bool verbose) {
+unsigned char *getBWT(unsigned char *text, unsigned int textLen, unsigned int &bwtLen, bool verbose) {
 	unsigned int saLen;
 	unsigned int *sa = getSA(text, textLen, saLen, 0, verbose);
-	unsigned char *bwt = getBWT(text, textLen, sa, saLen, bwtLen, eof, verbose);
+	unsigned char *bwt = getBWT(text, textLen, sa, saLen, bwtLen, verbose);
 	delete[] sa;
 	return bwt;
 }

@@ -74,8 +74,8 @@ void FMDummy1::initialize() {
 	this->ordCharsLen = 0;
 	this->ordChars = NULL;
 	for (int i = 0; i < 257; ++i) this->c[i] = 0;
-
 	this->ht = NULL;
+
 	this->type = FMDummy1::TYPE_256;
 	this->allChars = true;
 
@@ -122,9 +122,9 @@ void FMDummy1::build(unsigned char* text, unsigned int textLen) {
 		if (this->allChars) this->ht->buildWithEntries(text, textLen, sa, saLen);
 		else this->ht->buildWithEntries(text, textLen, sa, saLen, this->ordChars, this->ordCharsLen);
 		if (this->verbose) cout << "Done" << endl;
-		bwt = getBWT(text, textLen, sa, saLen, bwtLen, 0, this->verbose);
+		bwt = getBWT(text, textLen, sa, saLen, bwtLen, this->verbose);
 		delete[] sa;
-	} else bwt = getBWT(text, textLen, bwtLen, 0, this->verbose);
+	} else bwt = getBWT(text, textLen, bwtLen, this->verbose);
 	if (this->verbose) cout << "Compacting BWT for selected chars ... " << flush;
 	++bwtLen;
 	unsigned int bwtDenseLen = (bwtLen / 8);
@@ -340,38 +340,74 @@ void FMDummy2::setMaxEncodedCharsLen() {
 }
 
 void FMDummy2::setFunctions() {
-	switch (this->type) {
-	case FMDummy2::TYPE_512:
-		this->builder = &buildRank_512_counter40;
-		switch (this->schema) {
-		case FMDummy2::SCHEMA_CB:
-			this->countOperation = &count_CB_512_counter40;
+	if (this->ht == NULL) {
+		switch (this->type) {
+		case FMDummy2::TYPE_512:
+			this->builder = &buildRank_512_counter40;
+			switch (this->schema) {
+			case FMDummy2::SCHEMA_CB:
+				this->countOperation = &FMDummy2::count_std_CB_512_counter40;
+				break;
+			case FMDummy2::SCHEMA_SCBO:
+				this->countOperation = &FMDummy2::count_std_SCBO_512_counter40;
+				break;
+			default:
+				cout << "Error: not valid index schema" << endl;
+				exit(1);
+			}
 			break;
-		case FMDummy2::SCHEMA_SCBO:
-			this->countOperation = &count_SCBO_512_counter40;
+		case FMDummy2::TYPE_256:
+			this->builder = &buildRank_256_counter48;
+			switch (this->schema) {
+			case FMDummy2::SCHEMA_CB:
+				this->countOperation = &FMDummy2::count_std_CB_256_counter48;
+				break;
+			case FMDummy2::SCHEMA_SCBO:
+				this->countOperation = &FMDummy2::count_std_SCBO_256_counter48;
+				break;
+			default:
+				cout << "Error: not valid index schema" << endl;
+				exit(1);
+			}
 			break;
 		default:
-			cout << "Error: not valid index schema" << endl;
+			cout << "Error: not valid index type" << endl;
 			exit(1);
 		}
-		break;
-	case FMDummy2::TYPE_256:
-		this->builder = &buildRank_256_counter48;
-		switch (this->schema) {
-		case FMDummy2::SCHEMA_CB:
-			this->countOperation = &count_CB_256_counter48;
+	} else {
+		switch (this->type) {
+		case FMDummy2::TYPE_512:
+			this->builder = &buildRank_512_counter40;
+			switch (this->schema) {
+			case FMDummy2::SCHEMA_CB:
+				this->countOperation = &FMDummy2::count_hash_CB_512_counter40;
+				break;
+			case FMDummy2::SCHEMA_SCBO:
+				this->countOperation = &FMDummy2::count_hash_SCBO_512_counter40;
+				break;
+			default:
+				cout << "Error: not valid index schema" << endl;
+				exit(1);
+			}
 			break;
-		case FMDummy2::SCHEMA_SCBO:
-			this->countOperation = &count_SCBO_256_counter48;
+		case FMDummy2::TYPE_256:
+			this->builder = &buildRank_256_counter48;
+			switch (this->schema) {
+			case FMDummy2::SCHEMA_CB:
+				this->countOperation = &FMDummy2::count_hash_CB_256_counter48;
+				break;
+			case FMDummy2::SCHEMA_SCBO:
+				this->countOperation = &FMDummy2::count_hash_SCBO_256_counter48;
+				break;
+			default:
+				cout << "Error: not valid index schema" << endl;
+				exit(1);
+			}
 			break;
 		default:
-			cout << "Error: not valid index schema" << endl;
+			cout << "Error: not valid index type" << endl;
 			exit(1);
 		}
-		break;
-	default:
-		cout << "Error: not valid index type" << endl;
-		exit(1);
 	}
 }
 
@@ -389,6 +425,7 @@ void FMDummy2::initialize() {
 	this->maxEncodedCharsLen = 0;
 	for (int i = 0; i < 257; ++i) this->c[i] = 0;
 	this->bInC = 0;
+	this->ht = NULL;
 
 	this->type = FMDummy2::TYPE_256;
 	this->schema = FMDummy2::SCHEMA_SCBO;
@@ -404,6 +441,7 @@ void FMDummy2::freeMemory() {
 	for (int i = 0; i < 256; ++i) if (this->bwtWithRanks[i] != NULL) delete[] this->bwtWithRanks[i];
 	for (int i = 0; i < 256; ++i) if (this->encodedChars[i] != NULL) delete[] this->encodedChars[i];
 	if (this->alignedBWTWithRanks != NULL) delete[] this->alignedBWTWithRanks;
+	if (this->ht != NULL) delete this->ht;
 }
 
 void FMDummy2::build(unsigned char *text, unsigned int textLen) {
@@ -427,7 +465,16 @@ void FMDummy2::build(unsigned char *text, unsigned int textLen) {
 	this->setMaxEncodedCharsLen();
 	unsigned int bwtLen;
 	unsigned int ordCharsLen = (unsigned int)pow(2.0, (double)this->bitsPerChar);
-	unsigned char *bwt = getBWT(encodedText, encodedTextLen, bwtLen, ordCharsLen, this->verbose);
+	unsigned char *bwt = NULL;
+	if (this->ht != NULL) {
+		unsigned int saLen;
+		unsigned int *sa = getSA(encodedText, encodedTextLen, saLen, 0, this->verbose);
+		if (this->verbose) cout << "Creating hash table ... " << flush;
+		this->ht->buildWithEntries(encodedText, encodedTextLen, sa, saLen);
+		if (this->verbose) cout << "Done" << endl;
+		bwt = getBWT(encodedText, encodedTextLen, sa, saLen, bwtLen, this->verbose);
+		delete[] sa;
+	} else bwt = getBWT(encodedText, encodedTextLen, bwtLen, this->verbose);
 	if (this->verbose) cout << "Compacting BWT ... " << flush;
 	++bwtLen;
 	unsigned int bwtDenseLen = (bwtLen / 8);
@@ -437,14 +484,14 @@ void FMDummy2::build(unsigned char *text, unsigned int textLen) {
 	unsigned long long *bwtDenseInLong[256];
 	unsigned int *ordChars = new unsigned int[ordCharsLen];
 	for (unsigned int i = 0; i < ordCharsLen; ++i) {
-		ordChars[i] = i;
-		unsigned char *bwtDense = getBinDenseForChar(bwt, bwtLen, i);
-		bwtDenseInLong[i] = new unsigned long long[bwtDenseInLongLen + 8];
+		ordChars[i] = i + 1;
+		unsigned char *bwtDense = getBinDenseForChar(bwt, bwtLen, ordChars[i]);
+		bwtDenseInLong[ordChars[i]] = new unsigned long long[bwtDenseInLongLen + 8];
 		for (unsigned long long j = 0; j < bwtDenseInLongLen; ++j) {
-			bwtDenseInLong[i][j] = ((unsigned long long)bwtDense[8 * j + 7] << 56) | ((unsigned long long)bwtDense[8 * j + 6] << 48) | ((unsigned long long)bwtDense[8 * j + 5] << 40) | ((unsigned long long)bwtDense[8 * j + 4] << 32) | ((unsigned long long)bwtDense[8 * j + 3] << 24) | ((unsigned long long)bwtDense[8 * j + 2] << 16) | ((unsigned long long)bwtDense[8 * j + 1] << 8) | (unsigned long long)bwtDense[8 * j];
+			bwtDenseInLong[ordChars[i]][j] = ((unsigned long long)bwtDense[8 * j + 7] << 56) | ((unsigned long long)bwtDense[8 * j + 6] << 48) | ((unsigned long long)bwtDense[8 * j + 5] << 40) | ((unsigned long long)bwtDense[8 * j + 4] << 32) | ((unsigned long long)bwtDense[8 * j + 3] << 24) | ((unsigned long long)bwtDense[8 * j + 2] << 16) | ((unsigned long long)bwtDense[8 * j + 1] << 8) | (unsigned long long)bwtDense[8 * j];
 		}
 		for (unsigned long long j = bwtDenseInLongLen; j < bwtDenseInLongLen + 8; ++j) {
-			bwtDenseInLong[i][j] = 0ULL;
+			bwtDenseInLong[ordChars[i]][j] = 0ULL;
 		}
 		delete[] bwtDense;
 	}
@@ -457,8 +504,24 @@ void FMDummy2::build(unsigned char *text, unsigned int textLen) {
 	if (this->verbose) cout << "Interweaving BWT with ranks ... " << flush;
 	this->alignedBWTWithRanks = builder(bwtDenseInLong, bwtDenseInLongLen, ordChars, ordCharsLen, this->bwtWithRanks, this->bwtWithRanksLen);
 	if (this->verbose) cout << "Done" << endl;
+	if (this->schema == FMDummy2::SCHEMA_CB)  {
+		if (this->verbose) cout << "Correcting right boundaries in hash table ... " << flush;
+		for (unsigned int i = 0; i < this->ht->bucketsNum; ++i) {
+			if (this->ht->alignedBoundariesHT[2 * i] != this->ht->emptyValueHT) {
+				switch(this->type) {
+				case FMDummy2::TYPE_256:
+					this->ht->alignedBoundariesHT[2 * i + 1] = this->ht->alignedBoundariesHT[2 * i] + this->count_std_CB_256_counter48(this->ht->alignedEntriesHT + (i * this->ht->k), this->ht->k);
+					break;
+				case FMDummy2::TYPE_512:
+					this->ht->alignedBoundariesHT[2 * i + 1] = this->ht->alignedBoundariesHT[2 * i] + this->count_std_CB_512_counter40(this->ht->alignedEntriesHT + (i * this->ht->k), this->ht->k);
+					break;
+				}
+			}
+		}
+		if (this->verbose) cout << "Done" << endl;
+	}
 
-	for (unsigned int i = 0; i < ordCharsLen; ++i) delete[] bwtDenseInLong[i];
+	for (unsigned int i = 0; i < ordCharsLen; ++i) delete[] bwtDenseInLong[ordChars[i]];
 	delete[] ordChars;
 	delete[] encodedText;
 
@@ -473,6 +536,7 @@ unsigned int FMDummy2::getIndexSize() {
 	unsigned int size = (sizeof(this->type) + sizeof(this->schema) + sizeof(this->bitsPerChar) + sizeof(this->maxEncodedCharsLen) + sizeof(bInC) + sizeof(this->bwtWithRanksLen));
 	size += (257 * sizeof(unsigned int) + 256 * sizeof(unsigned long long *) + 256 * sizeof(unsigned int) + 256 * sizeof(unsigned char *));
 	size += ((unsigned int)pow(2.0, (double)this->bitsPerChar) * this->bwtWithRanksLen * sizeof(unsigned long long) + encodedCharsLenSum * sizeof(unsigned char));
+	if (this->ht != NULL) size += this->ht->getHTSize();
 	return size;
 }
 
@@ -486,9 +550,65 @@ unsigned int FMDummy2::count(unsigned char *pattern, unsigned int patternLen) {
 	unsigned char *encodedPattern = encodePattern(pattern, patternLen, this->encodedChars, this->encodedCharsLen, this->maxEncodedCharsLen, encodedPatternLen, wrongEncoding);
 	unsigned int count;
 	if (wrongEncoding) count = 0;
-	else count = this->countOperation(encodedPattern, encodedPatternLen, this->c, this->alignedBWTWithRanks, this->bInC);
+	else count = (this->*countOperation)(encodedPattern, encodedPatternLen);
 	delete[] encodedPattern;
 	return count;
+}
+
+unsigned int FMDummy2::count_std_SCBO_256_counter48(unsigned char *pattern, unsigned int patternLen) {
+	return count_256_counter48(pattern, patternLen - 1, this->c, this->alignedBWTWithRanks, this->c[pattern[patternLen - 1]] + 1, this->c[pattern[patternLen - 1] + 1]);
+}
+
+unsigned int FMDummy2::count_std_CB_256_counter48(unsigned char *pattern, unsigned int patternLen) {
+	return count_256_counter48(pattern, patternLen, this->c, this->alignedBWTWithRanks, 1, this->bInC);
+}
+
+unsigned int FMDummy2::count_std_SCBO_512_counter40(unsigned char *pattern, unsigned int patternLen) {
+	return count_512_counter40(pattern, patternLen - 1, this->c, this->alignedBWTWithRanks, this->c[pattern[patternLen - 1]] + 1, this->c[pattern[patternLen - 1] + 1]);
+}
+
+unsigned int FMDummy2::count_std_CB_512_counter40(unsigned char *pattern, unsigned int patternLen) {
+	return count_512_counter40(pattern, patternLen, this->c, this->alignedBWTWithRanks, 1, this->bInC);
+}
+
+unsigned int FMDummy2::count_hash_SCBO_256_counter48(unsigned char *pattern, unsigned int patternLen) {
+	if (this->ht->k <= patternLen) {
+		unsigned int leftBoundary, rightBoundary;
+		this->ht->getBoundariesWithEntries(pattern + (patternLen - this->ht->k), leftBoundary, rightBoundary);
+		return count_256_counter48(pattern, patternLen - this->ht->k, this->c, this->alignedBWTWithRanks, leftBoundary + 1, rightBoundary);
+	} else {
+		return this->count_std_SCBO_256_counter48(pattern, patternLen);
+	}
+}
+
+unsigned int FMDummy2::count_hash_CB_256_counter48(unsigned char *pattern, unsigned int patternLen) {
+	if (this->ht->k <= patternLen) {
+		unsigned int leftBoundary, rightBoundary;
+		this->ht->getBoundariesWithEntries(pattern + (patternLen - this->ht->k), leftBoundary, rightBoundary);
+		return count_256_counter48(pattern, patternLen - this->ht->k, this->c, this->alignedBWTWithRanks, leftBoundary + 1, rightBoundary);
+	} else {
+		return this->count_std_CB_256_counter48(pattern, patternLen);
+	}
+}
+
+unsigned int FMDummy2::count_hash_SCBO_512_counter40(unsigned char *pattern, unsigned int patternLen) {
+	if (this->ht->k <= patternLen) {
+		unsigned int leftBoundary, rightBoundary;
+		this->ht->getBoundariesWithEntries(pattern + (patternLen - this->ht->k), leftBoundary, rightBoundary);
+		return count_512_counter40(pattern, patternLen - this->ht->k, this->c, this->alignedBWTWithRanks, leftBoundary + 1, rightBoundary);
+	} else {
+		return this->count_std_SCBO_512_counter40(pattern, patternLen);
+	}
+}
+
+unsigned int FMDummy2::count_hash_CB_512_counter40(unsigned char *pattern, unsigned int patternLen) {
+	if (this->ht->k <= patternLen) {
+		unsigned int leftBoundary, rightBoundary;
+		this->ht->getBoundariesWithEntries(pattern + (patternLen - this->ht->k), leftBoundary, rightBoundary);
+		return count_512_counter40(pattern, patternLen - this->ht->k, this->c, this->alignedBWTWithRanks, leftBoundary + 1, rightBoundary);
+	} else {
+		return this->count_std_CB_512_counter40(pattern, patternLen);
+	}
 }
 
 unsigned int *FMDummy2::locate(unsigned char *pattern, unsigned int patternLen) {
@@ -497,6 +617,8 @@ unsigned int *FMDummy2::locate(unsigned char *pattern, unsigned int patternLen) 
 
 void FMDummy2::save(char *fileName) {
 	if (this->verbose) cout << "Saving index in " << fileName << " ... " << flush;
+	bool nullPointer = false;
+	bool notNullPointer = true;
 	FILE *outFile;
 	outFile = fopen(fileName, "w");
 	fwrite(&this->verbose, (size_t)sizeof(bool), (size_t)1, outFile);
@@ -512,17 +634,23 @@ void FMDummy2::save(char *fileName) {
 	unsigned int maxChar = (unsigned int)pow(2.0, (double)this->bitsPerChar);
 	fwrite(&this->bwtWithRanksLen, (size_t)sizeof(unsigned int), (size_t)1, outFile);
 	if (this->bwtWithRanksLen > 0) {
-		for (unsigned int i = 0; i < maxChar; ++i) {
+		for (unsigned int i = 1; i < maxChar + 1; ++i) {
 			fwrite(this->alignedBWTWithRanks[i], (size_t)sizeof(unsigned long long), (size_t)(this->bwtWithRanksLen - 16), outFile);
 		}
 	}
 	if (this->schema == FMDummy2::SCHEMA_CB) fwrite(&this->bInC, (size_t)sizeof(unsigned int), (size_t)1, outFile);
+	if (this->ht == NULL) fwrite(&nullPointer, (size_t)sizeof(bool), (size_t)1, outFile);
+	else {
+		fwrite(&notNullPointer, (size_t)sizeof(bool), (size_t)1, outFile);
+		this->ht->save(outFile);
+	}
 	fclose(outFile);
 	if (this->verbose) cout << "Done" << endl;
 }
 
 void FMDummy2::load(char *fileName) {
 	this->free();
+	bool isNotNullPointer;
 	FILE *inFile;
 	inFile = fopen(fileName, "rb");
 	size_t result;
@@ -580,7 +708,7 @@ void FMDummy2::load(char *fileName) {
 	}
 	if (this->bwtWithRanksLen > 0) {
 		this->alignedBWTWithRanks = new unsigned long long*[256];
-		for (unsigned int i = 0; i < maxChar; ++i) {
+		for (unsigned int i = 1; i < maxChar + 1; ++i) {
 			this->bwtWithRanks[i] = new unsigned long long[this->bwtWithRanksLen];
 			this->alignedBWTWithRanks[i] = this->bwtWithRanks[i];
 			while ((unsigned long long)(this->alignedBWTWithRanks[i]) % 128) ++(this->alignedBWTWithRanks[i]);
@@ -597,6 +725,15 @@ void FMDummy2::load(char *fileName) {
 			cout << "Error loading index from " << fileName << endl;
 			exit(1);
 		}
+	}
+	result = fread(&isNotNullPointer, (size_t)sizeof(bool), (size_t)1, inFile);
+	if (result != 1) {
+		cout << "Error loading index from " << fileName << endl;
+		exit(1);
+	}
+	if (isNotNullPointer) {
+		this->ht = new HT();
+		this->ht->load(inFile);
 	}
 	fclose(inFile);
 	this->setFunctions();
@@ -739,7 +876,7 @@ void FMDummy3::build(unsigned char *text, unsigned int textLen) {
 	}
 	if (this->verbose) cout << "Done" << endl;
 	unsigned int bwtLen;
-	unsigned char *bwt = getBWT(convertedText, textLen, bwtLen, 0, this->verbose);
+	unsigned char *bwt = getBWT(convertedText, textLen, bwtLen, this->verbose);
 	if (this->verbose) cout << "Encoding BWT ... " << flush;
 	++bwtLen;
 	unsigned int selectedOrdChars[4] = { (unsigned int)'A', (unsigned int)'C', (unsigned int)'G', (unsigned int)'T' };
@@ -1379,9 +1516,9 @@ void FMDummyWT::build(unsigned char *text, unsigned int textLen) {
 		if (this->verbose) cout << "Creating hash table ... " << flush;
 		this->ht->buildWithEntries(text, textLen, sa, saLen);
 		if (this->verbose) cout << "Done" << endl;
-		bwt = getBWT(text, textLen, sa, saLen, bwtLen, 0, this->verbose);
+		bwt = getBWT(text, textLen, sa, saLen, bwtLen, this->verbose);
 		delete[] sa;
-	} else bwt = getBWT(text, textLen, bwtLen, 0, this->verbose);
+	} else bwt = getBWT(text, textLen, bwtLen, this->verbose);
 	if (this->verbose) cout << "Huffman encoding ... " << flush;
 	encodeHuff(this->wtType, bwt, bwtLen, this->code, this->codeLen);
 	if (this->verbose) cout << "Done" << endl;
@@ -1746,14 +1883,6 @@ unsigned int count_256_counter48(unsigned char *pattern, unsigned int i, unsigne
 	else return lastVal - firstVal + 1;
 }
 
-unsigned int count_SCBO_256_counter48(unsigned char *pattern, unsigned int patternLen, unsigned int *C, unsigned long long** bwtWithRanks, unsigned int bInC) {
-	return count_256_counter48(pattern, patternLen - 1, C, bwtWithRanks, C[pattern[patternLen - 1]] + 1, C[pattern[patternLen - 1] + 1]);
-}
-
-unsigned int count_CB_256_counter48(unsigned char *pattern, unsigned int patternLen, unsigned int *C, unsigned long long** bwtWithRanks, unsigned int bInC) {
-	return count_256_counter48(pattern, patternLen, C, bwtWithRanks, 1, bInC);
-}
-
 unsigned int getRank_512_counter40(unsigned char c, unsigned int i, unsigned long long** bwtWithRanks) {
 
 	unsigned int j = i / 448;
@@ -1821,14 +1950,6 @@ unsigned int count_512_counter40(unsigned char *pattern, unsigned int i, unsigne
 
 	if (firstVal > lastVal) return 0;
 	else return lastVal - firstVal + 1;
-}
-
-unsigned int count_SCBO_512_counter40(unsigned char *pattern, unsigned int patternLen, unsigned int *C, unsigned long long** bwtWithRanks, unsigned int bInC) {
-	return count_512_counter40(pattern, patternLen - 1, C, bwtWithRanks, C[pattern[patternLen - 1]] + 1, C[pattern[patternLen - 1] + 1]);
-}
-
-unsigned int count_CB_512_counter40(unsigned char *pattern, unsigned int patternLen, unsigned int *C, unsigned long long** bwtWithRanks, unsigned int bInC) {
-	return count_512_counter40(pattern, patternLen, C, bwtWithRanks, 1, bInC);
 }
 
 bool sortCharsCount(unsigned int* i, unsigned int* j) {
@@ -1919,15 +2040,15 @@ unsigned char *getEncodedInSCBO(int bits, unsigned char *text, unsigned int text
 	for (unsigned int i = 0; i < charsLen; ++i) {
 		if (i < o) {
 			encodedChars[chars[i]] = new unsigned char[1];
-			encodedChars[chars[i]][0] = i;
+			encodedChars[chars[i]][0] = i + 1;
 			encodedCharsLen[chars[i]] = 1;
 			continue;
 		}
 		if (i < o + b * s) {
 			int j = i - o;
 			encodedChars[chars[i]] = new unsigned char[2];
-			encodedChars[chars[i]][0] = bStart + j / s;
-			encodedChars[chars[i]][1] = sStart + j % s;
+			encodedChars[chars[i]][0] = bStart + j / s + 1;
+			encodedChars[chars[i]][1] = sStart + j % s + 1;
 			encodedCharsLen[chars[i]] = 2;
 			continue;
 		}
@@ -1939,11 +2060,11 @@ unsigned char *getEncodedInSCBO(int bits, unsigned char *text, unsigned int text
 			if (i < o + temp1 + temp2) {
 				int j = i - o - temp1;
 				encodedChars[chars[i]] = new unsigned char[symbolLen];
-				encodedChars[chars[i]][0] = bStart + j / (s * (unsigned int)pow((double)c, (double)(symbolLen - 2)));
+				encodedChars[chars[i]][0] = bStart + j / (s * (unsigned int)pow((double)c, (double)(symbolLen - 2))) + 1;
 				for (unsigned int k = 1; k < symbolLen - 1; ++k) {
-					encodedChars[chars[i]][k] = cStart + (j / (s * (unsigned int)pow((double)c, (double)(symbolLen - 2 - k)))) % c;
+					encodedChars[chars[i]][k] = cStart + (j / (s * (unsigned int)pow((double)c, (double)(symbolLen - 2 - k)))) % c + 1;
 				}
-				encodedChars[chars[i]][symbolLen - 1] = sStart + j % s;
+				encodedChars[chars[i]][symbolLen - 1] = sStart + j % s + 1;
 				encodedCharsLen[chars[i]] = symbolLen;
 				break;
 			}
@@ -2030,7 +2151,7 @@ unsigned char *getEncodedInCB(int bits, unsigned char *text, unsigned int textLe
 	for (unsigned int i = 0; i < charsLen; ++i) {
 		if (i < b) {
 			encodedChars[chars[i]] = new unsigned char[1];
-			encodedChars[chars[i]][0] = i;
+			encodedChars[chars[i]][0] = i + 1;
 			encodedCharsLen[chars[i]] = 1;
 			continue;
 		}
@@ -2042,11 +2163,11 @@ unsigned char *getEncodedInCB(int bits, unsigned char *text, unsigned int textLe
 			if (i < temp1 + temp2) {
 				int j = i - temp1;
 				encodedChars[chars[i]] = new unsigned char[symbolLen];
-				encodedChars[chars[i]][0] = bStart + j / (unsigned int)pow((double)c, (double)(symbolLen - 1));
+				encodedChars[chars[i]][0] = bStart + j / (unsigned int)pow((double)c, (double)(symbolLen - 1)) + 1;
 				for (unsigned int k = 1; k < symbolLen - 1; ++k) {
-					encodedChars[chars[i]][k] = cStart + (j / (unsigned int)pow((double)c, (double)(symbolLen - 1 - k))) % c;
+					encodedChars[chars[i]][k] = cStart + (j / (unsigned int)pow((double)c, (double)(symbolLen - 1 - k))) % c + 1;
 				}
-				encodedChars[chars[i]][symbolLen - 1] = cStart + j % c;
+				encodedChars[chars[i]][symbolLen - 1] = cStart + j % c + 1;
 				encodedCharsLen[chars[i]] = symbolLen;
 				break;
 			}
@@ -2054,6 +2175,7 @@ unsigned char *getEncodedInCB(int bits, unsigned char *text, unsigned int textLe
 			++symbolLen;
 		}
 	}
+	++b;
 
 	unsigned char *encodedText = new unsigned char[totalTotal];
 	encodedTextLen = 0;

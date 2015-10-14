@@ -92,6 +92,7 @@ private:
 	unsigned int maxEncodedCharsLen;
 	unsigned int c[257];
 	unsigned int bInC;
+	HT *ht;
 
 	int type;
 	int schema;
@@ -100,7 +101,7 @@ private:
 	unsigned int textSize;
 
 	unsigned long long **(*builder)(unsigned long long **, unsigned int, unsigned int *, unsigned int, unsigned long long **, unsigned int &);
-	unsigned int (*countOperation)(unsigned char*, unsigned int, unsigned int *, unsigned long long **, unsigned int);
+	unsigned int (FMDummy2::*countOperation)(unsigned char *, unsigned int);
 
 	void freeMemory();
 	void initialize();
@@ -108,6 +109,14 @@ private:
 	void setBitsPerChar(string bitsPerChar);
 	void setMaxEncodedCharsLen();
 	void setFunctions();
+	unsigned int count_std_CB_256_counter48(unsigned char *pattern, unsigned int patternLen);
+	unsigned int count_hash_CB_256_counter48(unsigned char *pattern, unsigned int patternLen);
+	unsigned int count_std_SCBO_256_counter48(unsigned char *pattern, unsigned int patternLen);
+	unsigned int count_hash_SCBO_256_counter48(unsigned char *pattern, unsigned int patternLen);
+	unsigned int count_std_CB_512_counter40(unsigned char *pattern, unsigned int patternLen);
+	unsigned int count_hash_CB_512_counter40(unsigned char *pattern, unsigned int patternLen);
+	unsigned int count_std_SCBO_512_counter40(unsigned char *pattern, unsigned int patternLen);
+	unsigned int count_hash_SCBO_512_counter40(unsigned char *pattern, unsigned int patternLen);
 
 public:
 	enum IndexTypesConst {
@@ -132,6 +141,14 @@ public:
 
 	FMDummy2(string indexType, string schema, string bitsPerChar) {
 		this->initialize();
+		this->setType(indexType, schema);
+		this->setBitsPerChar(bitsPerChar);
+		this->setFunctions();
+	}
+
+	FMDummy2(string indexType, string schema, string bitsPerChar, unsigned int k, double loadFactor) {
+		this->initialize();
+		this->ht = new HT(k, loadFactor);
 		this->setType(indexType, schema);
 		this->setBitsPerChar(bitsPerChar);
 		this->setFunctions();
@@ -330,11 +347,7 @@ unsigned char *getBinDenseForChar(unsigned char *bwt, unsigned int bwtLen, int o
 unsigned long long** buildRank_256_counter48(unsigned long long** bwtInLong, unsigned int bwtInLongLen, unsigned int *ordChars, unsigned int ordCharsLen, unsigned long long** bwtWithRanks, unsigned int &bwtWithRanksLen);
 unsigned long long** buildRank_512_counter40(unsigned long long** bwtInLong, unsigned int bwtInLongLen, unsigned int *ordChars, unsigned int ordCharsLen, unsigned long long** bwtWithRanks, unsigned int &bwtWithRanksLen);
 unsigned int count_256_counter48(unsigned char *pattern, unsigned int i, unsigned int *C, unsigned long long** bwtWithRanks, unsigned int firstVal, unsigned int lastVal);
-unsigned int count_SCBO_256_counter48(unsigned char *pattern, unsigned int patternLen, unsigned int *C, unsigned long long** bwtWithRanks, unsigned int bInC);
-unsigned int count_CB_256_counter48(unsigned char *pattern, unsigned int patternLen, unsigned int *C, unsigned long long** bwtWithRanks, unsigned int bInC);
 unsigned int count_512_counter40(unsigned char *pattern, unsigned int i, unsigned int *C, unsigned long long** bwtWithRanks, unsigned int firstVal, unsigned int lastVal);
-unsigned int count_SCBO_512_counter40(unsigned char *pattern, unsigned int patternLen, unsigned int *C, unsigned long long** bwtWithRanks, unsigned int bInC);
-unsigned int count_CB_512_counter40(unsigned char *pattern, unsigned int patternLen, unsigned int *C, unsigned long long** bwtWithRanks, unsigned int bInC);
 unsigned char *getEncodedInSCBO(int bits, unsigned char *text, unsigned int textLen, unsigned int &encodedTextLen, unsigned char **encodedChars, unsigned int *encodedCharsLen);
 unsigned char *getEncodedInCB(int bits, unsigned char *text, unsigned int textLen, unsigned int &encodedTextLen, unsigned char **encodedChars, unsigned int *encodedCharsLen, unsigned int &b);
 unsigned char* encodePattern(unsigned char* pattern, unsigned int patternLen, unsigned char** encodedChars, unsigned int* encodedCharsLen, unsigned int maxEncodedCharsLen, unsigned int &encodedPatternLen, bool &wrongEncoding);
