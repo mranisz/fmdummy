@@ -501,7 +501,7 @@ void FMDummy2::build(unsigned char *text, unsigned int textLen) {
 	if (this->verbose) cout << "Interweaving BWT with ranks ... " << flush;
 	this->alignedBWTWithRanks = builder(bwtDenseInLong, bwtDenseInLongLen, ordChars, ordCharsLen, this->bwtWithRanks, this->bwtWithRanksLen);
 	if (this->verbose) cout << "Done" << endl;
-	if (this->schema == FMDummy2::SCHEMA_CB)  {
+	if (this->ht != NULL && this->schema == FMDummy2::SCHEMA_CB)  {
 		if (this->verbose) cout << "Correcting right boundaries in hash table ... " << flush;
 		for (unsigned int i = 0; i < this->ht->bucketsNum; ++i) {
 			if (this->ht->alignedBoundariesHT[2 * i] != this->ht->emptyValueHT) {
