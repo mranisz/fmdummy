@@ -57,7 +57,7 @@ void HT::save(FILE *outFile) {
 	bool notNullPointer = true;
 	fwrite(&this->loadFactor, (size_t)sizeof(double), (size_t)1, outFile);
 	fwrite(&this->k, (size_t)sizeof(unsigned int), (size_t)1, outFile);
-	fwrite(&this->bucketsNum, (size_t)sizeof(unsigned int), (size_t)1, outFile);
+	fwrite(&this->bucketsNum, (size_t)sizeof(unsigned long long), (size_t)1, outFile);
 	fwrite(&this->emptyValueHT, (size_t)sizeof(unsigned int), (size_t)1, outFile);
 	fwrite(&this->lut2, (size_t)sizeof(unsigned int), (size_t)(256 * 257), outFile);
 	if (this->boundariesHT != NULL) {
@@ -88,7 +88,7 @@ void HT::load(FILE *inFile) {
 		cout << "Error loading index" << endl;
 		exit(1);
 	}
-	result = fread(&this->bucketsNum, (size_t)sizeof(unsigned int), (size_t)1, inFile);
+	result = fread(&this->bucketsNum, (size_t)sizeof(unsigned long long), (size_t)1, inFile);
 	if (result != 1) {
 		cout << "Error loading index" << endl;
 		exit(1);
@@ -179,18 +179,18 @@ unsigned int HT::getUniqueSuffixNum(unsigned char *text, unsigned int textLen, u
 	return uniqueSuffixNum;
 }
 
-unsigned long long HT::getHashValue(unsigned char* str) {
-	return XXH64(str, strlen((const char *)str), 0);
+unsigned long long HT::getHashValue(unsigned char* str, unsigned int strLen) {
+	return XXH64(str, strLen, 0);
 }
 
 void HT::fillHTData(unsigned char *text, unsigned int textLen, unsigned int *sa, unsigned int saLen) {
 	this->emptyValueHT = saLen;
-	unsigned int hash = this->bucketsNum;
+	unsigned long long hash = this->bucketsNum;
 	this->boundariesHT = new unsigned int[2 * this->bucketsNum + 32];
 	this->alignedBoundariesHT = this->boundariesHT;
 	while ((unsigned long long)(this->alignedBoundariesHT) % 128) ++(this->alignedBoundariesHT);
 
-	for (unsigned int i = 0; i < 2 * this->bucketsNum; ++i) this->alignedBoundariesHT[i] = this->emptyValueHT;
+	for (unsigned long long i = 0; i < 2 * this->bucketsNum; ++i) this->alignedBoundariesHT[i] = this->emptyValueHT;
 
 	unsigned char *lastPattern = new unsigned char[this->k + 1];
 	for (unsigned int i = 0; i < this->k; ++i) lastPattern[i] = 255;
@@ -206,7 +206,7 @@ void HT::fillHTData(unsigned char *text, unsigned int textLen, unsigned int *sa,
 		else {
 			strcpy((char *)lastPattern, (const char *)pattern);
 			if (hash != this->bucketsNum) this->alignedBoundariesHT[2 * hash + 1] = i;
-			hash = getHashValue(pattern) % this->bucketsNum;
+			hash = getHashValue(pattern, this->k) % this->bucketsNum;
 		}
 		while (true) {
 			if (this->alignedBoundariesHT[2 * hash] == this->emptyValueHT) {
@@ -233,7 +233,7 @@ void HT::build(unsigned char *text, unsigned int textLen, unsigned int *sa, unsi
 void HT::fillHTDataWithEntries(unsigned char *text, unsigned int textLen, unsigned int *sa, unsigned int saLen, unsigned int *ordChars, unsigned int ordCharsLen) {
 	bool selectedChars = (ordCharsLen != 0);
 	this->emptyValueHT = saLen;
-	unsigned int hash = this->bucketsNum;
+	unsigned long long hash = this->bucketsNum;
 	this->boundariesHT = new unsigned int[2 * this->bucketsNum + 32];
 	this->alignedBoundariesHT = this->boundariesHT;
 	while ((unsigned long long)(this->alignedBoundariesHT) % 128) ++(this->alignedBoundariesHT);
@@ -241,7 +241,7 @@ void HT::fillHTDataWithEntries(unsigned char *text, unsigned int textLen, unsign
 	this->alignedEntriesHT = this->entriesHT;
 	while ((unsigned long long)(this->alignedEntriesHT) % 128) ++(this->alignedEntriesHT);
 
-	for (unsigned int i = 0; i < 2 * this->bucketsNum; ++i) this->alignedBoundariesHT[i] = this->emptyValueHT;
+	for (unsigned long long i = 0; i < 2 * this->bucketsNum; ++i) this->alignedBoundariesHT[i] = this->emptyValueHT;
 
 	unsigned char *lastPattern = new unsigned char[this->k + 1];
 	for (unsigned int i = 0; i < this->k; ++i) lastPattern[i] = 255;
@@ -277,7 +277,7 @@ void HT::fillHTDataWithEntries(unsigned char *text, unsigned int textLen, unsign
 					continue;
 				}
 			}
-			hash = getHashValue(pattern) % this->bucketsNum;
+			hash = getHashValue(pattern, this->k) % this->bucketsNum;
 		}
 		while (true) {
 			if (this->alignedBoundariesHT[2 * hash] == this->emptyValueHT) {
@@ -308,7 +308,7 @@ void HT::getBoundaries(unsigned char *pattern, unsigned char *text, unsigned int
 	if (leftBoundaryLUT2 < rightBoundaryLUT2) {
 		unsigned char kChar = pattern[this->k];
 		pattern[this->k] = '\0';
-		unsigned int hash = this->getHashValue(pattern) % this->bucketsNum;
+		unsigned long long hash = this->getHashValue(pattern, this->k) % this->bucketsNum;
 		while (true) {
 			leftBoundary = this->alignedBoundariesHT[2 * hash];
 			if (leftBoundary >= leftBoundaryLUT2 && leftBoundary < rightBoundaryLUT2 && strncmp((const char *)pattern, (const char *)(text + sa[leftBoundary]), this->k) == 0) {
@@ -338,7 +338,7 @@ void HT::getBoundariesWithEntries(unsigned char *pattern, unsigned int &leftBoun
 	if (leftBoundaryLUT2 < rightBoundaryLUT2) {
 		unsigned char kChar = pattern[this->k];
 		pattern[this->k] = '\0';
-		unsigned int hash = this->getHashValue(pattern) % this->bucketsNum;
+		unsigned long long hash = this->getHashValue(pattern, this->k) % this->bucketsNum;
 		while (true) {
 			leftBoundary = this->alignedBoundariesHT[2 * hash];
 			if (leftBoundary >= leftBoundaryLUT2 && leftBoundary < rightBoundaryLUT2 && strncmp((const char *)pattern, (const char *)&(this->alignedEntriesHT[hash * this->k]), this->k) == 0) {

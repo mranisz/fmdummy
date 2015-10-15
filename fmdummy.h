@@ -24,6 +24,8 @@ private:
 
 	int type;
 	bool allChars;
+	unsigned int k;
+	double loadFactor;
 
 	unsigned int textSize;
 
@@ -33,8 +35,10 @@ private:
 	void freeMemory();
 	void initialize();
 	void setType(string indexType);
-	void setFunctions();
 	void setSelectedChars(string selectedChars);
+	void setK(unsigned int k);
+	void setLoadFactor(double loadFactor);
+	void setFunctions();
 	unsigned int count_std_256_counter48(unsigned char *pattern, unsigned int patternLen);
 	unsigned int count_hash_256_counter48(unsigned char *pattern, unsigned int patternLen);
 	unsigned int count_std_512_counter40(unsigned char *pattern, unsigned int patternLen);
@@ -60,9 +64,10 @@ public:
 
 	FMDummy1(string indexType, string selectedChars, unsigned int k, double loadFactor) {
 		this->initialize();
-		this->ht = new HT(k, loadFactor);
 		this->setType(indexType);
 		this->setSelectedChars(selectedChars);
+		this->setK(k);
+		this->setLoadFactor(loadFactor);
 		this->setFunctions();
 	}
 
@@ -98,6 +103,8 @@ private:
 	int type;
 	int schema;
 	int bitsPerChar;
+	unsigned int k;
+	double loadFactor;
 
 	unsigned int textSize;
 
@@ -109,6 +116,8 @@ private:
 	void setType(string indexType, string schema);
 	void setBitsPerChar(string bitsPerChar);
 	void setMaxEncodedCharsLen();
+	void setK(unsigned int k);
+	void setLoadFactor(double loadFactor);
 	void setFunctions();
 	unsigned int count_std_CB_256_counter48(unsigned char *pattern, unsigned int patternLen);
 	unsigned int count_hash_CB_256_counter48(unsigned char *pattern, unsigned int patternLen);
@@ -149,9 +158,10 @@ public:
 
 	FMDummy2(string indexType, string schema, string bitsPerChar, unsigned int k, double loadFactor) {
 		this->initialize();
-		this->ht = new HT(k, loadFactor);
 		this->setType(indexType, schema);
 		this->setBitsPerChar(bitsPerChar);
+		this->setK(k);
+		this->setLoadFactor(loadFactor);
 		this->setFunctions();
 	}
 
@@ -182,6 +192,8 @@ private:
 	HT *ht;
 
 	int type;
+	unsigned int k;
+	double loadFactor;
 
 	unsigned int textSize;
 
@@ -190,6 +202,8 @@ private:
 	void freeMemory();
 	void initialize();
 	void setType(string indexType);
+	void setK(unsigned int k);
+	void setLoadFactor(double loadFactor);
 	void setFunctions();
 	void buildRank_512_enc125(unsigned char *bwtEnc125, unsigned int bwtLen);
 	void buildRank_1024_enc125(unsigned char *bwtEnc125, unsigned int bwtLen);
@@ -217,8 +231,9 @@ public:
 
 	FMDummy3(string indexType, unsigned int k, double loadFactor) {
 		this->initialize();
-		this->ht = new HT(k, loadFactor);
 		this->setType(indexType);
+		this->setK(k);
+		this->setLoadFactor(loadFactor);
 		this->setFunctions();
 	}
 
@@ -249,6 +264,8 @@ private:
 
 	int type;
 	int wtType;
+	unsigned int k;
+	double loadFactor;
 
 	unsigned int textSize;
 
@@ -257,6 +274,8 @@ private:
 	void freeMemory();
 	void initialize();
 	void setType(string wtType, string indexType);
+	void setK(unsigned int k);
+	void setLoadFactor(double loadFactor);
 	void setFunctions();
 	WT *createWT2_512_counter40(unsigned char *text, unsigned int textLen, unsigned int wtLevel);
 	WT *createWT2_1024_counter32(unsigned char *text, unsigned int textLen, unsigned int wtLevel);
@@ -300,8 +319,9 @@ public:
 
 	FMDummyWT(string wtType, string indexType, unsigned int k, double loadFactor) {
 		this->initialize();
-		this->ht = new HT(k, loadFactor);
 		this->setType(wtType, indexType);
+		this->setK(k);
+		this->setLoadFactor(loadFactor);
 		this->setFunctions();
 	}
 

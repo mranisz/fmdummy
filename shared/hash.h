@@ -15,7 +15,7 @@ public:
 	double loadFactor;
 	unsigned int k;
 
-	unsigned int bucketsNum;
+	unsigned long long bucketsNum;
 	unsigned int emptyValueHT;
 
 	unsigned int lut2[256][257];
@@ -35,7 +35,7 @@ public:
 	};
 
 	unsigned int getHTSize();
-	unsigned long long getHashValue(unsigned char* str);
+	unsigned long long getHashValue(unsigned char* str, unsigned int strLen);
 	void build(unsigned char *text, unsigned int textLen, unsigned int *sa, unsigned int saLen);
 	void buildWithEntries(unsigned char *text, unsigned int textLen, unsigned int *sa, unsigned int saLen, unsigned int *ordChars = NULL, unsigned int ordCharsLen = 0);
 	void getBoundaries(unsigned char *pattern, unsigned char *text, unsigned int *sa, unsigned int &leftBoundary, unsigned int &rightBoundary);

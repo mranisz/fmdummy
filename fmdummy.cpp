@@ -27,6 +27,22 @@ void FMDummy1::setSelectedChars(string selectedChars) {
 	}
 }
 
+void FMDummy1::setK(unsigned int k) {
+	if (k == 0) {
+		cout << "Error: not valid k value" << endl;
+		exit(1);
+	}
+	this->k = k;
+}
+
+void FMDummy1::setLoadFactor(double loadFactor) {
+	if (loadFactor <= 0.0 || loadFactor >= 100.0) {
+		cout << "Error: not valid loadFactor value" << endl;
+		exit(1);
+	}
+	this->loadFactor = loadFactor;
+}
+
 void FMDummy1::setFunctions() {
 	if (this->ht == NULL) {
 		switch (this->type) {
@@ -74,6 +90,8 @@ void FMDummy1::initialize() {
 	this->ht = NULL;
 
 	this->type = FMDummy1::TYPE_256;
+	this->k = 0;
+	this->loadFactor = 0.0;
 	this->allChars = true;
 
 	this->textSize = 0;
@@ -91,6 +109,7 @@ void FMDummy1::freeMemory() {
 
 void FMDummy1::build(unsigned char* text, unsigned int textLen) {
 	checkNullChar(text, textLen);
+	this->freeMemory();
 	this->textSize = textLen;
 	if (this->allChars) {
 		if (this->verbose) cout << "Counting char frequencies ... " << flush;
@@ -112,7 +131,8 @@ void FMDummy1::build(unsigned char* text, unsigned int textLen) {
 	}
 	unsigned int bwtLen;
 	unsigned char *bwt = NULL;
-	if (this->ht != NULL) {
+	if (this->k != 0) {
+		this->ht = new HT(this->k, this->loadFactor);
 		unsigned int saLen;
 		unsigned int *sa = getSA(text, textLen, saLen, 0, this->verbose);
 		if (this->verbose) cout << "Creating hash table ... " << flush;
@@ -155,7 +175,7 @@ void FMDummy1::build(unsigned char* text, unsigned int textLen) {
 }
 
 unsigned int FMDummy1::getIndexSize() {
-	unsigned int size = sizeof(this->ordCharsLen) + sizeof(this->bwtWithRanksLen) + sizeof(this->type) + sizeof(this->allChars);
+	unsigned int size = sizeof(this->ordCharsLen) + sizeof(this->bwtWithRanksLen) + sizeof(this->type) + sizeof(this->k) + sizeof(this->loadFactor) + sizeof(this->allChars);
 	size += (257 * sizeof(unsigned int) + 256 * sizeof(unsigned long long*));
 	if (this->ordCharsLen > 0) {
 		size += (256 * sizeof(unsigned long long*));
@@ -213,6 +233,8 @@ void FMDummy1::save(char *fileName) {
 	outFile = fopen(fileName, "w");
 	fwrite(&this->verbose, (size_t)sizeof(bool), (size_t)1, outFile);
 	fwrite(&this->type, (size_t)sizeof(int), (size_t)1, outFile);
+	fwrite(&this->k, (size_t)sizeof(unsigned int), (size_t)1, outFile);
+	fwrite(&this->loadFactor, (size_t)sizeof(double), (size_t)1, outFile);
 	fwrite(&this->allChars, (size_t)sizeof(bool), (size_t)1, outFile);
 	fwrite(&this->ordCharsLen, (size_t)sizeof(unsigned int), (size_t)1, outFile);
 	fwrite(&this->textSize, (size_t)sizeof(unsigned int), (size_t)1, outFile);
@@ -250,6 +272,16 @@ void FMDummy1::load(char *fileName) {
 		cout << "Error loading index from " << fileName << endl;
 		exit(1);
 	}
+	result = fread(&this->k, (size_t)sizeof(unsigned int), (size_t)1, inFile);
+	if (result != 1) {
+		cout << "Error loading index from " << fileName << endl;
+		exit(1);
+	}
+	result = fread(&this->loadFactor, (size_t)sizeof(double), (size_t)1, inFile);
+	if (result != 1) {
+		cout << "Error loading index from " << fileName << endl;
+		exit(1);
+	}
 	result = fread(&this->allChars, (size_t)sizeof(bool), (size_t)1, inFile);
 	if (result != 1) {
 		cout << "Error loading index from " << fileName << endl;
@@ -283,6 +315,7 @@ void FMDummy1::load(char *fileName) {
 			exit(1);
 		}
 		this->alignedBWTWithRanks = new unsigned long long*[256];
+		for (int i = 0; i < 256; ++i) this->alignedBWTWithRanks[i] = NULL;
 		for (unsigned int i = 0; i < this->ordCharsLen; ++i) {
 			unsigned int c = this->ordChars[i];
 			this->bwtWithRanks[c] = new unsigned long long[this->bwtWithRanksLen];
@@ -334,6 +367,22 @@ void FMDummy2::setBitsPerChar(string bitsPerChar) {
 void FMDummy2::setMaxEncodedCharsLen() {
 	this->maxEncodedCharsLen = 0;
 	for (int i = 0; i < 256; ++i) if (this->encodedCharsLen[i] > this->maxEncodedCharsLen) this->maxEncodedCharsLen = this->encodedCharsLen[i];
+}
+
+void FMDummy2::setK(unsigned int k) {
+	if (k == 0) {
+		cout << "Error: not valid k value" << endl;
+		exit(1);
+	}
+	this->k = k;
+}
+
+void FMDummy2::setLoadFactor(double loadFactor) {
+	if (loadFactor <= 0.0 || loadFactor >= 100.0) {
+		cout << "Error: not valid loadFactor value" << endl;
+		exit(1);
+	}
+	this->loadFactor = loadFactor;
 }
 
 void FMDummy2::setFunctions() {
@@ -427,6 +476,8 @@ void FMDummy2::initialize() {
 	this->type = FMDummy2::TYPE_256;
 	this->schema = FMDummy2::SCHEMA_SCBO;
 	this->bitsPerChar = FMDummy2::BITS_4;
+	this->k = 0;
+	this->loadFactor = 0.0;
 
 	this->textSize = 0;
 
@@ -443,6 +494,7 @@ void FMDummy2::freeMemory() {
 
 void FMDummy2::build(unsigned char *text, unsigned int textLen) {
 	checkNullChar(text, textLen);
+	this->freeMemory();
 	this->textSize = textLen;
 	unsigned int encodedTextLen;
 	unsigned char *encodedText = NULL;
@@ -463,7 +515,8 @@ void FMDummy2::build(unsigned char *text, unsigned int textLen) {
 	unsigned int bwtLen;
 	unsigned int ordCharsLen = (unsigned int)pow(2.0, (double)this->bitsPerChar);
 	unsigned char *bwt = NULL;
-	if (this->ht != NULL) {
+	if (this->k != 0) {
+		this->ht = new HT(this->k, this->loadFactor);
 		unsigned int saLen;
 		unsigned int *sa = getSA(encodedText, encodedTextLen, saLen, 0, this->verbose);
 		if (this->verbose) cout << "Creating hash table ... " << flush;
@@ -530,7 +583,7 @@ unsigned int FMDummy2::getIndexSize() {
 	for (int i = 0; i < 256; ++i) {
 		encodedCharsLenSum += this->encodedCharsLen[i];
 	}
-	unsigned int size = (sizeof(this->type) + sizeof(this->schema) + sizeof(this->bitsPerChar) + sizeof(this->maxEncodedCharsLen) + sizeof(bInC) + sizeof(this->bwtWithRanksLen));
+	unsigned int size = (sizeof(this->type) + sizeof(this->schema) + sizeof(this->bitsPerChar) + sizeof(this->k) + sizeof(this->loadFactor) + sizeof(this->maxEncodedCharsLen) + sizeof(bInC) + sizeof(this->bwtWithRanksLen));
 	size += (257 * sizeof(unsigned int) + 256 * sizeof(unsigned long long *) + 256 * sizeof(unsigned int) + 256 * sizeof(unsigned char *));
 	size += ((unsigned int)pow(2.0, (double)this->bitsPerChar) * this->bwtWithRanksLen * sizeof(unsigned long long) + encodedCharsLenSum * sizeof(unsigned char));
 	if (this->ht != NULL) size += this->ht->getHTSize();
@@ -622,6 +675,8 @@ void FMDummy2::save(char *fileName) {
 	fwrite(&this->type, (size_t)sizeof(int), (size_t)1, outFile);
 	fwrite(&this->schema, (size_t)sizeof(int), (size_t)1, outFile);
 	fwrite(&this->bitsPerChar, (size_t)sizeof(int), (size_t)1, outFile);
+	fwrite(&this->k, (size_t)sizeof(unsigned int), (size_t)1, outFile);
+	fwrite(&this->loadFactor, (size_t)sizeof(double), (size_t)1, outFile);
 	fwrite(&this->textSize, (size_t)sizeof(unsigned int), (size_t)1, outFile);
 	fwrite(this->c, (size_t)sizeof(unsigned int), (size_t)257, outFile);
 	fwrite(this->encodedCharsLen, (size_t)sizeof(unsigned int), (size_t)256, outFile);
@@ -672,6 +727,16 @@ void FMDummy2::load(char *fileName) {
 		cout << "Error loading index from " << fileName << endl;
 		exit(1);
 	}
+	result = fread(&this->k, (size_t)sizeof(unsigned int), (size_t)1, inFile);
+	if (result != 1) {
+		cout << "Error loading index from " << fileName << endl;
+		exit(1);
+	}
+	result = fread(&this->loadFactor, (size_t)sizeof(double), (size_t)1, inFile);
+	if (result != 1) {
+		cout << "Error loading index from " << fileName << endl;
+		exit(1);
+	}
 	result = fread(&this->textSize, (size_t)sizeof(unsigned int), (size_t)1, inFile);
 	if (result != 1) {
 		cout << "Error loading index from " << fileName << endl;
@@ -705,6 +770,7 @@ void FMDummy2::load(char *fileName) {
 	}
 	if (this->bwtWithRanksLen > 0) {
 		this->alignedBWTWithRanks = new unsigned long long*[256];
+		for (int i = 0; i < 256; ++i) this->alignedBWTWithRanks[i] = NULL;
 		for (unsigned int i = 1; i < maxChar + 1; ++i) {
 			this->bwtWithRanks[i] = new unsigned long long[this->bwtWithRanksLen];
 			this->alignedBWTWithRanks[i] = this->bwtWithRanks[i];
@@ -749,6 +815,22 @@ void FMDummy3::setType(string indexType) {
 	}
 }
 
+void FMDummy3::setK(unsigned int k) {
+	if (k == 0) {
+		cout << "Error: not valid k value" << endl;
+		exit(1);
+	}
+	this->k = k;
+}
+
+void FMDummy3::setLoadFactor(double loadFactor) {
+	if (loadFactor <= 0.0 || loadFactor >= 100.0) {
+		cout << "Error: not valid loadFactor value" << endl;
+		exit(1);
+	}
+	this->loadFactor = loadFactor;
+}
+
 void FMDummy3::setFunctions() {
 	if (this->ht == NULL) {
 		switch (this->type) {
@@ -790,6 +872,8 @@ void FMDummy3::initialize() {
 	this->ht = NULL;
 
 	this->type = FMDummy3::TYPE_512;
+	this->k = 0;
+	this->loadFactor = 0.0;
 
 	this->textSize = 0;
 
@@ -875,6 +959,7 @@ void FMDummy3::buildRank_1024_enc125(unsigned char *bwtEnc125, unsigned int bwtL
 
 void FMDummy3::build(unsigned char *text, unsigned int textLen) {
 	checkNullChar(text, textLen);
+	this->freeMemory();
 	this->textSize = textLen;
 	if (this->verbose) cout << "Converting text ... " << flush;
 	unsigned char *convertedText = new unsigned char[textLen];
@@ -890,18 +975,20 @@ void FMDummy3::build(unsigned char *text, unsigned int textLen) {
 	if (this->verbose) cout << "Done" << endl;
 	unsigned int bwtLen;
 	unsigned char *bwt = NULL;
-	if (this->ht != NULL) {
+	unsigned int selectedOrdChars[4] = { (unsigned int)'A', (unsigned int)'C', (unsigned int)'G', (unsigned int)'T' };
+	if (this->k != 0) {
+		this->ht = new HT(this->k, this->loadFactor);
 		unsigned int saLen;
 		unsigned int *sa = getSA(convertedText, textLen, saLen, 0, this->verbose);
 		if (this->verbose) cout << "Creating hash table ... " << flush;
-		this->ht->buildWithEntries(convertedText, textLen, sa, saLen);
+
+		this->ht->buildWithEntries(convertedText, textLen, sa, saLen, selectedOrdChars, 4);
 		if (this->verbose) cout << "Done" << endl;
 		bwt = getBWT(convertedText, textLen, sa, saLen, bwtLen, this->verbose);
 		delete[] sa;
 	} else bwt = getBWT(convertedText, textLen, bwtLen, this->verbose);
 	if (this->verbose) cout << "Encoding BWT ... " << flush;
 	++bwtLen;
-	unsigned int selectedOrdChars[4] = { (unsigned int)'A', (unsigned int)'C', (unsigned int)'G', (unsigned int)'T' };
 	unsigned int bwtEnc125Len;
 	unsigned char *bwtEnc125 = encode125(bwt, bwtLen, selectedOrdChars, bwtEnc125Len);
 	delete[] bwt;
@@ -924,7 +1011,7 @@ void FMDummy3::build(unsigned char *text, unsigned int textLen) {
 }
 
 unsigned int FMDummy3::getIndexSize() {
-	unsigned int size = sizeof(this->type) + sizeof(this->bwtWithRanksLen);
+	unsigned int size = sizeof(this->type) + sizeof(this->k) + sizeof(this->loadFactor) + sizeof(this->bwtWithRanksLen);
 	size += (257 * sizeof(unsigned int) + sizeof(unsigned char*) + 256 * 125 * sizeof(unsigned int));
 	size += this->bwtWithRanksLen * sizeof(unsigned char);
 	if (this->ht != NULL) size += this->ht->getHTSize();
@@ -979,6 +1066,8 @@ void FMDummy3::save(char *fileName) {
 	outFile = fopen(fileName, "w");
 	fwrite(&this->verbose, (size_t)sizeof(bool), (size_t)1, outFile);
 	fwrite(&this->type, (size_t)sizeof(int), (size_t)1, outFile);
+	fwrite(&this->k, (size_t)sizeof(unsigned int), (size_t)1, outFile);
+	fwrite(&this->loadFactor, (size_t)sizeof(double), (size_t)1, outFile);
 	fwrite(&this->textSize, (size_t)sizeof(unsigned int), (size_t)1, outFile);
 	fwrite(this->c, (size_t)sizeof(unsigned int), (size_t)257, outFile);
 	fwrite(this->lut, (size_t)sizeof(unsigned int), (size_t)(256 * 125), outFile);
@@ -1006,6 +1095,16 @@ void FMDummy3::load(char *fileName) {
 	}
 	if (this->verbose) cout << "Loading index from " << fileName << " ... " << flush;
 	result = fread(&this->type, (size_t)sizeof(int), (size_t)1, inFile);
+	if (result != 1) {
+		cout << "Error loading index from " << fileName << endl;
+		exit(1);
+	}
+	result = fread(&this->k, (size_t)sizeof(unsigned int), (size_t)1, inFile);
+	if (result != 1) {
+		cout << "Error loading index from " << fileName << endl;
+		exit(1);
+	}
+	result = fread(&this->loadFactor, (size_t)sizeof(double), (size_t)1, inFile);
 	if (result != 1) {
 		cout << "Error loading index from " << fileName << endl;
 		exit(1);
@@ -1070,6 +1169,22 @@ void FMDummyWT::setType(string wtType, string indexType) {
 		cout << "Error: not valid index type" << endl;
 		exit(1);
 	}
+}
+
+void FMDummyWT::setK(unsigned int k) {
+	if (k == 0) {
+		cout << "Error: not valid k value" << endl;
+		exit(1);
+	}
+	this->k = k;
+}
+
+void FMDummyWT::setLoadFactor(double loadFactor) {
+	if (loadFactor <= 0.0 || loadFactor >= 100.0) {
+		cout << "Error: not valid loadFactor value" << endl;
+		exit(1);
+	}
+	this->loadFactor = loadFactor;
 }
 
 void FMDummyWT::setFunctions() {
@@ -1184,6 +1299,8 @@ void FMDummyWT::initialize() {
 
 	this->wtType = FMDummyWT::TYPE_WT2;
 	this->type = FMDummyWT::TYPE_512;
+	this->k = 0;
+	this->loadFactor = 0.0;
 
 	this->textSize = 0;
 
@@ -1494,10 +1611,12 @@ WT *FMDummyWT::createWT8(unsigned char *text, unsigned int textLen, unsigned int
 
 void FMDummyWT::build(unsigned char *text, unsigned int textLen) {
 	checkNullChar(text, textLen);
+	this->freeMemory();
 	this->textSize = textLen;
 	unsigned int bwtLen;
 	unsigned char *bwt = NULL;
-	if (this->ht != NULL) {
+	if (this->k != 0) {
+		this->ht = new HT(this->k, this->loadFactor);
 		unsigned int saLen;
 		unsigned int *sa = getSA(text, textLen, saLen, 0, this->verbose);
 		if (this->verbose) cout << "Creating hash table ... " << flush;
@@ -1535,7 +1654,7 @@ void FMDummyWT::build(unsigned char *text, unsigned int textLen) {
 }
 
 unsigned int FMDummyWT::getIndexSize() {
-	unsigned int size = sizeof(this->type) + sizeof(this->wtType) + sizeof(WT *) + sizeof(HT *);
+	unsigned int size = sizeof(this->type) + sizeof(this->wtType) + sizeof(this->k) + sizeof(this->loadFactor) + sizeof(WT *) + sizeof(HT *);
 	size += (257 * sizeof(unsigned int) + 256 * sizeof(unsigned int) + 256 * sizeof(unsigned long long));
 	if (this->wt != NULL) size += this->wt->getWTSize();
 	if (this->ht != NULL) size += this->ht->getHTSize();
@@ -1563,6 +1682,8 @@ void FMDummyWT::save(char *fileName) {
 	fwrite(&this->verbose, (size_t)sizeof(bool), (size_t)1, outFile);
 	fwrite(&this->wtType, (size_t)sizeof(int), (size_t)1, outFile);
 	fwrite(&this->type, (size_t)sizeof(int), (size_t)1, outFile);
+	fwrite(&this->k, (size_t)sizeof(unsigned int), (size_t)1, outFile);
+	fwrite(&this->loadFactor, (size_t)sizeof(double), (size_t)1, outFile);
 	fwrite(&this->textSize, (size_t)sizeof(unsigned int), (size_t)1, outFile);
 	fwrite(this->c, (size_t)sizeof(unsigned int), (size_t)257, outFile);
 	fwrite(this->code, (size_t)sizeof(unsigned long long), (size_t)256, outFile);
@@ -1599,6 +1720,16 @@ void FMDummyWT::load(char *fileName) {
 		exit(1);
 	}
 	result = fread(&this->type, (size_t)sizeof(int), (size_t)1, inFile);
+	if (result != 1) {
+		cout << "Error loading index from " << fileName << endl;
+		exit(1);
+	}
+	result = fread(&this->k, (size_t)sizeof(unsigned int), (size_t)1, inFile);
+	if (result != 1) {
+		cout << "Error loading index from " << fileName << endl;
+		exit(1);
+	}
+	result = fread(&this->loadFactor, (size_t)sizeof(double), (size_t)1, inFile);
 	if (result != 1) {
 		cout << "Error loading index from " << fileName << endl;
 		exit(1);
@@ -1853,6 +1984,7 @@ unsigned int count_256_counter48(unsigned char *pattern, unsigned int i, unsigne
 
 	while (firstVal <= lastVal && i > 1) {
 		c = pattern[i - 1];
+		if (bwtWithRanks[c] == NULL) return 0;
 		firstVal = C[c] + getRank_256_counter48(c, firstVal - 1, bwtWithRanks) + 1;
 		__builtin_prefetch(bwtWithRanks[pattern[i - 2]] + 4 * ((firstVal - 1) / 192), 0, 3);
 		lastVal = C[c] + getRank_256_counter48(c, lastVal, bwtWithRanks);
@@ -1862,6 +1994,7 @@ unsigned int count_256_counter48(unsigned char *pattern, unsigned int i, unsigne
 
 	if (firstVal <= lastVal) {
 		c = pattern[i - 1];
+		if (bwtWithRanks[c] == NULL) return 0;
 		firstVal = C[c] + getRank_256_counter48(c, firstVal - 1, bwtWithRanks) + 1;
 		lastVal = C[c] + getRank_256_counter48(c, lastVal, bwtWithRanks);
 	}
@@ -1922,6 +2055,7 @@ unsigned int count_512_counter40(unsigned char *pattern, unsigned int i, unsigne
 
 	while (firstVal <= lastVal && i > 1) {
 		c = pattern[i - 1];
+		if (bwtWithRanks[c] == NULL) return 0;
 		firstVal = C[c] + getRank_512_counter40(c, firstVal - 1, bwtWithRanks) + 1;
 		__builtin_prefetch(bwtWithRanks[pattern[i - 2]] + 8 * ((firstVal - 1) / 448), 0, 3);
 		lastVal = C[c] + getRank_512_counter40(c, lastVal, bwtWithRanks);
@@ -1931,6 +2065,7 @@ unsigned int count_512_counter40(unsigned char *pattern, unsigned int i, unsigne
 
 	if (firstVal <= lastVal) {
 		c = pattern[i - 1];
+		if (bwtWithRanks[c] == NULL) return 0;
 		firstVal = C[c] + getRank_512_counter40(c, firstVal - 1, bwtWithRanks) + 1;
 		lastVal = C[c] + getRank_512_counter40(c, lastVal, bwtWithRanks);
 	}
@@ -2276,8 +2411,11 @@ unsigned int getRank_512_enc125(unsigned char c, unsigned int i, unsigned char *
 		p += 4;
 	case 'C':
 		p += 4;
-	default:
+	case 'A':
 		memcpy(&rank, p, (size_t)4);
+		break;
+	default:
+		return 0;
 	}
 	p = bwtWithRanks + 64 * j + 16;
 	i -= (j * 144);
@@ -2334,8 +2472,11 @@ unsigned int getRank_1024_enc125(unsigned char c, unsigned int i, unsigned char 
 		p += 4;
 	case 'C':
 		p += 4;
-	default:
+	case 'A':
 		memcpy(&rank, p, (size_t)4);
+		break;
+	default:
+		return 0;
 	}
 	p = bwtWithRanks + 128 * j + 16;
 	i -= (j * 336);
