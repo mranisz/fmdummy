@@ -179,8 +179,8 @@ unsigned int HT::getUniqueSuffixNum(unsigned char *text, unsigned int textLen, u
 	return uniqueSuffixNum;
 }
 
-unsigned int HT::getHashValue(unsigned char* str) {
-	return XXH32(str, strlen((const char *)str), 0);
+unsigned long long HT::getHashValue(unsigned char* str) {
+	return XXH64(str, strlen((const char *)str), 0);
 }
 
 void HT::fillHTData(unsigned char *text, unsigned int textLen, unsigned int *sa, unsigned int saLen) {
