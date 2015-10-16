@@ -232,9 +232,11 @@ void FMDummy1::save(char *fileName) {
 	outFile = fopen(fileName, "w");
 	fwrite(&this->verbose, (size_t)sizeof(bool), (size_t)1, outFile);
 	fwrite(&this->type, (size_t)sizeof(int), (size_t)1, outFile);
+	unsigned int selectedCharsLen = this->selectedChars.size();
+	fwrite(&selectedCharsLen, (size_t)sizeof(unsigned int), (size_t)1, outFile);
+	fwrite(this->selectedChars.c_str(), (size_t)sizeof(char), (size_t)selectedCharsLen, outFile);
 	fwrite(&this->k, (size_t)sizeof(unsigned int), (size_t)1, outFile);
 	fwrite(&this->loadFactor, (size_t)sizeof(double), (size_t)1, outFile);
-	fwrite(&this->allChars, (size_t)sizeof(bool), (size_t)1, outFile);
 	fwrite(&this->ordCharsLen, (size_t)sizeof(unsigned int), (size_t)1, outFile);
 	fwrite(&this->textSize, (size_t)sizeof(unsigned int), (size_t)1, outFile);
 	fwrite(this->c, (size_t)sizeof(unsigned int), (size_t)257, outFile);
@@ -271,17 +273,29 @@ void FMDummy1::load(char *fileName) {
 		cout << "Error loading index from " << fileName << endl;
 		exit(1);
 	}
+	unsigned int selectedCharsLen;
+	result = fread(&selectedCharsLen, (size_t)sizeof(unsigned int), (size_t)1, inFile);
+	if (result != 1) {
+		cout << "Error loading index from " << fileName << endl;
+		exit(1);
+	}
+	char *selectedCharsTemp = new char[selectedCharsLen + 1];
+	result = fread(selectedCharsTemp, (size_t)sizeof(char), (size_t)selectedCharsLen, inFile);
+	if (result != selectedCharsLen) {
+		cout << "Error loading index from " << fileName << endl;
+		exit(1);
+	}
+	selectedCharsTemp[selectedCharsLen] = '\0';
+	this->selectedChars = selectedCharsTemp;
+	delete [] selectedCharsTemp;
+	if (this->selectedChars == "all") this->allChars = true;
+	else this->allChars = false;
 	result = fread(&this->k, (size_t)sizeof(unsigned int), (size_t)1, inFile);
 	if (result != 1) {
 		cout << "Error loading index from " << fileName << endl;
 		exit(1);
 	}
 	result = fread(&this->loadFactor, (size_t)sizeof(double), (size_t)1, inFile);
-	if (result != 1) {
-		cout << "Error loading index from " << fileName << endl;
-		exit(1);
-	}
-	result = fread(&this->allChars, (size_t)sizeof(bool), (size_t)1, inFile);
 	if (result != 1) {
 		cout << "Error loading index from " << fileName << endl;
 		exit(1);
