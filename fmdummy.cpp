@@ -20,11 +20,9 @@ void FMDummy1::setType(string indexType) {
 }
 
 void FMDummy1::setSelectedChars(string selectedChars) {
+	this->selectedChars = selectedChars;
 	if (selectedChars == "all") this->allChars = true;
-	else {
-		this->allChars = false;
-		this->ordChars = breakByDelimeter(selectedChars, '.', this->ordCharsLen);
-	}
+	else this->allChars = false;
 }
 
 void FMDummy1::setK(unsigned int k) {
@@ -93,6 +91,7 @@ void FMDummy1::initialize() {
 	this->k = 0;
 	this->loadFactor = 0.0;
 	this->allChars = true;
+	this->selectedChars = "all";
 
 	this->textSize = 0;
 
@@ -128,7 +127,7 @@ void FMDummy1::build(unsigned char* text, unsigned int textLen) {
 		this->ordChars = new unsigned int[this->ordCharsLen];
 		unsigned int counter = 0;
 		for (unsigned int i = 0; i < 256; ++i) if (charsFreq[i] > 0) this->ordChars[counter++] = i;
-	}
+	} else this->ordChars = breakByDelimeter(this->selectedChars, '.', this->ordCharsLen);
 	unsigned int bwtLen;
 	unsigned char *bwt = NULL;
 	if (this->k != 0) {
@@ -175,7 +174,7 @@ void FMDummy1::build(unsigned char* text, unsigned int textLen) {
 }
 
 unsigned int FMDummy1::getIndexSize() {
-	unsigned int size = sizeof(this->ordCharsLen) + sizeof(this->bwtWithRanksLen) + sizeof(this->type) + sizeof(this->k) + sizeof(this->loadFactor) + sizeof(this->allChars);
+	unsigned int size = sizeof(this->ordCharsLen) + sizeof(this->bwtWithRanksLen) + sizeof(this->type) + sizeof(this->k) + sizeof(this->loadFactor) + sizeof(this->allChars) + this->selectedChars.size();
 	size += (257 * sizeof(unsigned int) + 256 * sizeof(unsigned long long*));
 	if (this->ordCharsLen > 0) {
 		size += (256 * sizeof(unsigned long long*));

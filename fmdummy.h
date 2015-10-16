@@ -24,6 +24,7 @@ private:
 
 	int type;
 	bool allChars;
+	string selectedChars;
 	unsigned int k;
 	double loadFactor;
 
