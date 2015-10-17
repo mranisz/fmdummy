@@ -92,7 +92,7 @@ Parameters:
 
 Constructors:
 ```
-FMDummy1(string indexType, string selectedChars, unisgned int k, double loadFactor);
+FMDummy1(string indexType, string selectedChars, unsigned int k, double loadFactor);
 ```
 
 ##FMDummy2
@@ -131,7 +131,7 @@ Parameters:
 
 Constructors:
 ```
-FMDummy2(string indexType, string schema, string bitsPerChar, unisgned int k, double loadFactor);
+FMDummy2(string indexType, string schema, string bitsPerChar, unsigned int k, double loadFactor);
 ```
 
 ##FMDummy3
@@ -160,7 +160,7 @@ Parameters:
 
 Constructors:
 ```
-FMDummy3(string indexType, unisgned int k, double loadFactor);
+FMDummy3(string indexType, unsigned int k, double loadFactor);
 ```
 
 ##FMDummyWT
@@ -195,7 +195,7 @@ Parameters:
 
 Constructors:
 ```
-FMDummyWT(string wtType, string indexType, unisgned int k, double loadFactor);
+FMDummyWT(string wtType, string indexType, unsigned int k, double loadFactor);
 ```
 
 ##FMDummy1 usage example
