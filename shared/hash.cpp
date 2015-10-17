@@ -9,7 +9,7 @@
 using namespace std;
 
 void HT::setK(unsigned int k) {
-	if (k == 0) {
+	if (k < 2) {
 		cout << "Error: not valid k value" << endl;
 		exit(1);
 	}

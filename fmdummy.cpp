@@ -26,7 +26,7 @@ void FMDummy1::setSelectedChars(string selectedChars) {
 }
 
 void FMDummy1::setK(unsigned int k) {
-	if (k == 0) {
+	if (k < 2) {
 		cout << "Error: not valid k value" << endl;
 		exit(1);
 	}
@@ -383,7 +383,7 @@ void FMDummy2::setMaxEncodedCharsLen() {
 }
 
 void FMDummy2::setK(unsigned int k) {
-	if (k == 0) {
+	if (k < 2) {
 		cout << "Error: not valid k value" << endl;
 		exit(1);
 	}
@@ -829,7 +829,7 @@ void FMDummy3::setType(string indexType) {
 }
 
 void FMDummy3::setK(unsigned int k) {
-	if (k == 0) {
+	if (k < 2) {
 		cout << "Error: not valid k value" << endl;
 		exit(1);
 	}
@@ -1185,7 +1185,7 @@ void FMDummyWT::setType(string wtType, string indexType) {
 }
 
 void FMDummyWT::setK(unsigned int k) {
-	if (k == 0) {
+	if (k < 2) {
 		cout << "Error: not valid k value" << endl;
 		exit(1);
 	}

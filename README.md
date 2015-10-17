@@ -1,4 +1,4 @@
-# fmdummy text indexes library
+# FMDummy text indexes library
 
 ##What is it?
 The FMDummy text indexes are fast variants of the FM-index, a well-known compressed full-text index by Ferragina and Manzini (2000). We focus more on search speed than space use. One of the novelties is a rank solution with 1 cache miss in the worst case, which (to our knowledge) was not used earlier elsewhere.
@@ -77,6 +77,24 @@ FMDummy1();
 FMDummy1(string indexType, string selectedChars);
 ```
 
+##FMDummy1-hash
+FMDummy1-hash is FMDummy1 with hashed k-symbol prefixes of suffixes from suffix array to speed up searches (k ≥ 2). Hashes are used when pattern length is greater or equal k.
+
+Parameters:
+- indexType:
+      - "256" - using 256b blocks: 64b of rank data and 192b of text data
+      - "512" - using 512b blocks: 64b of rank data and 448b of text data
+- selectedChars:
+      - up to 16 ordinal character values separated by dots, e.g. "65.67.71.84"
+      - "all" - all characters from the text
+- k - length of prefixes of suffixes from suffix array (k ≥ 2)
+- loadFactor - hash table load factor (0.0 < loadFactor < 100.0)
+
+Constructors:
+```
+FMDummy1(string indexType, string selectedChars, unisgned int k, double loadFactor);
+```
+
 ##FMDummy2
 Parameters:
 - indexType:
@@ -95,8 +113,29 @@ FMDummy2();
 FMDummy2(string indexType, string schema, string bitsPerChar);
 ```
 
+##FMDummy2-hash
+FMDummy2-hash is FMDummy2 with hashed k-symbol prefixes of suffixes from suffix array to speed up searches (k ≥ 2). Hashes are used when encoded pattern length is greater or equal k.
+
+Parameters:
+- indexType:
+      - "256" - using 256b blocks: 64b of rank data and 192b of encoded text data
+      - "512" - using 512b blocks: 64b of rank data and 448b of encoded text data
+- schema:
+      - "SCBO" - using SCBO encoding
+      - "CB" - using CB encoding
+- bitsPerChars:
+      - "4" (default) - using 4 bits to store the encoded symbol
+      - "3" - using 3 bits to store the encoded symbol
+- k - length of prefixes of suffixes from suffix array (k ≥ 2)
+- loadFactor - hash table load factor (0.0 < loadFactor < 100.0)
+
+Constructors:
+```
+FMDummy2(string indexType, string schema, string bitsPerChar, unisgned int k, double loadFactor);
+```
+
 ##FMDummy3
-FMDummy3 is intended for DNA sequences.
+FMDummy3 is intended for DNA sequences (it searches only for patterns consisting symbols A, C, G, T).
 
 Parameters:
 - indexType:
@@ -109,8 +148,22 @@ FMDummy3();
 FMDummy3(string indexType);
 ```
 
-##FMDummyWT
+##FMDummy3-hash
+FMDummy3-hash is FMDummy3 with hashed k-symbol prefixes of suffixes from suffix array to speed up searches (k ≥ 2). Hashes are used when pattern length is greater or equal k.
 
+Parameters:
+- indexType:
+      - "512" - using 512b blocks: 128b of rank data and 384b of text data
+      - "1024" - using 1024b blocks: 128b of rank data and 896b of text data
+- k - length of prefixes of suffixes from suffix array (k ≥ 2)
+- loadFactor - hash table load factor (0.0 < loadFactor < 100.0)
+
+Constructors:
+```
+FMDummy3(string indexType, unisgned int k, double loadFactor);
+```
+
+##FMDummyWT
 Parameters:
 - wtType:
       - "2" (default) - using wavelet tree for 2-ary Huffman encoded text
@@ -124,6 +177,25 @@ Constructors:
 ```
 FMDummyWT();
 FMDummyWT(string wtType, string indexType);
+```
+
+##FMDummyWT-hash
+FMDummyWT-hash is FMDummyWT with hashed k-symbol prefixes of suffixes from suffix array to speed up searches (k ≥ 2). Hashes are used when pattern length is greater or equal k.
+
+Parameters:
+- wtType:
+      - "2" - using wavelet tree for 2-ary Huffman encoded text
+      - "4" - using wavelet tree for 4-ary Huffman encoded text
+      - "8" - using wavelet tree for 8-ary Huffman encoded text
+- indexType:
+      - "512" - using 512b blocks: 64b of rank data and 448b of encoded text data
+      - "1024" - using 1024b blocks: 64b of rank data and 960b of encoded text data
+- k - length of prefixes of suffixes from suffix array (k ≥ 2)
+- loadFactor - hash table load factor (0.0 < loadFactor < 100.0)
+
+Constructors:
+```
+FMDummyWT(string wtType, string indexType, unisgned int k, double loadFactor);
 ```
 
 ##FMDummy1 usage example
@@ -175,6 +247,7 @@ Using other fmdummy indexes is analogous.
 ##External resources used in fmdummy project
 - Yuta Mori suffix array building (sais)
 - A multi-platform library of highly optimized functions for C and C++ by Agner Fog (asmlib)
+- Extremely fast hash algorithm by Yann Collet (xxHash)
 
 ##Authors
 - Szymon Grabowski
