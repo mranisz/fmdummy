@@ -78,7 +78,7 @@ FMDummy1(string indexType, string selectedChars);
 ```
 
 ##FMDummy1-hash
-FMDummy1-hash is FMDummy1 with hashed k-symbol prefixes of suffixes from suffix array to speed up searches (k ≥ 2). Hashes are used when pattern length is greater or equal k.
+FMDummy1-hash is FMDummy1 with hashed k-symbol prefixes of suffixes from suffix array to speed up searches (k ≥ 2). Hashes are used when pattern length is greater than or equal to k.
 
 Parameters:
 - indexType:
@@ -114,7 +114,7 @@ FMDummy2(string indexType, string schema, string bitsPerChar);
 ```
 
 ##FMDummy2-hash
-FMDummy2-hash is FMDummy2 with hashed k-symbol prefixes of suffixes from suffix array to speed up searches (k ≥ 2). Hashes are used when encoded pattern length is greater or equal k.
+FMDummy2-hash is FMDummy2 with hashed k-symbol prefixes of suffixes from suffix array to speed up searches (k ≥ 2). Hashes are used when encoded pattern length is greater than or equal to k.
 
 Parameters:
 - indexType:
@@ -135,7 +135,7 @@ FMDummy2(string indexType, string schema, string bitsPerChar, unsigned int k, do
 ```
 
 ##FMDummy3
-FMDummy3 is intended for DNA sequences (it searches only for patterns consisting symbols A, C, G, T).
+FMDummy3 is intended for DNA sequences (it searches only for patterns consisting of te symbols A, C, G, T).
 
 Parameters:
 - indexType:
@@ -149,7 +149,7 @@ FMDummy3(string indexType);
 ```
 
 ##FMDummy3-hash
-FMDummy3-hash is FMDummy3 with hashed k-symbol prefixes of suffixes from suffix array to speed up searches (k ≥ 2). Hashes are used when pattern length is greater or equal k.
+FMDummy3-hash is FMDummy3 with hashed k-symbol prefixes of suffixes from suffix array to speed up searches (k ≥ 2). Hashes are used when pattern length is greater than or equal to k.
 
 Parameters:
 - indexType:
@@ -180,7 +180,7 @@ FMDummyWT(string wtType, string indexType);
 ```
 
 ##FMDummyWT-hash
-FMDummyWT-hash is FMDummyWT with hashed k-symbol prefixes of suffixes from suffix array to speed up searches (k ≥ 2). Hashes are used when pattern length is greater or equal k.
+FMDummyWT-hash is FMDummyWT with hashed k-symbol prefixes of suffixes from suffix array to speed up searches (k ≥ 2). Hashes are used when pattern length is greater than or equal to k.
 
 Parameters:
 - wtType:
