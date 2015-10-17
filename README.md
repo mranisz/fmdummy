@@ -19,23 +19,23 @@ make
 ```
 
 ##Usage
-To use the fmdummy libriary:
+To use the FMDummy library:
 - include "fmdummy/fmdummy.h" to your project
 - compile it with "-std=c++11 -O3 -mpopcnt" options and link it with libriaries:
   - fmdummy/libfmdummy.a
   - fmdummy/libs/libaelf64.a
 
 ##API
-There are several functions you can call on each of the fmdummy text index:
-- **building** the index using the text:
+There are several functions you can call on each of the FMDummy text index:
+- **build** the index using the text:
 ```
 void build(unsigned char* text, unsigned int textLen);
 ```
-- **saving** the index to file called fileName:
+- **save** the index to file called fileName:
 ```
 void save(char *fileName);
 ```
-- **loading** the index from file called fileName:
+- **load** the index from file called fileName:
 ```
 void load(char *fileName);
 ```
@@ -61,7 +61,7 @@ void setVerbose(bool verbose);
 ```
 
 ##FMDummy1
-FMDummy1 can be build for up to 16 selected characters from text.
+FMDummy1 can be built for up to 16 selected characters from text.
 
 Parameters:
 - indexType:
@@ -78,7 +78,7 @@ FMDummy1(string indexType, string selectedChars);
 ```
 
 ##FMDummy1-hash
-FMDummy1-hash is FMDummy1 with hashed k-symbol prefixes of suffixes from suffix array to speed up searches (k ≥ 2). Hashes are used when pattern length is greater than or equal to k.
+FMDummy1-hash is FMDummy1 with hashed k-symbol prefixes of suffixes from suffix array to speed up searches (k ≥ 2). This variant is particularly efficient in speed for short patterns (not much longer than k). Note that patterns shorter than k are handled by standard variant of FMDummy1 index.
 
 Parameters:
 - indexType:
@@ -101,7 +101,7 @@ Parameters:
       - "256" (default) - using 256b blocks: 64b of rank data and 192b of encoded text data
       - "512" - using 512b blocks: 64b of rank data and 448b of encoded text data
 - schema:
-      - "SCBO" (default) - using SCBO encoding
+      - "SCBO" (default) - using SCBO encoding (A. Fariña, G. Navarro, J. Paramá. Boosting text compression with word-based statistical encoding. The Computer Journal, 55(1):111–131, 2012)
       - "CB" - using CB encoding
 - bitsPerChars:
       - "4" (default) - using 4 bits to store the encoded symbol
@@ -114,14 +114,14 @@ FMDummy2(string indexType, string schema, string bitsPerChar);
 ```
 
 ##FMDummy2-hash
-FMDummy2-hash is FMDummy2 with hashed k-symbol prefixes of suffixes from suffix array to speed up searches (k ≥ 2). Hashes are used when encoded pattern length is greater than or equal to k.
+FMDummy2-hash is FMDummy2 with hashed k-symbol prefixes of suffixes from suffix array to speed up searches (k ≥ 2). This variant is particularly efficient in speed for short patterns (not much longer than k). Note that patterns shorter than k are handled by standard variant of FMDummy2 index.
 
 Parameters:
 - indexType:
       - "256" - using 256b blocks: 64b of rank data and 192b of encoded text data
       - "512" - using 512b blocks: 64b of rank data and 448b of encoded text data
 - schema:
-      - "SCBO" - using SCBO encoding
+      - "SCBO" - using SCBO encoding (A. Fariña, G. Navarro, J. Paramá. Boosting text compression with word-based statistical encoding. The Computer Journal, 55(1):111–131, 2012)
       - "CB" - using CB encoding
 - bitsPerChars:
       - "4" (default) - using 4 bits to store the encoded symbol
@@ -149,7 +149,7 @@ FMDummy3(string indexType);
 ```
 
 ##FMDummy3-hash
-FMDummy3-hash is FMDummy3 with hashed k-symbol prefixes of suffixes from suffix array to speed up searches (k ≥ 2). Hashes are used when pattern length is greater than or equal to k.
+FMDummy3-hash is FMDummy3 with hashed k-symbol prefixes of suffixes from suffix array to speed up searches (k ≥ 2). This variant is particularly efficient in speed for short patterns (not much longer than k). Note that patterns shorter than k are handled by standard variant of FMDummy3 index.
 
 Parameters:
 - indexType:
@@ -180,7 +180,7 @@ FMDummyWT(string wtType, string indexType);
 ```
 
 ##FMDummyWT-hash
-FMDummyWT-hash is FMDummyWT with hashed k-symbol prefixes of suffixes from suffix array to speed up searches (k ≥ 2). Hashes are used when pattern length is greater than or equal to k.
+FMDummyWT-hash is FMDummyWT with hashed k-symbol prefixes of suffixes from suffix array to speed up searches (k ≥ 2). This variant is particularly efficient in speed for short patterns (not much longer than k). Note that patterns shorter than k are handled by standard variant of FMDummyWT index.
 
 Parameters:
 - wtType:
@@ -243,11 +243,11 @@ void fmDummy1(string indexType, string selectedChars, char *textFileName, unsign
 	delete P;
 }
 ```
-Using other fmdummy indexes is analogous.
-##External resources used in fmdummy project
-- Yuta Mori suffix array building (sais)
+Using other FMDummy indexes is analogous.
+##External resources used in FMDummy project
+- Suffix array building by Yuta Mori (sais)
 - A multi-platform library of highly optimized functions for C and C++ by Agner Fog (asmlib)
-- Extremely fast hash algorithm by Yann Collet (xxHash)
+- A very fast hash function by Yann Collet (xxHash)
 
 ##Authors
 - Szymon Grabowski
