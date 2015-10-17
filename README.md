@@ -135,7 +135,7 @@ FMDummy2(string indexType, string schema, string bitsPerChar, unsigned int k, do
 ```
 
 ##FMDummy3
-FMDummy3 is intended for DNA sequences (it searches only for patterns consisting of te symbols A, C, G, T).
+FMDummy3 is intended for DNA sequences (it searches only for patterns consisting of the symbols A, C, G, T).
 
 Parameters:
 - indexType:
