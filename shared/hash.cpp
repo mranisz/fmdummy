@@ -212,6 +212,7 @@ void HT::fillHTData(unsigned char *text, unsigned int textLen, unsigned int *sa,
 			}
 		}
 	}
+	this->alignedBoundariesHT[2 * hash + 1] = saLen;
 
 	delete[] lastPattern;
 	delete[] pattern;
@@ -283,6 +284,7 @@ void HT::fillHTDataWithEntries(unsigned char *text, unsigned int textLen, unsign
 			}
 		}
 	}
+	this->alignedBoundariesHT[2 * hash + 1] = saLen;
 
 	delete[] lastPattern;
 	delete[] pattern;
