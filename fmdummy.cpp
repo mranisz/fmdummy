@@ -730,7 +730,7 @@ unsigned int FMDummy2::count_hash_SCBO_512_counter40(unsigned char *pattern, uns
 		unsigned char *encodedPattern = encodePattern(pattern, patternLen - this->ht->k, this->encodedChars, this->encodedCharsLen, this->maxEncodedCharsLen, encodedPatternLen, wrongEncoding);
 		unsigned int count;
 		if (wrongEncoding) count = 0;
-		else count = count_512_counter40(encodedPattern, encodedPatternLen - 1, this->c, this->alignedBWTWithRanks, leftBoundary + 1, rightBoundary);
+		else count = count_512_counter40(encodedPattern, encodedPatternLen, this->c, this->alignedBWTWithRanks, leftBoundary + 1, rightBoundary);
 		delete[] encodedPattern;
 		return count;
 	} else {

@@ -261,6 +261,7 @@ unsigned char *encode(unsigned char* pattern, unsigned int patternLen, unsigned 
 	encodedPatternLen = 0;
 	for (; p < pattern + patternLen; ++p) encodedPatternLen += encodedCharsLen[*p];
 	unsigned char* encodedPattern = new unsigned char[encodedPatternLen + 1];
+	encodedPattern[encodedPatternLen] = '\0';
 	p = pattern;
 	encodedPatternLen = 0;
 	for (; p < pattern + patternLen; ++p) {
