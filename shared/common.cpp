@@ -232,7 +232,6 @@ void binarySearch(unsigned int *sa, unsigned char *text, unsigned int lStart, un
 }
 
 void fillLUT1(unsigned int lut1[256][2], unsigned char *text, unsigned int *sa, unsigned int saLen) {
-	unsigned int beg, end;
 	unsigned char *lutPattern = new unsigned char[2];
 	lutPattern[1] = '\0';
 	for (int i = 0; i < 256; ++i) {
@@ -244,7 +243,6 @@ void fillLUT1(unsigned int lut1[256][2], unsigned char *text, unsigned int *sa, 
 }
 
 void fillLUT2(unsigned int lut2[256][256][2], unsigned char *text, unsigned int *sa, unsigned int saLen) {
-	unsigned int beg, end;
 	unsigned char *lutPattern = new unsigned char[3];
 	lutPattern[2] = '\0';
 	for (int i = 0; i < 256; ++i) {
