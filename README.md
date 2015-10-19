@@ -21,7 +21,7 @@ make
 ##Usage
 To use the FMDummy library:
 - include "fmdummy/fmdummy.h" to your project
-- compile it with "-std=c++11 -O3 -mpopcnt" options and link it with libriaries:
+- compile it with "-std=c++11 -O3 -mpopcnt" options and link it with libraries:
   - fmdummy/libfmdummy.a
   - fmdummy/libs/libaelf64.a
 

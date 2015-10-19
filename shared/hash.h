@@ -16,13 +16,14 @@ public:
 	unsigned int k;
 
 	unsigned long long bucketsNum;
-	unsigned int emptyValueHT;
 
-	unsigned int lut2[256][257];
+	unsigned int lut2[256][256][2];
 	unsigned int *boundariesHT;
 	unsigned int *alignedBoundariesHT;
 	unsigned char *entriesHT;
 	unsigned char *alignedEntriesHT;
+
+	const static unsigned int emptyValueHT;
 
 	HT() {
 		this->initialize();

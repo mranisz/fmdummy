@@ -217,7 +217,7 @@ void binarySearch(unsigned int *sa, unsigned char *text, unsigned int lStart, un
 	}
 	beg = l;
 	r = rStart;
-	pattern[patternLength - 1]++;
+	++pattern[patternLength - 1];
 	while (l < r) {
 		mid = (l + r) / 2;
 		if (A_strcmp((const char*)pattern, (const char*)(text + sa[mid])) <= 0) {
@@ -227,77 +227,46 @@ void binarySearch(unsigned int *sa, unsigned char *text, unsigned int lStart, un
 			l = mid + 1;
 		}
 	}
+	--pattern[patternLength - 1];
 	end = r;
 }
 
-void fillLUT1(unsigned int lut1[257], unsigned char *text, unsigned int *sa, unsigned int saLen) {
+void fillLUT1(unsigned int lut1[256][2], unsigned char *text, unsigned int *sa, unsigned int saLen) {
 	unsigned int beg, end;
 	unsigned char *lutPattern = new unsigned char[2];
 	lutPattern[1] = '\0';
-	lut1[0] = 0;
-	for (int i = 1; i < 256; ++i) {
+	for (int i = 0; i < 256; ++i) {
 		lutPattern[0] = (unsigned char)i;
-		binarySearch(sa, text, 0, saLen, lutPattern, 1, beg, end);
-		if (beg == 0) {
-			lut1[i] = lut1[i - 1];
-		}
-		else {
-			lut1[i] = beg;
-		}
+		binarySearch(sa, text, 0, saLen, lutPattern, 1, lut1[i][0], lut1[i][1]);
+		++lut1[i][1];
 	}
-	lut1[256] = saLen;
+	delete[] lutPattern;
 }
 
-void fillLUT2(unsigned int lut2[256][257], unsigned char *text, unsigned int *sa, unsigned int saLen) {
+void fillLUT2(unsigned int lut2[256][256][2], unsigned char *text, unsigned int *sa, unsigned int saLen) {
 	unsigned int beg, end;
 	unsigned char *lutPattern = new unsigned char[3];
 	lutPattern[2] = '\0';
-	lut2[0][0] = 0;
 	for (int i = 0; i < 256; ++i) {
 		lutPattern[0] = (unsigned char)i;
-		for (int j = 1; j < 256; ++j) {
+		for (int j = 0; j < 256; ++j) {
 			lutPattern[1] = (unsigned char)j;
-			binarySearch(sa, text, 0, saLen, lutPattern, 2, beg, end);
-			if (beg == 0) {
-				lut2[i][j] = lut2[i][j - 1];
-			}
-			else {
-				lut2[i][j] = beg;
-			}
+			binarySearch(sa, text, 0, saLen, lutPattern, 2, lut2[i][j][0], lut2[i][j][1]);
+			++lut2[i][j][1];
 		}
 	}
-	for (int i = 0; i < 255; ++i) {
-		if (i < 255) lut2[i][256] = lut2[i + 1][0];
-	}
-	lut2[255][256] = saLen;
+	delete[] lutPattern;
 }
 
-void fillLUT3(unsigned int lut3[256][256][257], unsigned char *text, unsigned int *sa, unsigned int saLen) {
-	unsigned int beg, end;
-	unsigned char *lutPattern = new unsigned char[4];
-	lutPattern[3] = '\0';
-	lut3[0][0][0] = 0;
-	for (int i = 0; i < 256; ++i) {
-		lutPattern[0] = (unsigned char)i;
-		for (int j = 0; j < 256; ++j) {
-			lutPattern[1] = (unsigned char)j;
-			for (int k = 1; k < 256; ++k) {
-				lutPattern[2] = (unsigned char)k;
-				binarySearch(sa, text, 0, saLen, lutPattern, 3, beg, end);
-				if (beg == 0) {
-					lut3[i][j][k] = lut3[i][j][k - 1];
-				}
-				else {
-					lut3[i][j][k] = beg;
-				}
-			}
-		}
+unsigned char *encode(unsigned char* pattern, unsigned int patternLen, unsigned char** encodedChars, unsigned int* encodedCharsLen, unsigned int &encodedPatternLen) {
+	unsigned char* p = pattern;
+	encodedPatternLen = 0;
+	for (; p < pattern + patternLen; ++p) encodedPatternLen += encodedCharsLen[*p];
+	unsigned char* encodedPattern = new unsigned char[encodedPatternLen + 1];
+	p = pattern;
+	encodedPatternLen = 0;
+	for (; p < pattern + patternLen; ++p) {
+		for (unsigned int i = 0; i < encodedCharsLen[*p]; ++i) encodedPattern[encodedPatternLen++] = encodedChars[*p][i];
 	}
-	for (int i = 0; i < 256; ++i) {
-		if (i < 255) lut3[i][255][256] = lut3[i + 1][255][0];
-		for (int j = 0; j < 256; ++j) {
-			if (j < 255) lut3[i][j][256] = lut3[i][j + 1][0];
-		}
-	}
-	lut3[255][255][256] = saLen;
+	return encodedPattern;
 }
