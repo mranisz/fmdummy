@@ -191,15 +191,28 @@ void HT::fillHTData(unsigned char *text, unsigned int textLen, unsigned int *sa,
 	lastPattern[this->k] = '\0';
 
 	unsigned char *pattern = new unsigned char[this->k + 1];
+	unsigned int lastNotOutsideTextIndex;
+	bool notLastOutsideText = true;
 
 	for (unsigned int i = 0; i < saLen; i++) {
-		if (sa[i] > (textLen - this->k)) continue;
+		if (sa[i] > (textLen - this->k)) {
+			if (notLastOutsideText) lastNotOutsideTextIndex = i;
+			notLastOutsideText = false;
+			continue;
+		}
 		strncpy((char *)pattern, (const char *)(text + sa[i]), this->k);
 		pattern[this->k] = '\0';
-		if (strcmp((char *)pattern, (const char *)lastPattern) == 0) continue;
+		if (strcmp((char *)pattern, (const char *)lastPattern) == 0) {
+			notLastOutsideText = true;
+			continue;
+		}
 		else {
 			strcpy((char *)lastPattern, (const char *)pattern);
-			if (hash != this->bucketsNum) this->alignedBoundariesHT[2 * hash + 1] = i;
+			if (hash != this->bucketsNum)  {
+				if (notLastOutsideText) this->alignedBoundariesHT[2 * hash + 1] = i;
+				else this->alignedBoundariesHT[2 * hash + 1] = lastNotOutsideTextIndex;
+			}
+			notLastOutsideText = true;
 			hash = getHashValue(pattern, this->k) % this->bucketsNum;
 		}
 		while (true) {
@@ -242,15 +255,28 @@ void HT::fillHTDataWithEntries(unsigned char *text, unsigned int textLen, unsign
 	lastPattern[this->k] = '\0';
 
 	unsigned char *pattern = new unsigned char[this->k + 1];
+	unsigned int lastNotOutsideTextIndex;
+	bool notLastOutsideText = true;
 
 	for (unsigned int i = 0; i < saLen; i++) {
-		if (sa[i] > (textLen - this->k)) continue;
+		if (sa[i] > (textLen - this->k)) {
+			if (notLastOutsideText) lastNotOutsideTextIndex = i;
+			notLastOutsideText = false;
+			continue;
+		}
 		strncpy((char *)pattern, (const char *)(text + sa[i]), this->k);
 		pattern[this->k] = '\0';
-		if (strcmp((char *)pattern, (const char *)lastPattern) == 0) continue;
+		if (strcmp((char *)pattern, (const char *)lastPattern) == 0) {
+			notLastOutsideText = true;
+			continue;
+		}
 		else {
 			strcpy((char *)lastPattern, (const char *)pattern);
-			if (hash != this->bucketsNum) this->alignedBoundariesHT[2 * hash + 1] = i;
+			if (hash != this->bucketsNum) {
+				if (notLastOutsideText) this->alignedBoundariesHT[2 * hash + 1] = i;
+				else this->alignedBoundariesHT[2 * hash + 1] = lastNotOutsideTextIndex;
+			}
+			notLastOutsideText = true;
 			if (selectedChars) {
 				bool rejectPattern = false;
 				for (unsigned int j = 0; j < this->k; ++j) {
@@ -284,7 +310,7 @@ void HT::fillHTDataWithEntries(unsigned char *text, unsigned int textLen, unsign
 			}
 		}
 	}
-	this->alignedBoundariesHT[2 * hash + 1] = saLen;
+	if (hash != this->bucketsNum) this->alignedBoundariesHT[2 * hash + 1] = saLen;
 
 	delete[] lastPattern;
 	delete[] pattern;
