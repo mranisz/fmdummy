@@ -9,6 +9,13 @@ The current version handles only the count query (i.e., returns the number of oc
 The FMDummy text indexes require:
 - C++11 ready compiler such as g++ version 4.7 or higher
 - a 64-bit operating system
+- text size is limited to (FMDummy2 limitations are the worst cases for incompressible text, usually they are not so strong):
+    - 4GB for FMDummy1(hash), FMDummy3(hash) and FMDummyWT(hash)
+    - 0.8GB for FMDummy2(hash) with SCBO schema and 3 bitsPerChar
+    - 1.2GB for FMDummy2(hash) with SCBO schema and 4 bitsPerChar
+    - 1.1GB for FMDummy2(hash) with CB schema and 3 bitsPerChar
+    - 1.5GB for FMDummy2(hash) with CB schema and 4 bitsPerChar
+
 
 ##Installation
 To download and build the library use the following commands:
@@ -88,7 +95,7 @@ Parameters:
       - up to 16 ordinal character values separated by dots, e.g. "65.67.71.84"
       - "all" - all characters from the text
 - k - length of prefixes of suffixes from suffix array (k ≥ 2)
-- loadFactor - hash table load factor (0.0 < loadFactor < 100.0)
+- loadFactor - hash table load factor (0.0 < loadFactor < 1.0)
 
 Constructors:
 ```
@@ -127,7 +134,7 @@ Parameters:
       - "4" (default) - using 4 bits to store the encoded symbol
       - "3" - using 3 bits to store the encoded symbol
 - k - length of prefixes of suffixes from suffix array (k ≥ 2)
-- loadFactor - hash table load factor (0.0 < loadFactor < 100.0)
+- loadFactor - hash table load factor (0.0 < loadFactor < 1.0)
 
 Constructors:
 ```
@@ -156,7 +163,7 @@ Parameters:
       - "512" - using 512b blocks: 128b of rank data and 384b of text data
       - "1024" - using 1024b blocks: 128b of rank data and 896b of text data
 - k - length of prefixes of suffixes from suffix array (k ≥ 2)
-- loadFactor - hash table load factor (0.0 < loadFactor < 100.0)
+- loadFactor - hash table load factor (0.0 < loadFactor < 1.0)
 
 Constructors:
 ```
@@ -191,7 +198,7 @@ Parameters:
       - "512" - using 512b blocks: 64b of rank data and 448b of encoded text data
       - "1024" - using 1024b blocks: 64b of rank data and 960b of encoded text data
 - k - length of prefixes of suffixes from suffix array (k ≥ 2)
-- loadFactor - hash table load factor (0.0 < loadFactor < 100.0)
+- loadFactor - hash table load factor (0.0 < loadFactor < 1.0)
 
 Constructors:
 ```

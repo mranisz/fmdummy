@@ -34,7 +34,7 @@ void FMDummy1::setK(unsigned int k) {
 }
 
 void FMDummy1::setLoadFactor(double loadFactor) {
-	if (loadFactor <= 0.0 || loadFactor >= 100.0) {
+	if (loadFactor <= 0.0 || loadFactor >= 1.0) {
 		cout << "Error: not valid loadFactor value" << endl;
 		exit(1);
 	}
@@ -391,7 +391,7 @@ void FMDummy2::setK(unsigned int k) {
 }
 
 void FMDummy2::setLoadFactor(double loadFactor) {
-	if (loadFactor <= 0.0 || loadFactor >= 100.0) {
+	if (loadFactor <= 0.0 || loadFactor >= 1.0) {
 		cout << "Error: not valid loadFactor value" << endl;
 		exit(1);
 	}
@@ -539,7 +539,7 @@ void FMDummy2::build(unsigned char *text, unsigned int textLen) {
 	unsigned int *encodedSA = getSA(encodedText, encodedTextLen, encodedSALen, 0, this->verbose);
 	unsigned char *bwt = getBWT(encodedText, encodedTextLen, encodedSA, encodedSALen, bwtLen, this->verbose);
 	if (this->ht == NULL) delete[] encodedSA;
-	unsigned int ordCharsLen = (unsigned int)pow(2.0, (double)this->bitsPerChar);
+	unsigned int ordCharsLen = (unsigned int)exp2((double)this->bitsPerChar);
 	if (this->verbose) cout << "Compacting BWT ... " << flush;
 	++bwtLen;
 	unsigned int bwtDenseLen = (bwtLen / 8);
@@ -600,7 +600,7 @@ void FMDummy2::build(unsigned char *text, unsigned int textLen) {
 				delete[] encodedPattern;
 			}
 		}
-		unsigned char *lutPattern = new unsigned char[3];
+		unsigned char lutPattern[3];
 		lutPattern[2] = '\0';
 		for (int i = 0; i < 256; ++i) {
 			lutPattern[0] = (unsigned char)i;
@@ -610,6 +610,7 @@ void FMDummy2::build(unsigned char *text, unsigned int textLen) {
 				unsigned char *encodedLutPattern = encode(lutPattern, 2, this->encodedChars, this->encodedCharsLen, encodedPatternLen);
 				binarySearch(encodedSA, encodedText, 0, encodedSALen, encodedLutPattern, encodedPatternLen, this->ht->lut2[i][j][0], this->ht->lut2[i][j][1]);
 				++this->ht->lut2[i][j][1];
+				delete[] encodedLutPattern;
 			}
 		}
 		if (this->verbose) cout << "Done" << endl;
@@ -630,7 +631,7 @@ unsigned int FMDummy2::getIndexSize() {
 	}
 	unsigned int size = (sizeof(this->type) + sizeof(this->schema) + sizeof(this->bitsPerChar) + sizeof(this->k) + sizeof(this->loadFactor) + sizeof(this->maxEncodedCharsLen) + sizeof(bInC) + sizeof(this->bwtWithRanksLen));
 	size += (257 * sizeof(unsigned int) + 256 * sizeof(unsigned long long *) + 256 * sizeof(unsigned int) + 256 * sizeof(unsigned char *));
-	size += ((unsigned int)pow(2.0, (double)this->bitsPerChar) * this->bwtWithRanksLen * sizeof(unsigned long long) + encodedCharsLenSum * sizeof(unsigned char));
+	size += ((unsigned int)exp2((double)this->bitsPerChar) * this->bwtWithRanksLen * sizeof(unsigned long long) + encodedCharsLenSum * sizeof(unsigned char));
 	if (this->ht != NULL) size += this->ht->getHTSize();
 	return size;
 }
@@ -777,7 +778,7 @@ void FMDummy2::save(char *fileName) {
 	for (int i = 0; i < 256; ++i) {
 		if (this->encodedChars[i] != NULL) fwrite(this->encodedChars[i], (size_t)sizeof(unsigned char), (size_t)this->encodedCharsLen[i], outFile);
 	}
-	unsigned int maxChar = (unsigned int)pow(2.0, (double)this->bitsPerChar);
+	unsigned int maxChar = (unsigned int)exp2((double)this->bitsPerChar);
 	fwrite(&this->bwtWithRanksLen, (size_t)sizeof(unsigned int), (size_t)1, outFile);
 	if (this->bwtWithRanksLen > 0) {
 		for (unsigned int i = 1; i < maxChar + 1; ++i) {
@@ -856,7 +857,7 @@ void FMDummy2::load(char *fileName) {
 			exit(1);
 		}
 	}
-	unsigned int maxChar = (unsigned int)pow(2.0, (double)this->bitsPerChar);
+	unsigned int maxChar = (unsigned int)exp2((double)this->bitsPerChar);
 	result = fread(&this->bwtWithRanksLen, (size_t)sizeof(unsigned int), (size_t)1, inFile);
 	if (result != 1) {
 		cout << "Error loading index from " << fileName << endl;
@@ -918,7 +919,7 @@ void FMDummy3::setK(unsigned int k) {
 }
 
 void FMDummy3::setLoadFactor(double loadFactor) {
-	if (loadFactor <= 0.0 || loadFactor >= 100.0) {
+	if (loadFactor <= 0.0 || loadFactor >= 1.0) {
 		cout << "Error: not valid loadFactor value" << endl;
 		exit(1);
 	}
@@ -983,7 +984,7 @@ void FMDummy3::buildRank_512_enc125(unsigned char *bwtEnc125, unsigned int bwtLe
 	unsigned int rank[4] = {0, 0, 0, 0};
 	unsigned char *p, signs[4] = { 'A', 'C', 'G', 'T' };
 
-	unsigned int **resRank = new unsigned int *[4];
+	unsigned int *resRank[4];
 	for (int i = 0; i < 4; ++i) {
 		resRank[i] = new unsigned int[(bwtLen * 8) / 384 + 1];
 		resRank[i][0] = 0;
@@ -1012,14 +1013,14 @@ void FMDummy3::buildRank_512_enc125(unsigned char *bwtEnc125, unsigned int bwtLe
 		}
 		this->alignedBWTWithRanks[counter++] = *p;
 	}
-	delete[] resRank;
+	for (int i = 0; i < 4; ++i) delete[] resRank[i];
 }
 
 void FMDummy3::buildRank_1024_enc125(unsigned char *bwtEnc125, unsigned int bwtLen) {
 	unsigned int rank[4] = {0, 0, 0, 0};
 	unsigned char *p, signs[4] = { 'A', 'C', 'G', 'T' };
 
-	unsigned int **resRank = new unsigned int *[4];
+	unsigned int *resRank[4];
 	for (int i = 0; i < 4; ++i) {
 		resRank[i] = new unsigned int[(bwtLen * 8) / 896 + 1];
 		resRank[i][0] = 0;
@@ -1048,7 +1049,7 @@ void FMDummy3::buildRank_1024_enc125(unsigned char *bwtEnc125, unsigned int bwtL
 		}
 		this->alignedBWTWithRanks[counter++] = *p;
 	}
-	delete[] resRank;
+	for (int i = 0; i < 4; ++i) delete[] resRank[i];
 }
 
 void FMDummy3::build(unsigned char *text, unsigned int textLen) {
@@ -1274,7 +1275,7 @@ void FMDummyWT::setK(unsigned int k) {
 }
 
 void FMDummyWT::setLoadFactor(double loadFactor) {
-	if (loadFactor <= 0.0 || loadFactor >= 100.0) {
+	if (loadFactor <= 0.0 || loadFactor >= 1.0) {
 		cout << "Error: not valid loadFactor value" << endl;
 		exit(1);
 	}
@@ -2221,7 +2222,7 @@ bool sortCharsCount(unsigned int* i, unsigned int* j) {
 
 unsigned char *getEncodedInSCBO(int bits, unsigned char *text, unsigned int textLen, unsigned int &encodedTextLen, unsigned char **encodedChars, unsigned int *encodedCharsLen) {
 
-	int max = (int)pow(2.0, (double)bits);
+	int max = (int)exp2((double)bits);
 
 	unsigned int charsCount[256][2];
 	for (int i = 0; i < 256; ++i) {
@@ -2351,7 +2352,7 @@ unsigned char *getEncodedInSCBO(int bits, unsigned char *text, unsigned int text
 
 unsigned char *getEncodedInCB(int bits, unsigned char *text, unsigned int textLen, unsigned int &encodedTextLen, unsigned char **encodedChars, unsigned int *encodedCharsLen, unsigned int &b) {
 
-	int max = (int)pow(2.0, (double)bits);
+	int max = (int)exp2((double)bits);
 
 	unsigned int charsCount[256][2];
 	for (int i = 0; i < 256; ++i) {

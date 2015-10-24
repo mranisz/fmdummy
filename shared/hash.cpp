@@ -19,7 +19,7 @@ void HT::setK(unsigned int k) {
 }
 
 void HT::setLoadFactor(double loadFactor) {
-	if (loadFactor <= 0.0 || loadFactor >= 100.0) {
+	if (loadFactor <= 0.0 || loadFactor >= 1.0) {
 		cout << "Error: not valid loadFactor value" << endl;
 		exit(1);
 	}

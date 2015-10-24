@@ -15,12 +15,12 @@ using namespace std;
 class FMDummy1 : public I_Api {
 private:
 	unsigned long long *bwtWithRanks[256];
-	unsigned int bwtWithRanksLen;
+	unsigned int c[257];
 	unsigned long long **alignedBWTWithRanks;
 	unsigned int *ordChars;
-	unsigned int ordCharsLen;
-	unsigned int c[257];
 	HT *ht;
+	unsigned int bwtWithRanksLen;
+	unsigned int ordCharsLen;
 
 	int type;
 	bool allChars;
@@ -92,14 +92,14 @@ public:
 class FMDummy2 : public I_Api {
 private:
 	unsigned long long *bwtWithRanks[256];
-	unsigned int bwtWithRanksLen;
-	unsigned long long **alignedBWTWithRanks;
 	unsigned char *encodedChars[256];
 	unsigned int encodedCharsLen[256];
-	unsigned int maxEncodedCharsLen;
 	unsigned int c[257];
-	unsigned int bInC;
+	unsigned long long **alignedBWTWithRanks;
 	HT *ht;
+	unsigned int bwtWithRanksLen;
+	unsigned int maxEncodedCharsLen;
+	unsigned int bInC;
 
 	int type;
 	int schema;
@@ -185,12 +185,12 @@ public:
 
 class FMDummy3 : public I_Api {
 private:
-	unsigned char *bwtWithRanks;
-	unsigned int bwtWithRanksLen;
-	unsigned char *alignedBWTWithRanks;
 	unsigned int lut[256][125];
 	unsigned int c[257];
+	unsigned char *bwtWithRanks;
+	unsigned char *alignedBWTWithRanks;
 	HT *ht;
+	unsigned int bwtWithRanksLen;
 
 	int type;
 	unsigned int k;
@@ -257,10 +257,10 @@ public:
 
 class FMDummyWT : public I_Api {
 private:
-	WT *wt;
 	unsigned long long code[256];
 	unsigned int codeLen[256];
 	unsigned int c[257];
+	WT *wt;
 	HT *ht;
 
 	int type;

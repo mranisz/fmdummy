@@ -12,16 +12,15 @@ private:
 	void fillHTDataWithEntries(unsigned char *text, unsigned int textLen, unsigned int *sa, unsigned int saLen, unsigned int *ordChars = NULL, unsigned int ordCharsLen = 0);
 
 public:
-	double loadFactor;
-	unsigned int k;
-
-	unsigned long long bucketsNum;
 
 	unsigned int lut2[256][256][2];
 	unsigned int *boundariesHT;
 	unsigned int *alignedBoundariesHT;
 	unsigned char *entriesHT;
 	unsigned char *alignedEntriesHT;
+	double loadFactor;
+	unsigned int k;
+	unsigned long long bucketsNum;
 
 	const static unsigned int emptyValueHT;
 
