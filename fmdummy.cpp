@@ -377,9 +377,16 @@ void FMDummy2::setBitsPerChar(string bitsPerChar) {
 	else this->bitsPerChar = FMDummy2::BITS_4;
 }
 
+void FMDummy2::setEncodedPattern(unsigned int maxPatternLen) {
+	if (this->encodedPattern != NULL) delete[] this->encodedPattern;
+	this->maxPatternLen = maxPatternLen;
+	this->encodedPattern = new unsigned char[maxPatternLen * this->maxEncodedCharsLen + 1];
+}
+
 void FMDummy2::setMaxEncodedCharsLen() {
 	this->maxEncodedCharsLen = 0;
 	for (int i = 0; i < 256; ++i) if (this->encodedCharsLen[i] > this->maxEncodedCharsLen) this->maxEncodedCharsLen = this->encodedCharsLen[i];
+	this->setEncodedPattern(1000);
 }
 
 void FMDummy2::setK(unsigned int k) {
@@ -482,6 +489,8 @@ void FMDummy2::initialize() {
 	this->encodedChars = NULL;
 	for (int i = 0; i < 256; ++i) this->encodedCharsLen[i] = 0;
 	this->maxEncodedCharsLen = 0;
+	this->encodedPattern = NULL;
+	this->maxPatternLen = 0;
 	for (int i = 0; i < 257; ++i) this->c[i] = 0;
 	this->bInC = 0;
 	this->ht = NULL;
@@ -501,6 +510,7 @@ void FMDummy2::initialize() {
 void FMDummy2::freeMemory() {
 	for (int i = 0; i < 256; ++i) if (this->bwtWithRanks[i] != NULL) delete[] this->bwtWithRanks[i];
 	if (this->encodedChars != NULL) delete[] this->encodedChars;
+	if (this->encodedPattern != NULL) delete[] this->encodedPattern;
 	if (this->alignedBWTWithRanks != NULL) delete[] this->alignedBWTWithRanks;
 	if (this->ht != NULL) delete this->ht;
 }
@@ -868,8 +878,8 @@ void FMDummy2::build(unsigned char *text, unsigned int textLen) {
 }
 
 unsigned int FMDummy2::getIndexSize() {
-	unsigned int size = (sizeof(this->type) + sizeof(this->schema) + sizeof(this->bitsPerChar) + sizeof(this->k) + sizeof(this->loadFactor) + sizeof(this->maxEncodedCharsLen) + sizeof(bInC) + sizeof(this->bwtWithRanksLen));
-	size += (257 * sizeof(unsigned int) + 256 * sizeof(unsigned long long *) + 256 * sizeof(unsigned int) + 256 * sizeof(unsigned char *));
+	unsigned int size = (sizeof(this->type) + sizeof(this->schema) + sizeof(this->bitsPerChar) + sizeof(this->k) + sizeof(this->loadFactor) + sizeof(this->maxEncodedCharsLen) + sizeof(this->maxPatternLen) + sizeof(bInC) + sizeof(this->bwtWithRanksLen));
+	size += (257 * sizeof(unsigned int) + 256 * sizeof(unsigned long long *) + 256 * sizeof(unsigned int) + (this->maxEncodedCharsLen * this->maxPatternLen + 1) * sizeof(unsigned char));
 	size += ((unsigned int)exp2((double)this->bitsPerChar) * this->bwtWithRanksLen * sizeof(unsigned long long) + this->maxEncodedCharsLen * 256 * sizeof(unsigned char));
 	if (this->ht != NULL) size += this->ht->getHTSize();
 	return size;
@@ -879,6 +889,19 @@ unsigned int FMDummy2::getTextSize() {
 	return this->textSize;
 }
 
+void FMDummy2::encodePattern(unsigned char *pattern, unsigned int patternLen, unsigned int &encodedPatternLen, bool &wrongEncoding) {
+	if (patternLen > this->maxPatternLen) this->setEncodedPattern(patternLen);
+	unsigned char* p = pattern;
+	encodedPatternLen = 0;
+	for (; p < pattern + patternLen; ++p) {
+		if (this->encodedCharsLen[*p] == 0) {
+			wrongEncoding = true;
+			break;
+		}
+		for (unsigned int i = 0; i < this->encodedCharsLen[*p]; ++i) this->encodedPattern[encodedPatternLen++] = this->encodedChars[(unsigned int)(*p) * this->maxEncodedCharsLen + i];
+	}
+}
+
 unsigned int FMDummy2::count(unsigned char *pattern, unsigned int patternLen) {
 	return (this->*countOperation)(pattern, patternLen);
 }
@@ -886,45 +909,33 @@ unsigned int FMDummy2::count(unsigned char *pattern, unsigned int patternLen) {
 unsigned int FMDummy2::count_std_SCBO_256_counter48(unsigned char *pattern, unsigned int patternLen) {
 	bool wrongEncoding = false;
 	unsigned int encodedPatternLen;
-	unsigned char *encodedPattern = encodePattern(pattern, patternLen, this->encodedChars, this->encodedCharsLen, this->maxEncodedCharsLen, encodedPatternLen, wrongEncoding);
-	unsigned int count;
-	if (wrongEncoding) count = 0;
-	else count = count_256_counter48(encodedPattern, encodedPatternLen - 1, this->c, this->alignedBWTWithRanks, this->c[encodedPattern[encodedPatternLen - 1]] + 1, this->c[encodedPattern[encodedPatternLen - 1] + 1]);
-	delete[] encodedPattern;
-	return count;
+	this->encodePattern(pattern, patternLen, encodedPatternLen, wrongEncoding);
+	if (wrongEncoding) return 0;
+	return count_256_counter48(encodedPattern, encodedPatternLen - 1, this->c, this->alignedBWTWithRanks, this->c[encodedPattern[encodedPatternLen - 1]] + 1, this->c[encodedPattern[encodedPatternLen - 1] + 1]);
 }
 
 unsigned int FMDummy2::count_std_CB_256_counter48(unsigned char *pattern, unsigned int patternLen) {
 	bool wrongEncoding = false;
 	unsigned int encodedPatternLen;
-	unsigned char *encodedPattern = encodePattern(pattern, patternLen, this->encodedChars, this->encodedCharsLen, this->maxEncodedCharsLen, encodedPatternLen, wrongEncoding);
-	unsigned int count;
-	if (wrongEncoding) count = 0;
-	else count = count_256_counter48(encodedPattern, encodedPatternLen, this->c, this->alignedBWTWithRanks, 1, this->bInC);
-	delete[] encodedPattern;
-	return count;
+	this->encodePattern(pattern, patternLen, encodedPatternLen, wrongEncoding);
+	if (wrongEncoding) return 0;
+	return count_256_counter48(encodedPattern, encodedPatternLen, this->c, this->alignedBWTWithRanks, 1, this->bInC);
 }
 
 unsigned int FMDummy2::count_std_SCBO_512_counter40(unsigned char *pattern, unsigned int patternLen) {
 	bool wrongEncoding = false;
 	unsigned int encodedPatternLen;
-	unsigned char *encodedPattern = encodePattern(pattern, patternLen, this->encodedChars, this->encodedCharsLen, this->maxEncodedCharsLen, encodedPatternLen, wrongEncoding);
-	unsigned int count;
-	if (wrongEncoding) count = 0;
-	else count = count_512_counter40(encodedPattern, encodedPatternLen - 1, this->c, this->alignedBWTWithRanks, this->c[encodedPattern[encodedPatternLen - 1]] + 1, this->c[encodedPattern[encodedPatternLen - 1] + 1]);
-	delete[] encodedPattern;
-	return count;
+	this->encodePattern(pattern, patternLen, encodedPatternLen, wrongEncoding);
+	if (wrongEncoding) return 0;
+	return count_512_counter40(encodedPattern, encodedPatternLen - 1, this->c, this->alignedBWTWithRanks, this->c[encodedPattern[encodedPatternLen - 1]] + 1, this->c[encodedPattern[encodedPatternLen - 1] + 1]);
 }
 
 unsigned int FMDummy2::count_std_CB_512_counter40(unsigned char *pattern, unsigned int patternLen) {
 	bool wrongEncoding = false;
 	unsigned int encodedPatternLen;
-	unsigned char *encodedPattern = encodePattern(pattern, patternLen, this->encodedChars, this->encodedCharsLen, this->maxEncodedCharsLen, encodedPatternLen, wrongEncoding);
-	unsigned int count;
-	if (wrongEncoding) count = 0;
-	else count = count_512_counter40(encodedPattern, encodedPatternLen, this->c, this->alignedBWTWithRanks, 1, this->bInC);
-	delete[] encodedPattern;
-	return count;
+	this->encodePattern(pattern, patternLen, encodedPatternLen, wrongEncoding);
+	if (wrongEncoding) return 0;
+	return count_512_counter40(encodedPattern, encodedPatternLen, this->c, this->alignedBWTWithRanks, 1, this->bInC);
 }
 
 unsigned int FMDummy2::count_hash_SCBO_256_counter48(unsigned char *pattern, unsigned int patternLen) {
@@ -933,12 +944,9 @@ unsigned int FMDummy2::count_hash_SCBO_256_counter48(unsigned char *pattern, uns
 		this->ht->getBoundariesWithEntries(pattern + (patternLen - this->ht->k), leftBoundary, rightBoundary);
 		bool wrongEncoding = false;
 		unsigned int encodedPatternLen;
-		unsigned char *encodedPattern = encodePattern(pattern, patternLen - this->ht->k, this->encodedChars, this->encodedCharsLen, this->maxEncodedCharsLen, encodedPatternLen, wrongEncoding);
-		unsigned int count;
-		if (wrongEncoding) count = 0;
-		else count = count_256_counter48(encodedPattern, encodedPatternLen, this->c, this->alignedBWTWithRanks, leftBoundary + 1, rightBoundary);
-		delete[] encodedPattern;
-		return count;
+		this->encodePattern(pattern, patternLen - this->ht->k, encodedPatternLen, wrongEncoding);
+		if (wrongEncoding) return 0;
+		return count_256_counter48(encodedPattern, encodedPatternLen, this->c, this->alignedBWTWithRanks, leftBoundary + 1, rightBoundary);
 	} else {
 		return this->count_std_SCBO_256_counter48(pattern, patternLen);
 	}
@@ -950,12 +958,9 @@ unsigned int FMDummy2::count_hash_CB_256_counter48(unsigned char *pattern, unsig
 		this->ht->getBoundariesWithEntries(pattern + (patternLen - this->ht->k), leftBoundary, rightBoundary);
 		bool wrongEncoding = false;
 		unsigned int encodedPatternLen;
-		unsigned char *encodedPattern = encodePattern(pattern, patternLen - this->ht->k, this->encodedChars, this->encodedCharsLen, this->maxEncodedCharsLen, encodedPatternLen, wrongEncoding);
-		unsigned int count;
-		if (wrongEncoding) count = 0;
-		else count = count_256_counter48(encodedPattern, encodedPatternLen, this->c, this->alignedBWTWithRanks, leftBoundary + 1, rightBoundary);
-		delete[] encodedPattern;
-		return count;
+		this->encodePattern(pattern, patternLen - this->ht->k, encodedPatternLen, wrongEncoding);
+		if (wrongEncoding) return 0;
+		return count_256_counter48(encodedPattern, encodedPatternLen, this->c, this->alignedBWTWithRanks, leftBoundary + 1, rightBoundary);
 	} else {
 		return this->count_std_CB_256_counter48(pattern, patternLen);
 	}
@@ -967,12 +972,9 @@ unsigned int FMDummy2::count_hash_SCBO_512_counter40(unsigned char *pattern, uns
 		this->ht->getBoundariesWithEntries(pattern + (patternLen - this->ht->k), leftBoundary, rightBoundary);
 		bool wrongEncoding = false;
 		unsigned int encodedPatternLen;
-		unsigned char *encodedPattern = encodePattern(pattern, patternLen - this->ht->k, this->encodedChars, this->encodedCharsLen, this->maxEncodedCharsLen, encodedPatternLen, wrongEncoding);
-		unsigned int count;
-		if (wrongEncoding) count = 0;
-		else count = count_512_counter40(encodedPattern, encodedPatternLen, this->c, this->alignedBWTWithRanks, leftBoundary + 1, rightBoundary);
-		delete[] encodedPattern;
-		return count;
+		this->encodePattern(pattern, patternLen - this->ht->k, encodedPatternLen, wrongEncoding);
+		if (wrongEncoding) return 0;
+		return count_512_counter40(encodedPattern, encodedPatternLen, this->c, this->alignedBWTWithRanks, leftBoundary + 1, rightBoundary);
 	} else {
 		return this->count_std_SCBO_512_counter40(pattern, patternLen);
 	}
@@ -984,12 +986,9 @@ unsigned int FMDummy2::count_hash_CB_512_counter40(unsigned char *pattern, unsig
 		this->ht->getBoundariesWithEntries(pattern + (patternLen - this->ht->k), leftBoundary, rightBoundary);
 		bool wrongEncoding = false;
 		unsigned int encodedPatternLen;
-		unsigned char *encodedPattern = encodePattern(pattern, patternLen - this->ht->k, this->encodedChars, this->encodedCharsLen, this->maxEncodedCharsLen, encodedPatternLen, wrongEncoding);
-		unsigned int count;
-		if (wrongEncoding) count = 0;
-		else count = count_512_counter40(encodedPattern, encodedPatternLen, this->c, this->alignedBWTWithRanks, leftBoundary + 1, rightBoundary);
-		delete[] encodedPattern;
-		return count;
+		this->encodePattern(pattern, patternLen - this->ht->k, encodedPatternLen, wrongEncoding);
+		if (wrongEncoding) return 0;
+		return count_512_counter40(encodedPattern, encodedPatternLen, this->c, this->alignedBWTWithRanks, leftBoundary + 1, rightBoundary);
 	} else {
 		return this->count_std_CB_512_counter40(pattern, patternLen);
 	}
@@ -2448,20 +2447,6 @@ void getCountBoundaries_512_counter40(unsigned char *pattern, unsigned int i, un
 
 	leftBoundary = firstVal - 1;
 	rightBoundary = lastVal;
-}
-
-unsigned char *encodePattern(unsigned char *pattern, unsigned int patternLen, unsigned char *encodedChars, unsigned int *encodedCharsLen, unsigned int maxEncodedCharsLen, unsigned int &encodedPatternLen, bool &wrongEncoding) {
-	unsigned char* encodedPattern = new unsigned char[maxEncodedCharsLen * patternLen + 1];
-	unsigned char* p = pattern;
-	encodedPatternLen = 0;
-	for (; p < pattern + patternLen; ++p) {
-		if (encodedCharsLen[*p] == 0) {
-			wrongEncoding = true;
-			break;
-		}
-		for (unsigned int i = 0; i < encodedCharsLen[*p]; ++i) encodedPattern[encodedPatternLen++] = encodedChars[(unsigned int)(*p) * maxEncodedCharsLen + i];
-	}
-	return encodedPattern;
 }
 
 unsigned char *encode125(unsigned char* text, unsigned int textLen, unsigned int *selectedOrdChars, unsigned int &encodedTextLen) {
