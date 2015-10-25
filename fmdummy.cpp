@@ -479,7 +479,7 @@ void FMDummy2::initialize() {
 	for (int i = 0; i < 256; ++i) this->bwtWithRanks[i] = NULL;
 	this->alignedBWTWithRanks = NULL;
 	this->bwtWithRanksLen = 0;
-	for (int i = 0; i < 256; ++i) this->encodedChars[i] = NULL;
+	this->encodedChars = NULL;
 	for (int i = 0; i < 256; ++i) this->encodedCharsLen[i] = 0;
 	this->maxEncodedCharsLen = 0;
 	for (int i = 0; i < 257; ++i) this->c[i] = 0;
@@ -500,9 +500,250 @@ void FMDummy2::initialize() {
 
 void FMDummy2::freeMemory() {
 	for (int i = 0; i < 256; ++i) if (this->bwtWithRanks[i] != NULL) delete[] this->bwtWithRanks[i];
-	for (int i = 0; i < 256; ++i) if (this->encodedChars[i] != NULL) delete[] this->encodedChars[i];
+	if (this->encodedChars != NULL) delete[] this->encodedChars;
 	if (this->alignedBWTWithRanks != NULL) delete[] this->alignedBWTWithRanks;
 	if (this->ht != NULL) delete this->ht;
+}
+
+bool sortCharsCount(unsigned int* i, unsigned int* j) {
+	return (i[1] > j[1]);
+}
+
+unsigned char *FMDummy2::getEncodedInSCBO(unsigned char *text, unsigned int textLen, unsigned int &encodedTextLen) {
+
+	int max = (int)exp2((double)this->bitsPerChar);
+
+	unsigned int charsCount[256][2];
+	for (int i = 0; i < 256; ++i) {
+		charsCount[i][0] = i;
+		charsCount[i][1] = 0;
+	}
+	for (unsigned int i = 0; i < textLen; ++i) {
+		charsCount[text[i]][1]++;
+	}
+
+	unsigned int charsLen = 0;
+	for (int i = 0; i < 256; ++i) {
+		if (charsCount[i][1] != 0) ++charsLen;
+	}
+
+	vector<unsigned int*> charsCountVector(charsCount, charsCount + 256);
+	sort(charsCountVector.begin(), charsCountVector.end(), sortCharsCount);
+
+	unsigned char chars[256];
+	int i = 0;
+	for (vector<unsigned int*>::iterator it = charsCountVector.begin(); it != charsCountVector.end(); ++it, ++i) {
+		chars[i] = **it;
+	}
+
+	unsigned int totalTotal = (unsigned int)(-1);
+	unsigned int best[4] = {0, 0, 0, 0};
+	unsigned int maxSymbolLen = 0;
+
+	for (int o = 1; o < max - 2; ++o) {
+		for (int b = 1; b < max - 2; ++b) {
+			for (int c = 1; c < max - 2; ++c) {
+				for (int s = 1; s < max - 2; ++s) {
+					if (o + b + c + s != max) continue;
+					int sig = charsLen;
+					unsigned int total = 0;
+					unsigned int curr = 0;
+					unsigned int upperBound = o;
+					unsigned int symbolLen = 1;
+					if (sig > 0) {
+						for (unsigned int i = 0; i < upperBound; ++i) {
+							total += charsCountVector[curr][1] * symbolLen;
+							++curr;
+							if (curr >= charsLen) break;
+						}
+						sig -= upperBound;
+						upperBound = b * s;
+						if (sig > 0) ++symbolLen;
+					}
+					while (sig > 0) {
+						for (unsigned int i = 0; i < upperBound; ++i) {
+							total += charsCountVector[curr][1] * symbolLen;
+							++curr;
+							if (curr >= charsLen) break;
+						}
+						sig -= upperBound;
+						upperBound *= c;
+						if (sig > 0) ++symbolLen;
+					}
+					if (total < totalTotal) {
+						totalTotal = total;
+						best[0] = o;
+						best[1] = b;
+						best[2] = s;
+						best[3] = c;
+						maxSymbolLen = symbolLen;
+					}
+				}
+			}
+		}
+	}
+
+	unsigned int o = best[0];
+	unsigned int b = best[1];
+	unsigned int s = best[2];
+	unsigned int c = best[3];
+
+	unsigned int bStart = o;
+	unsigned int sStart = bStart + b;
+	unsigned int cStart = sStart + s;
+
+	this->encodedChars = new unsigned char[256 * maxSymbolLen];
+
+	for (unsigned int i = 0; i < charsLen; ++i) {
+		if (i < o) {
+			this->encodedChars[(unsigned int)chars[i] * maxSymbolLen] = i + 1;
+			this->encodedCharsLen[chars[i]] = 1;
+			continue;
+		}
+		if (i < o + b * s) {
+			int j = i - o;
+			this->encodedChars[(unsigned int)chars[i] * maxSymbolLen] = bStart + j / s + 1;
+			this->encodedChars[(unsigned int)chars[i] * maxSymbolLen + 1] = sStart + j % s + 1;
+			this->encodedCharsLen[chars[i]] = 2;
+			continue;
+		}
+		unsigned int temp1 = b * s;
+		unsigned int symbolLen = 3;
+		unsigned int temp2 = 0;
+		while (true) {
+			temp2 = b * s * (unsigned int)pow((double)c, (double)(symbolLen - 2));
+			if (i < o + temp1 + temp2) {
+				int j = i - o - temp1;
+				this->encodedChars[(unsigned int)chars[i] * maxSymbolLen] = bStart + j / (s * (unsigned int)pow((double)c, (double)(symbolLen - 2))) + 1;
+				for (unsigned int k = 1; k < symbolLen - 1; ++k) {
+					this->encodedChars[(unsigned int)chars[i] * maxSymbolLen + k] = cStart + (j / (s * (unsigned int)pow((double)c, (double)(symbolLen - 2 - k)))) % c + 1;
+				}
+				this->encodedChars[(unsigned int)chars[i] * maxSymbolLen + symbolLen - 1] = sStart + j % s + 1;
+				this->encodedCharsLen[chars[i]] = symbolLen;
+				break;
+			}
+			temp1 += temp2;
+			++symbolLen;
+		}
+	}
+
+	unsigned char *encodedText = new unsigned char[totalTotal];
+	encodedTextLen = 0;
+
+	for (unsigned int i = 0; i < textLen; ++i) {
+		unsigned char ch = text[i];
+		for (unsigned int j = 0; j < this->encodedCharsLen[ch]; ++j) {
+			encodedText[encodedTextLen++] = this->encodedChars[(unsigned int)ch * maxSymbolLen + j];
+		}
+	}
+
+	return encodedText;
+}
+
+unsigned char *FMDummy2::getEncodedInCB(unsigned char *text, unsigned int textLen, unsigned int &encodedTextLen, unsigned int &b) {
+
+	int max = (int)exp2((double)this->bitsPerChar);
+
+	unsigned int charsCount[256][2];
+	for (int i = 0; i < 256; ++i) {
+		charsCount[i][0] = i;
+		charsCount[i][1] = 0;
+	}
+	for (unsigned int i = 0; i < textLen; ++i) {
+		charsCount[text[i]][1]++;
+	}
+
+	unsigned int charsLen = 0;
+	for (int i = 0; i < 256; ++i) {
+		if (charsCount[i][1] != 0) ++charsLen;
+	}
+
+	vector<unsigned int*> charsCountVector(charsCount, charsCount + 256);
+	sort(charsCountVector.begin(), charsCountVector.end(), sortCharsCount);
+
+	unsigned char chars[256];
+	int i = 0;
+	for (vector<unsigned int*>::iterator it = charsCountVector.begin(); it != charsCountVector.end(); ++it, ++i) {
+		chars[i] = **it;
+	}
+
+	unsigned int totalTotal = (unsigned int)(-1);
+	unsigned int best[2] = {0, 0};
+	unsigned int maxSymbolLen = 0;
+
+	for (int b = 1; b < max; ++b) {
+		for (int c = 1; c < max; ++c) {
+			if (b + c != max) continue;
+			int sig = charsLen;
+			unsigned int total = 0;
+			unsigned int curr = 0;
+			unsigned int upperBound = b;
+			unsigned int symbolLen = 1;
+			while (sig > 0) {
+				for (unsigned int i = 0; i < upperBound; ++i) {
+					total += charsCountVector[curr][1] * symbolLen;
+					++curr;
+					if (curr >= charsLen) break;
+				}
+				sig -= upperBound;
+				upperBound *= c;
+				if (sig > 0) ++symbolLen;
+			}
+			if (total < totalTotal) {
+				totalTotal = total;
+				best[0] = b;
+				best[1] = c;
+				maxSymbolLen = symbolLen;
+			}
+		}
+	}
+
+	b = best[0];
+	unsigned int c = best[1];
+
+	unsigned int bStart = 0;
+	unsigned int cStart = b;
+
+	this->encodedChars = new unsigned char[256 * maxSymbolLen];
+
+	for (unsigned int i = 0; i < charsLen; ++i) {
+		if (i < b) {
+			this->encodedChars[(unsigned int)chars[i] * maxSymbolLen] = i + 1;
+			this->encodedCharsLen[chars[i]] = 1;
+			continue;
+		}
+		unsigned int temp1 = b;
+		unsigned int symbolLen = 2;
+		unsigned int temp2 = 0;
+		while (true) {
+			temp2 = b * (unsigned int)pow((double)c, (double)(symbolLen - 1));
+			if (i < temp1 + temp2) {
+				int j = i - temp1;
+				this->encodedChars[(unsigned int)chars[i] * maxSymbolLen] = bStart + j / (unsigned int)pow((double)c, (double)(symbolLen - 1)) + 1;
+				for (unsigned int k = 1; k < symbolLen - 1; ++k) {
+					this->encodedChars[(unsigned int)chars[i] * maxSymbolLen + k] = cStart + (j / (unsigned int)pow((double)c, (double)(symbolLen - 1 - k))) % c + 1;
+				}
+				this->encodedChars[(unsigned int)chars[i] * maxSymbolLen + symbolLen - 1] = cStart + j % c + 1;
+				this->encodedCharsLen[chars[i]] = symbolLen;
+				break;
+			}
+			temp1 += temp2;
+			++symbolLen;
+		}
+	}
+	++b;
+
+	unsigned char *encodedText = new unsigned char[totalTotal];
+	encodedTextLen = 0;
+
+	for (unsigned int i = 0; i < textLen; ++i) {
+		unsigned char ch = text[i];
+		for (unsigned int j = 0; j < this->encodedCharsLen[ch]; ++j) {
+			encodedText[encodedTextLen++] = this->encodedChars[(unsigned int)ch * maxSymbolLen + j];
+		}
+	}
+
+	return encodedText;
 }
 
 void FMDummy2::build(unsigned char *text, unsigned int textLen) {
@@ -524,12 +765,12 @@ void FMDummy2::build(unsigned char *text, unsigned int textLen) {
 	switch (this->schema) {
 	case FMDummy2::SCHEMA_SCBO:
 		if (this->verbose) cout << "SCBO text encoding ... " << flush;
-		encodedText = getEncodedInSCBO(this->bitsPerChar, text, textLen, encodedTextLen, this->encodedChars, this->encodedCharsLen);
+		encodedText = this->getEncodedInSCBO(text, textLen, encodedTextLen);
 		if (this->verbose) cout << "Done" << endl;
 		break;
 	case FMDummy2::SCHEMA_CB:
 		if (this->verbose) cout << "CB text encoding ... " << flush;
-		encodedText = getEncodedInCB(this->bitsPerChar, text, textLen, encodedTextLen, this->encodedChars, this->encodedCharsLen, b);
+		encodedText = this->getEncodedInCB(text, textLen, encodedTextLen, b);
 		if (this->verbose) cout << "Done" << endl;
 		break;
 	}
@@ -571,10 +812,11 @@ void FMDummy2::build(unsigned char *text, unsigned int textLen) {
 	if (this->verbose) cout << "Done" << endl;
 	if (this->ht != NULL)  {
 		if (this->verbose) cout << "Modifying hash table for encoded text ... " << flush;
+		unsigned char *encodedPattern = new unsigned char[this->maxEncodedCharsLen * this->ht->k + 1];
+		unsigned int encodedPatternLen;
 		for (unsigned int i = 0; i < this->ht->bucketsNum; ++i) {
 			if (this->ht->alignedBoundariesHT[2 * i] != HT::emptyValueHT) {
-				unsigned int encodedPatternLen;
-				unsigned char *encodedPattern = encode(this->ht->alignedEntriesHT + (i * this->ht->k), this->ht->k, this->encodedChars, this->encodedCharsLen, encodedPatternLen);
+				encode(this->ht->alignedEntriesHT + (i * this->ht->k), this->ht->k, this->encodedChars, this->encodedCharsLen, this->maxEncodedCharsLen, encodedPattern, encodedPatternLen);
 				switch (this->schema) {
 				case FMDummy2::SCHEMA_SCBO:
 					switch(this->type) {
@@ -597,9 +839,10 @@ void FMDummy2::build(unsigned char *text, unsigned int textLen) {
 					}
 					break;
 				}
-				delete[] encodedPattern;
 			}
 		}
+		delete[] encodedPattern;
+		encodedPattern = new unsigned char[this->maxEncodedCharsLen * 2 + 1];
 		unsigned char lutPattern[3];
 		lutPattern[2] = '\0';
 		for (int i = 0; i < 256; ++i) {
@@ -607,12 +850,12 @@ void FMDummy2::build(unsigned char *text, unsigned int textLen) {
 			for (int j = 0; j < 256; ++j) {
 				lutPattern[1] = (unsigned char)j;
 				unsigned int encodedPatternLen;
-				unsigned char *encodedLutPattern = encode(lutPattern, 2, this->encodedChars, this->encodedCharsLen, encodedPatternLen);
-				binarySearch(encodedSA, encodedText, 0, encodedSALen, encodedLutPattern, encodedPatternLen, this->ht->lut2[i][j][0], this->ht->lut2[i][j][1]);
+				encode(lutPattern, 2, this->encodedChars, this->encodedCharsLen, this->maxEncodedCharsLen, encodedPattern, encodedPatternLen);
+				binarySearch(encodedSA, encodedText, 0, encodedSALen, encodedPattern, encodedPatternLen, this->ht->lut2[i][j][0], this->ht->lut2[i][j][1]);
 				++this->ht->lut2[i][j][1];
-				delete[] encodedLutPattern;
 			}
 		}
+		delete[] encodedPattern;
 		if (this->verbose) cout << "Done" << endl;
 		delete[] encodedSA;
 	}
@@ -625,13 +868,9 @@ void FMDummy2::build(unsigned char *text, unsigned int textLen) {
 }
 
 unsigned int FMDummy2::getIndexSize() {
-	unsigned int encodedCharsLenSum = 0;
-	for (int i = 0; i < 256; ++i) {
-		encodedCharsLenSum += this->encodedCharsLen[i];
-	}
 	unsigned int size = (sizeof(this->type) + sizeof(this->schema) + sizeof(this->bitsPerChar) + sizeof(this->k) + sizeof(this->loadFactor) + sizeof(this->maxEncodedCharsLen) + sizeof(bInC) + sizeof(this->bwtWithRanksLen));
 	size += (257 * sizeof(unsigned int) + 256 * sizeof(unsigned long long *) + 256 * sizeof(unsigned int) + 256 * sizeof(unsigned char *));
-	size += ((unsigned int)exp2((double)this->bitsPerChar) * this->bwtWithRanksLen * sizeof(unsigned long long) + encodedCharsLenSum * sizeof(unsigned char));
+	size += ((unsigned int)exp2((double)this->bitsPerChar) * this->bwtWithRanksLen * sizeof(unsigned long long) + this->maxEncodedCharsLen * 256 * sizeof(unsigned char));
 	if (this->ht != NULL) size += this->ht->getHTSize();
 	return size;
 }
@@ -775,9 +1014,7 @@ void FMDummy2::save(char *fileName) {
 	fwrite(&this->textSize, (size_t)sizeof(unsigned int), (size_t)1, outFile);
 	fwrite(this->c, (size_t)sizeof(unsigned int), (size_t)257, outFile);
 	fwrite(this->encodedCharsLen, (size_t)sizeof(unsigned int), (size_t)256, outFile);
-	for (int i = 0; i < 256; ++i) {
-		if (this->encodedChars[i] != NULL) fwrite(this->encodedChars[i], (size_t)sizeof(unsigned char), (size_t)this->encodedCharsLen[i], outFile);
-	}
+	fwrite(this->encodedChars, (size_t)sizeof(unsigned char), (size_t)this->maxEncodedCharsLen * 256, outFile);
 	unsigned int maxChar = (unsigned int)exp2((double)this->bitsPerChar);
 	fwrite(&this->bwtWithRanksLen, (size_t)sizeof(unsigned int), (size_t)1, outFile);
 	if (this->bwtWithRanksLen > 0) {
@@ -848,14 +1085,11 @@ void FMDummy2::load(char *fileName) {
 		exit(1);
 	}
 	this->setMaxEncodedCharsLen();
-	for (int i = 0; i < 256; ++i) {
-		if (this->encodedCharsLen[i] == 0) continue;
-		this->encodedChars[i] = new unsigned char[this->encodedCharsLen[i]];
-		result = fread(this->encodedChars[i], (size_t)sizeof(unsigned char), (size_t)this->encodedCharsLen[i], inFile);
-		if (result != this->encodedCharsLen[i]) {
-			cout << "Error loading index from " << fileName << endl;
-			exit(1);
-		}
+	this->encodedChars = new unsigned char[this->maxEncodedCharsLen * 256];
+	result = fread(this->encodedChars, (size_t)sizeof(unsigned char), (size_t)this->maxEncodedCharsLen * 256, inFile);
+	if (result != this->maxEncodedCharsLen * 256) {
+		cout << "Error loading index from " << fileName << endl;
+		exit(1);
 	}
 	unsigned int maxChar = (unsigned int)exp2((double)this->bitsPerChar);
 	result = fread(&this->bwtWithRanksLen, (size_t)sizeof(unsigned int), (size_t)1, inFile);
@@ -2216,245 +2450,7 @@ void getCountBoundaries_512_counter40(unsigned char *pattern, unsigned int i, un
 	rightBoundary = lastVal;
 }
 
-bool sortCharsCount(unsigned int* i, unsigned int* j) {
-	return (i[1] > j[1]);
-}
-
-unsigned char *getEncodedInSCBO(int bits, unsigned char *text, unsigned int textLen, unsigned int &encodedTextLen, unsigned char **encodedChars, unsigned int *encodedCharsLen) {
-
-	int max = (int)exp2((double)bits);
-
-	unsigned int charsCount[256][2];
-	for (int i = 0; i < 256; ++i) {
-		charsCount[i][0] = i;
-		charsCount[i][1] = 0;
-	}
-	for (unsigned int i = 0; i < textLen; ++i) {
-		charsCount[text[i]][1]++;
-	}
-
-	unsigned int charsLen = 0;
-	for (int i = 0; i < 256; ++i) {
-		if (charsCount[i][1] != 0) ++charsLen;
-	}
-
-	vector<unsigned int*> charsCountVector(charsCount, charsCount + 256);
-	sort(charsCountVector.begin(), charsCountVector.end(), sortCharsCount);
-
-	unsigned char chars[256];
-	int i = 0;
-	for (vector<unsigned int*>::iterator it = charsCountVector.begin(); it != charsCountVector.end(); ++it, ++i) {
-		chars[i] = **it;
-	}
-
-	unsigned int totalTotal = (unsigned int)(-1);
-	unsigned int best[4] = {0, 0, 0, 0};
-
-	for (int o = 1; o < max - 2; ++o) {
-		for (int b = 1; b < max - 2; ++b) {
-			for (int c = 1; c < max - 2; ++c) {
-				for (int s = 1; s < max - 2; ++s) {
-					if (o + b + c + s != max) continue;
-					int sig = charsLen;
-					unsigned int total = 0;
-					unsigned int curr = 0;
-					unsigned int upperBound = o;
-					unsigned int symbolLen = 1;
-					if (sig > 0) {
-						for (unsigned int i = 0; i < upperBound; ++i) {
-							total += charsCountVector[curr][1] * symbolLen;
-							++curr;
-							if (curr >= charsLen) break;
-						}
-						sig -= upperBound;
-						upperBound = b * s;
-						++symbolLen;
-					}
-					while (sig > 0) {
-						for (unsigned int i = 0; i < upperBound; ++i) {
-							total += charsCountVector[curr][1] * symbolLen;
-							++curr;
-							if (curr >= charsLen) break;
-						}
-						sig -= upperBound;
-						upperBound *= c;
-						++symbolLen;
-					}
-					if (total < totalTotal) {
-						totalTotal = total;
-						best[0] = o;
-						best[1] = b;
-						best[2] = s;
-						best[3] = c;
-					}
-				}
-			}
-		}
-	}
-
-	unsigned int o = best[0];
-	unsigned int b = best[1];
-	unsigned int s = best[2];
-	unsigned int c = best[3];
-
-	unsigned int bStart = o;
-	unsigned int sStart = bStart + b;
-	unsigned int cStart = sStart + s;
-
-	for (unsigned int i = 0; i < charsLen; ++i) {
-		if (i < o) {
-			encodedChars[chars[i]] = new unsigned char[1];
-			encodedChars[chars[i]][0] = i + 1;
-			encodedCharsLen[chars[i]] = 1;
-			continue;
-		}
-		if (i < o + b * s) {
-			int j = i - o;
-			encodedChars[chars[i]] = new unsigned char[2];
-			encodedChars[chars[i]][0] = bStart + j / s + 1;
-			encodedChars[chars[i]][1] = sStart + j % s + 1;
-			encodedCharsLen[chars[i]] = 2;
-			continue;
-		}
-		unsigned int temp1 = b * s;
-		unsigned int symbolLen = 3;
-		unsigned int temp2 = 0;
-		while (true) {
-			temp2 = b * s * (unsigned int)pow((double)c, (double)(symbolLen - 2));
-			if (i < o + temp1 + temp2) {
-				int j = i - o - temp1;
-				encodedChars[chars[i]] = new unsigned char[symbolLen];
-				encodedChars[chars[i]][0] = bStart + j / (s * (unsigned int)pow((double)c, (double)(symbolLen - 2))) + 1;
-				for (unsigned int k = 1; k < symbolLen - 1; ++k) {
-					encodedChars[chars[i]][k] = cStart + (j / (s * (unsigned int)pow((double)c, (double)(symbolLen - 2 - k)))) % c + 1;
-				}
-				encodedChars[chars[i]][symbolLen - 1] = sStart + j % s + 1;
-				encodedCharsLen[chars[i]] = symbolLen;
-				break;
-			}
-			temp1 += temp2;
-			++symbolLen;
-		}
-	}
-
-	unsigned char *encodedText = new unsigned char[totalTotal];
-	encodedTextLen = 0;
-
-	for (unsigned int i = 0; i < textLen; ++i) {
-		unsigned char ch = text[i];
-		for (unsigned int j = 0; j < encodedCharsLen[ch]; ++j) {
-			encodedText[encodedTextLen++] = encodedChars[ch][j];
-		}
-	}
-
-	return encodedText;
-}
-
-unsigned char *getEncodedInCB(int bits, unsigned char *text, unsigned int textLen, unsigned int &encodedTextLen, unsigned char **encodedChars, unsigned int *encodedCharsLen, unsigned int &b) {
-
-	int max = (int)exp2((double)bits);
-
-	unsigned int charsCount[256][2];
-	for (int i = 0; i < 256; ++i) {
-		charsCount[i][0] = i;
-		charsCount[i][1] = 0;
-	}
-	for (unsigned int i = 0; i < textLen; ++i) {
-		charsCount[text[i]][1]++;
-	}
-
-	unsigned int charsLen = 0;
-	for (int i = 0; i < 256; ++i) {
-		if (charsCount[i][1] != 0) ++charsLen;
-	}
-
-	vector<unsigned int*> charsCountVector(charsCount, charsCount + 256);
-	sort(charsCountVector.begin(), charsCountVector.end(), sortCharsCount);
-
-	unsigned char chars[256];
-	int i = 0;
-	for (vector<unsigned int*>::iterator it = charsCountVector.begin(); it != charsCountVector.end(); ++it, ++i) {
-		chars[i] = **it;
-	}
-
-	unsigned int totalTotal = (unsigned int)(-1);
-	unsigned int best[2] = {0, 0};
-
-	for (int b = 1; b < max; ++b) {
-		for (int c = 1; c < max; ++c) {
-			if (b + c != max) continue;
-			int sig = charsLen;
-			unsigned int total = 0;
-			unsigned int curr = 0;
-			unsigned int upperBound = b;
-			unsigned int symbolLen = 1;
-			while (sig > 0) {
-				for (unsigned int i = 0; i < upperBound; ++i) {
-					total += charsCountVector[curr][1] * symbolLen;
-					++curr;
-					if (curr >= charsLen) break;
-				}
-				sig -= upperBound;
-				upperBound *= c;
-				++symbolLen;
-			}
-			if (total < totalTotal) {
-				totalTotal = total;
-				best[0] = b;
-				best[1] = c;
-			}
-		}
-	}
-
-	b = best[0];
-	unsigned int c = best[1];
-
-	unsigned int bStart = 0;
-	unsigned int cStart = b;
-
-	for (unsigned int i = 0; i < charsLen; ++i) {
-		if (i < b) {
-			encodedChars[chars[i]] = new unsigned char[1];
-			encodedChars[chars[i]][0] = i + 1;
-			encodedCharsLen[chars[i]] = 1;
-			continue;
-		}
-		unsigned int temp1 = b;
-		unsigned int symbolLen = 2;
-		unsigned int temp2 = 0;
-		while (true) {
-			temp2 = b * (unsigned int)pow((double)c, (double)(symbolLen - 1));
-			if (i < temp1 + temp2) {
-				int j = i - temp1;
-				encodedChars[chars[i]] = new unsigned char[symbolLen];
-				encodedChars[chars[i]][0] = bStart + j / (unsigned int)pow((double)c, (double)(symbolLen - 1)) + 1;
-				for (unsigned int k = 1; k < symbolLen - 1; ++k) {
-					encodedChars[chars[i]][k] = cStart + (j / (unsigned int)pow((double)c, (double)(symbolLen - 1 - k))) % c + 1;
-				}
-				encodedChars[chars[i]][symbolLen - 1] = cStart + j % c + 1;
-				encodedCharsLen[chars[i]] = symbolLen;
-				break;
-			}
-			temp1 += temp2;
-			++symbolLen;
-		}
-	}
-	++b;
-
-	unsigned char *encodedText = new unsigned char[totalTotal];
-	encodedTextLen = 0;
-
-	for (unsigned int i = 0; i < textLen; ++i) {
-		unsigned char ch = text[i];
-		for (unsigned int j = 0; j < encodedCharsLen[ch]; ++j) {
-			encodedText[encodedTextLen++] = encodedChars[ch][j];
-		}
-	}
-
-	return encodedText;
-}
-
-unsigned char *encodePattern(unsigned char* pattern, unsigned int patternLen, unsigned char** encodedChars, unsigned int* encodedCharsLen, unsigned int maxEncodedCharsLen, unsigned int &encodedPatternLen, bool &wrongEncoding) {
+unsigned char *encodePattern(unsigned char *pattern, unsigned int patternLen, unsigned char *encodedChars, unsigned int *encodedCharsLen, unsigned int maxEncodedCharsLen, unsigned int &encodedPatternLen, bool &wrongEncoding) {
 	unsigned char* encodedPattern = new unsigned char[maxEncodedCharsLen * patternLen + 1];
 	unsigned char* p = pattern;
 	encodedPatternLen = 0;
@@ -2463,7 +2459,7 @@ unsigned char *encodePattern(unsigned char* pattern, unsigned int patternLen, un
 			wrongEncoding = true;
 			break;
 		}
-		for (unsigned int i = 0; i < encodedCharsLen[*p]; ++i) encodedPattern[encodedPatternLen++] = encodedChars[*p][i];
+		for (unsigned int i = 0; i < encodedCharsLen[*p]; ++i) encodedPattern[encodedPatternLen++] = encodedChars[(unsigned int)(*p) * maxEncodedCharsLen + i];
 	}
 	return encodedPattern;
 }

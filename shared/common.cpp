@@ -254,16 +254,11 @@ void fillLUT2(unsigned int lut2[256][256][2], unsigned char *text, unsigned int 
 	}
 }
 
-unsigned char *encode(unsigned char* pattern, unsigned int patternLen, unsigned char** encodedChars, unsigned int* encodedCharsLen, unsigned int &encodedPatternLen) {
+void encode(unsigned char *pattern, unsigned int patternLen, unsigned char *encodedChars, unsigned int *encodedCharsLen, unsigned int maxEncodedCharsLen, unsigned char *encodedPattern, unsigned int &encodedPatternLen) {
 	unsigned char* p = pattern;
 	encodedPatternLen = 0;
-	for (; p < pattern + patternLen; ++p) encodedPatternLen += encodedCharsLen[*p];
-	unsigned char* encodedPattern = new unsigned char[encodedPatternLen + 1];
-	encodedPattern[encodedPatternLen] = '\0';
-	p = pattern;
-	encodedPatternLen = 0;
 	for (; p < pattern + patternLen; ++p) {
-		for (unsigned int i = 0; i < encodedCharsLen[*p]; ++i) encodedPattern[encodedPatternLen++] = encodedChars[*p][i];
+		for (unsigned int i = 0; i < encodedCharsLen[*p]; ++i) encodedPattern[encodedPatternLen++] = encodedChars[(unsigned int)(*p) * maxEncodedCharsLen + i];
 	}
-	return encodedPattern;
+	encodedPattern[encodedPatternLen] = '\0';
 }

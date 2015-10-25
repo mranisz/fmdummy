@@ -92,7 +92,7 @@ public:
 class FMDummy2 : public I_Api {
 private:
 	unsigned long long *bwtWithRanks[256];
-	unsigned char *encodedChars[256];
+	unsigned char *encodedChars;
 	unsigned int encodedCharsLen[256];
 	unsigned int c[257];
 	unsigned long long **alignedBWTWithRanks;
@@ -120,6 +120,8 @@ private:
 	void setK(unsigned int k);
 	void setLoadFactor(double loadFactor);
 	void setFunctions();
+	unsigned char *getEncodedInSCBO(unsigned char *text, unsigned int textLen, unsigned int &encodedTextLen);
+	unsigned char *getEncodedInCB(unsigned char *text, unsigned int textLen, unsigned int &encodedTextLen, unsigned int &b);
 	unsigned int count_std_CB_256_counter48(unsigned char *pattern, unsigned int patternLen);
 	unsigned int count_hash_CB_256_counter48(unsigned char *pattern, unsigned int patternLen);
 	unsigned int count_std_SCBO_256_counter48(unsigned char *pattern, unsigned int patternLen);
@@ -350,9 +352,7 @@ unsigned int count_256_counter48(unsigned char *pattern, unsigned int i, unsigne
 void getCountBoundaries_256_counter48(unsigned char *pattern, unsigned int i, unsigned int *C, unsigned long long** bwtWithRanks, unsigned int firstVal, unsigned int lastVal, unsigned int &leftBoundary, unsigned int &rightBoundary);
 unsigned int count_512_counter40(unsigned char *pattern, unsigned int i, unsigned int *C, unsigned long long** bwtWithRanks, unsigned int firstVal, unsigned int lastVal);
 void getCountBoundaries_512_counter40(unsigned char *pattern, unsigned int i, unsigned int *C, unsigned long long** bwtWithRanks, unsigned int firstVal, unsigned int lastVal, unsigned int &leftBoundary, unsigned int &rightBoundary);
-unsigned char *getEncodedInSCBO(int bits, unsigned char *text, unsigned int textLen, unsigned int &encodedTextLen, unsigned char **encodedChars, unsigned int *encodedCharsLen);
-unsigned char *getEncodedInCB(int bits, unsigned char *text, unsigned int textLen, unsigned int &encodedTextLen, unsigned char **encodedChars, unsigned int *encodedCharsLen, unsigned int &b);
-unsigned char *encodePattern(unsigned char* pattern, unsigned int patternLen, unsigned char** encodedChars, unsigned int* encodedCharsLen, unsigned int maxEncodedCharsLen, unsigned int &encodedPatternLen, bool &wrongEncoding);
+unsigned char *encodePattern(unsigned char* pattern, unsigned int patternLen, unsigned char *encodedChars, unsigned int* encodedCharsLen, unsigned int maxEncodedCharsLen, unsigned int &encodedPatternLen, bool &wrongEncoding);
 unsigned char *encode125(unsigned char* text, unsigned int textLen, unsigned int *selectedOrdChars, unsigned int &encodedTextLen);
 void fill125LUT(unsigned int *selectedOrdChars, unsigned int lut[][125]);
 unsigned int count_512_enc125(unsigned char *pattern, unsigned int i, unsigned int *C, unsigned char *bwtWithRanks, unsigned int lut[][125], unsigned int firstVal, unsigned int lastVal);
