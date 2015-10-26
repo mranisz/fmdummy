@@ -8,9 +8,9 @@ private:
 
 public:
 	unsigned long long *bits;
+	unsigned int bitsLen;
 	unsigned long long *alignedBits;
 	WT** nodes;
-	unsigned int bitsLen;
 	unsigned int nodesLen;
 
 	WT() {

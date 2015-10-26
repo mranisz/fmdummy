@@ -1,4 +1,4 @@
-#include "shared/api.h"
+#include "shared/common.h"
 #include "shared/wt.h"
 #include "shared/hash.h"
 #include <cstdio>
@@ -12,15 +12,15 @@ using namespace std;
 
 /*FMDUMMY1*/
 
-class FMDummy1 : public I_Api {
+class FMDummy1 : public Index {
 private:
 	unsigned long long *bwtWithRanks[256];
-	unsigned int c[257];
+	unsigned int bwtWithRanksLen;
 	unsigned long long **alignedBWTWithRanks;
 	unsigned int *ordChars;
-	HT *ht;
-	unsigned int bwtWithRanksLen;
 	unsigned int ordCharsLen;
+	unsigned int c[257];
+	HT *ht;
 
 	int type;
 	bool allChars;
@@ -89,19 +89,19 @@ public:
 
 /*FMDUMMY2*/
 
-class FMDummy2 : public I_Api {
+class FMDummy2 : public Index {
 private:
 	unsigned long long *bwtWithRanks[256];
-	unsigned int encodedCharsLen[256];
-	unsigned int c[257];
-	unsigned char *encodedChars;
-	unsigned char *encodedPattern;
-	unsigned long long **alignedBWTWithRanks;
-	HT *ht;
 	unsigned int bwtWithRanksLen;
+	unsigned long long **alignedBWTWithRanks;
+	unsigned char *encodedChars;
+	unsigned int encodedCharsLen[256];
 	unsigned int maxEncodedCharsLen;
-	unsigned int maxPatternLen;
+	unsigned int c[257];
 	unsigned int bInC;
+	unsigned char *encodedPattern;
+	unsigned int maxPatternLen;
+	HT *ht;
 
 	int type;
 	int schema;
@@ -189,14 +189,14 @@ public:
 
 /*FMDUMMY3*/
 
-class FMDummy3 : public I_Api {
+class FMDummy3 : public Index {
 private:
+	unsigned char *bwtWithRanks;
+	unsigned int bwtWithRanksLen;
+	unsigned char *alignedBWTWithRanks;
 	unsigned int lut[256][125];
 	unsigned int c[257];
-	unsigned char *bwtWithRanks;
-	unsigned char *alignedBWTWithRanks;
 	HT *ht;
-	unsigned int bwtWithRanksLen;
 
 	int type;
 	unsigned int k;
@@ -261,12 +261,12 @@ public:
 
 /*FMDUMMYWT*/
 
-class FMDummyWT : public I_Api {
+class FMDummyWT : public Index {
 private:
+	WT *wt;
 	unsigned long long code[256];
 	unsigned int codeLen[256];
 	unsigned int c[257];
-	WT *wt;
 	HT *ht;
 
 	int type;
