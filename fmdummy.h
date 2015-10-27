@@ -16,7 +16,7 @@ class FMDummy1 : public Index {
 private:
 	unsigned long long *bwtWithRanks[256];
 	unsigned int bwtWithRanksLen;
-	unsigned long long **alignedBWTWithRanks;
+	unsigned long long *alignedBWTWithRanks[256];
 	unsigned int *ordChars;
 	unsigned int ordCharsLen;
 	unsigned int c[257];
@@ -30,7 +30,7 @@ private:
 
 	unsigned int textSize;
 
-	unsigned long long **(*builder)(unsigned long long **, unsigned int, unsigned int *, unsigned int, unsigned long long **, unsigned int &);
+	void (*builder)(unsigned long long **, unsigned int, unsigned int *, unsigned int, unsigned long long **, unsigned int &, unsigned long long **);
 	unsigned int (FMDummy1::*countOperation)(unsigned char *, unsigned int);
 
 	void freeMemory();
@@ -93,7 +93,7 @@ class FMDummy2 : public Index {
 private:
 	unsigned long long *bwtWithRanks[256];
 	unsigned int bwtWithRanksLen;
-	unsigned long long **alignedBWTWithRanks;
+	unsigned long long *alignedBWTWithRanks[256];
 	unsigned char *encodedChars;
 	unsigned int encodedCharsLen[256];
 	unsigned int maxEncodedCharsLen;
@@ -111,7 +111,7 @@ private:
 
 	unsigned int textSize;
 
-	unsigned long long **(*builder)(unsigned long long **, unsigned int, unsigned int *, unsigned int, unsigned long long **, unsigned int &);
+	void (*builder)(unsigned long long **, unsigned int, unsigned int *, unsigned int, unsigned long long **, unsigned int &, unsigned long long **);
 	unsigned int (FMDummy2::*countOperation)(unsigned char *, unsigned int);
 
 	void freeMemory();
@@ -350,12 +350,12 @@ public:
 /*SHARED STUFF*/
 
 unsigned char *getBinDenseForChar(unsigned char *bwt, unsigned int bwtLen, int ordChar);
-unsigned long long** buildRank_256_counter48(unsigned long long** bwtInLong, unsigned int bwtInLongLen, unsigned int *ordChars, unsigned int ordCharsLen, unsigned long long** bwtWithRanks, unsigned int &bwtWithRanksLen);
-unsigned long long** buildRank_512_counter40(unsigned long long** bwtInLong, unsigned int bwtInLongLen, unsigned int *ordChars, unsigned int ordCharsLen, unsigned long long** bwtWithRanks, unsigned int &bwtWithRanksLen);
-unsigned int count_256_counter48(unsigned char *pattern, unsigned int i, unsigned int *C, unsigned long long** bwtWithRanks, unsigned int firstVal, unsigned int lastVal);
-void getCountBoundaries_256_counter48(unsigned char *pattern, unsigned int i, unsigned int *C, unsigned long long** bwtWithRanks, unsigned int firstVal, unsigned int lastVal, unsigned int &leftBoundary, unsigned int &rightBoundary);
-unsigned int count_512_counter40(unsigned char *pattern, unsigned int i, unsigned int *C, unsigned long long** bwtWithRanks, unsigned int firstVal, unsigned int lastVal);
-void getCountBoundaries_512_counter40(unsigned char *pattern, unsigned int i, unsigned int *C, unsigned long long** bwtWithRanks, unsigned int firstVal, unsigned int lastVal, unsigned int &leftBoundary, unsigned int &rightBoundary);
+void buildRank_256_counter48(unsigned long long **bwtInLong, unsigned int bwtInLongLen, unsigned int *ordChars, unsigned int ordCharsLen, unsigned long long **bwtWithRanks, unsigned int &bwtWithRanksLen, unsigned long long **alignedBWTWithRanks);
+void buildRank_512_counter40(unsigned long long **bwtInLong, unsigned int bwtInLongLen, unsigned int *ordChars, unsigned int ordCharsLen, unsigned long long **bwtWithRanks, unsigned int &bwtWithRanksLen, unsigned long long **alignedBWTWithRanks);
+unsigned int count_256_counter48(unsigned char *pattern, unsigned int i, unsigned int *C, unsigned long long **bwtWithRanks, unsigned int firstVal, unsigned int lastVal);
+void getCountBoundaries_256_counter48(unsigned char *pattern, unsigned int i, unsigned int *C, unsigned long long **bwtWithRanks, unsigned int firstVal, unsigned int lastVal, unsigned int &leftBoundary, unsigned int &rightBoundary);
+unsigned int count_512_counter40(unsigned char *pattern, unsigned int i, unsigned int *C, unsigned long long **bwtWithRanks, unsigned int firstVal, unsigned int lastVal);
+void getCountBoundaries_512_counter40(unsigned char *pattern, unsigned int i, unsigned int *C, unsigned long long **bwtWithRanks, unsigned int firstVal, unsigned int lastVal, unsigned int &leftBoundary, unsigned int &rightBoundary);
 unsigned char *encode125(unsigned char* text, unsigned int textLen, unsigned int *selectedOrdChars, unsigned int &encodedTextLen);
 void fill125LUT(unsigned int *selectedOrdChars, unsigned int lut[][125]);
 unsigned int count_512_enc125(unsigned char *pattern, unsigned int i, unsigned int *C, unsigned char *bwtWithRanks, unsigned int lut[][125], unsigned int firstVal, unsigned int lastVal);

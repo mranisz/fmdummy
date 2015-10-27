@@ -26,7 +26,7 @@ void getUsage(char **argv) {
 	cout << "q - number of patterns (queries)" << endl;
 	cout << "m - pattern length" << endl;
 	cout << "k - suffix length to be hashed (k > 0)" << endl;
-	cout << "loadFactor - load factor to hash table (range: (0.0, 100.0))" << endl;
+	cout << "loadFactor - load factor to hash table (range: (0.0, 1.0))" << endl;
 	cout << "selectedChars - up to 16 ordinal character values separated by dots or \"all\" if you want to build index on all characters from the text" << endl << endl;
 }
 

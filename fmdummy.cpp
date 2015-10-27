@@ -79,8 +79,10 @@ void FMDummy1::free() {
 }
 
 void FMDummy1::initialize() {
-	for (int i = 0; i < 256; ++i) this->bwtWithRanks[i] = NULL;
-	this->alignedBWTWithRanks = NULL;
+	for (int i = 0; i < 256; ++i) {
+		this->bwtWithRanks[i] = NULL;
+		this->alignedBWTWithRanks[i] = NULL;
+	}
 	this->bwtWithRanksLen = 0;
 	this->ordCharsLen = 0;
 	this->ordChars = NULL;
@@ -101,7 +103,6 @@ void FMDummy1::initialize() {
 
 void FMDummy1::freeMemory() {
 	for (int i = 0; i < 256; ++i) if (this->bwtWithRanks[i] != NULL) delete[] this->bwtWithRanks[i];
-	if (this->alignedBWTWithRanks != NULL) delete[] this->alignedBWTWithRanks;
 	if (this->ordChars != NULL) delete[] this->ordChars;
 	if (this->ht != NULL) delete this->ht;
 }
@@ -166,7 +167,7 @@ void FMDummy1::build(unsigned char* text, unsigned int textLen) {
 	fillArrayC(text, textLen, this->c, verbose);
 
 	if (this->verbose) cout << "Interweaving BWT with ranks ... " << flush;
-	this->alignedBWTWithRanks = builder(bwtDenseInLong, bwtDenseInLongLen, this->ordChars, this->ordCharsLen, this->bwtWithRanks, this->bwtWithRanksLen);
+	builder(bwtDenseInLong, bwtDenseInLongLen, this->ordChars, this->ordCharsLen, this->bwtWithRanks, this->bwtWithRanksLen, this->alignedBWTWithRanks);
 	if (this->verbose) cout << "Done" << endl;
 
 	for (unsigned int i = 0; i < this->ordCharsLen; ++i) delete[] bwtDenseInLong[this->ordChars[i]];
@@ -327,7 +328,6 @@ void FMDummy1::load(char *fileName) {
 			cout << "Error loading index from " << fileName << endl;
 			exit(1);
 		}
-		this->alignedBWTWithRanks = new unsigned long long*[256];
 		for (int i = 0; i < 256; ++i) this->alignedBWTWithRanks[i] = NULL;
 		for (unsigned int i = 0; i < this->ordCharsLen; ++i) {
 			unsigned int c = this->ordChars[i];
@@ -483,8 +483,10 @@ void FMDummy2::free() {
 }
 
 void FMDummy2::initialize() {
-	for (int i = 0; i < 256; ++i) this->bwtWithRanks[i] = NULL;
-	this->alignedBWTWithRanks = NULL;
+	for (int i = 0; i < 256; ++i) {
+		this->bwtWithRanks[i] = NULL;
+		this->alignedBWTWithRanks[i] = NULL;
+	}
 	this->bwtWithRanksLen = 0;
 	this->encodedChars = NULL;
 	for (int i = 0; i < 256; ++i) this->encodedCharsLen[i] = 0;
@@ -511,7 +513,6 @@ void FMDummy2::freeMemory() {
 	for (int i = 0; i < 256; ++i) if (this->bwtWithRanks[i] != NULL) delete[] this->bwtWithRanks[i];
 	if (this->encodedChars != NULL) delete[] this->encodedChars;
 	if (this->encodedPattern != NULL) delete[] this->encodedPattern;
-	if (this->alignedBWTWithRanks != NULL) delete[] this->alignedBWTWithRanks;
 	if (this->ht != NULL) delete this->ht;
 }
 
@@ -818,7 +819,7 @@ void FMDummy2::build(unsigned char *text, unsigned int textLen) {
 	if (this->schema == FMDummy2::SCHEMA_CB) this->bInC = this->c[b];
 
 	if (this->verbose) cout << "Interweaving BWT with ranks ... " << flush;
-	this->alignedBWTWithRanks = builder(bwtDenseInLong, bwtDenseInLongLen, ordChars, ordCharsLen, this->bwtWithRanks, this->bwtWithRanksLen);
+	builder(bwtDenseInLong, bwtDenseInLongLen, ordChars, ordCharsLen, this->bwtWithRanks, this->bwtWithRanksLen, this->alignedBWTWithRanks);
 	if (this->verbose) cout << "Done" << endl;
 	if (this->ht != NULL)  {
 		if (this->verbose) cout << "Modifying hash table for encoded text ... " << flush;
@@ -1097,7 +1098,6 @@ void FMDummy2::load(char *fileName) {
 		exit(1);
 	}
 	if (this->bwtWithRanksLen > 0) {
-		this->alignedBWTWithRanks = new unsigned long long*[256];
 		for (int i = 0; i < 256; ++i) this->alignedBWTWithRanks[i] = NULL;
 		for (unsigned int i = 1; i < maxChar + 1; ++i) {
 			this->bwtWithRanks[i] = new unsigned long long[this->bwtWithRanksLen];
@@ -2209,9 +2209,8 @@ unsigned char *getBinDenseForChar(unsigned char *bwt, unsigned int bwtLen, int o
 	return bwtDense;
 }
 
-unsigned long long** buildRank_256_counter48(unsigned long long** bwtInLong, unsigned int bwtInLongLen, unsigned int *ordChars, unsigned int ordCharsLen, unsigned long long** bwtWithRanks, unsigned int &bwtWithRanksLen) {
+void buildRank_256_counter48(unsigned long long **bwtInLong, unsigned int bwtInLongLen, unsigned int *ordChars, unsigned int ordCharsLen, unsigned long long **bwtWithRanks, unsigned int &bwtWithRanksLen, unsigned long long **alignedBWTWithRanks) {
 	unsigned long long *p, pops, rank, b1, b2;
-	unsigned long long **alignedBWTWithRanks = new unsigned long long*[256];
 	for (int i = 0; i < 256; ++i) alignedBWTWithRanks[i] = NULL;
 	bwtWithRanksLen = (bwtInLongLen + (bwtInLongLen * 64) / 192 + 1 + 16);
 
@@ -2242,12 +2241,10 @@ unsigned long long** buildRank_256_counter48(unsigned long long** bwtInLong, uns
 		}
 		delete[] resRank;
 	}
-	return alignedBWTWithRanks;
 }
 
-unsigned long long** buildRank_512_counter40(unsigned long long** bwtInLong, unsigned int bwtInLongLen, unsigned int *ordChars, unsigned int ordCharsLen, unsigned long long** bwtWithRanks, unsigned int &bwtWithRanksLen) {
+void buildRank_512_counter40(unsigned long long **bwtInLong, unsigned int bwtInLongLen, unsigned int *ordChars, unsigned int ordCharsLen, unsigned long long **bwtWithRanks, unsigned int &bwtWithRanksLen, unsigned long long **alignedBWTWithRanks) {
 	unsigned long long *p, pop1, pop2, pop3, rank, b1, b2, b3;
-	unsigned long long **alignedBWTWithRanks = new unsigned long long*[256];
 	for (int i = 0; i < 256; ++i) alignedBWTWithRanks[i] = NULL;
 	bwtWithRanksLen = (bwtInLongLen + (bwtInLongLen * 64) / 448 + 1 + 16);
 
@@ -2277,10 +2274,9 @@ unsigned long long** buildRank_512_counter40(unsigned long long** bwtInLong, uns
 		}
 		delete[] resRank;
 	}
-	return alignedBWTWithRanks;
 }
 
-unsigned int getRank_256_counter48(unsigned char c, unsigned int i, unsigned long long** bwtWithRanks) {
+unsigned int getRank_256_counter48(unsigned char c, unsigned int i, unsigned long long **bwtWithRanks) {
 	unsigned int j = i / 192;
 	unsigned long long *p = bwtWithRanks[c] + 4 * j;
 	unsigned int rank = (*p) & 0x00000000FFFFFFFFULL;
@@ -2304,7 +2300,7 @@ unsigned int getRank_256_counter48(unsigned char c, unsigned int i, unsigned lon
 	return rank;
 }
 
-unsigned int count_256_counter48(unsigned char *pattern, unsigned int i, unsigned int *C, unsigned long long** bwtWithRanks, unsigned int firstVal, unsigned int lastVal) {
+unsigned int count_256_counter48(unsigned char *pattern, unsigned int i, unsigned int *C, unsigned long long **bwtWithRanks, unsigned int firstVal, unsigned int lastVal) {
 	unsigned char c;
 	__builtin_prefetch(bwtWithRanks[pattern[i - 1]] + 4 * ((firstVal - 1) / 192), 0, 3);
 	__builtin_prefetch(bwtWithRanks[pattern[i - 1]] + 4 * (lastVal / 192), 0, 3);
@@ -2330,7 +2326,7 @@ unsigned int count_256_counter48(unsigned char *pattern, unsigned int i, unsigne
 	else return lastVal - firstVal + 1;
 }
 
-void getCountBoundaries_256_counter48(unsigned char *pattern, unsigned int i, unsigned int *C, unsigned long long** bwtWithRanks, unsigned int firstVal, unsigned int lastVal, unsigned int &leftBoundary, unsigned int &rightBoundary) {
+void getCountBoundaries_256_counter48(unsigned char *pattern, unsigned int i, unsigned int *C, unsigned long long **bwtWithRanks, unsigned int firstVal, unsigned int lastVal, unsigned int &leftBoundary, unsigned int &rightBoundary) {
 	unsigned char c;
 	__builtin_prefetch(bwtWithRanks[pattern[i - 1]] + 4 * ((firstVal - 1) / 192), 0, 3);
 	__builtin_prefetch(bwtWithRanks[pattern[i - 1]] + 4 * (lastVal / 192), 0, 3);
@@ -2354,7 +2350,7 @@ void getCountBoundaries_256_counter48(unsigned char *pattern, unsigned int i, un
 	rightBoundary = lastVal;
 }
 
-unsigned int getRank_512_counter40(unsigned char c, unsigned int i, unsigned long long** bwtWithRanks) {
+unsigned int getRank_512_counter40(unsigned char c, unsigned int i, unsigned long long **bwtWithRanks) {
 
 	unsigned int j = i / 448;
 	unsigned long long *p = bwtWithRanks[c] + 8 * j;
@@ -2399,8 +2395,8 @@ unsigned int getRank_512_counter40(unsigned char c, unsigned int i, unsigned lon
 	return rank;
 }
 
-unsigned int count_512_counter40(unsigned char *pattern, unsigned int i, unsigned int *C, unsigned long long** bwtWithRanks, unsigned int firstVal, unsigned int lastVal){
-	unsigned char c = pattern[i];
+unsigned int count_512_counter40(unsigned char *pattern, unsigned int i, unsigned int *C, unsigned long long **bwtWithRanks, unsigned int firstVal, unsigned int lastVal){
+	unsigned char c;
 	__builtin_prefetch(bwtWithRanks[pattern[i - 1]] + 8 * ((firstVal - 1) / 448), 0, 3);
 	__builtin_prefetch(bwtWithRanks[pattern[i - 1]] + 8 * (lastVal / 448), 0, 3);
 
@@ -2425,8 +2421,8 @@ unsigned int count_512_counter40(unsigned char *pattern, unsigned int i, unsigne
 	else return lastVal - firstVal + 1;
 }
 
-void getCountBoundaries_512_counter40(unsigned char *pattern, unsigned int i, unsigned int *C, unsigned long long** bwtWithRanks, unsigned int firstVal, unsigned int lastVal, unsigned int &leftBoundary, unsigned int &rightBoundary) {
-	unsigned char c = pattern[i];
+void getCountBoundaries_512_counter40(unsigned char *pattern, unsigned int i, unsigned int *C, unsigned long long **bwtWithRanks, unsigned int firstVal, unsigned int lastVal, unsigned int &leftBoundary, unsigned int &rightBoundary) {
+	unsigned char c;
 	__builtin_prefetch(bwtWithRanks[pattern[i - 1]] + 8 * ((firstVal - 1) / 448), 0, 3);
 	__builtin_prefetch(bwtWithRanks[pattern[i - 1]] + 8 * (lastVal / 448), 0, 3);
 
