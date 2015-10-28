@@ -16,7 +16,7 @@ public:
 	unsigned int k;
 	unsigned long long bucketsNum;
 
-	unsigned int lut2[256][256][2];
+	alignas(128) unsigned int lut2[256][256][2];
 	unsigned int *boundariesHT;
 	unsigned int *alignedBoundariesHT;
 	unsigned char *entriesHT;

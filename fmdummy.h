@@ -14,12 +14,12 @@ using namespace std;
 
 class FMDummy1 : public Index {
 private:
-	unsigned long long *bwtWithRanks[256];
+	alignas(128) unsigned long long *bwtWithRanks[256];
 	unsigned int bwtWithRanksLen;
-	unsigned long long *alignedBWTWithRanks[256];
+	alignas(128) unsigned long long *alignedBWTWithRanks[256];
 	unsigned int *ordChars;
 	unsigned int ordCharsLen;
-	unsigned int c[257];
+	alignas(128) unsigned int c[257];
 	HT *ht;
 
 	int type;
@@ -91,13 +91,13 @@ public:
 
 class FMDummy2 : public Index {
 private:
-	unsigned long long *bwtWithRanks[256];
+	alignas(128) unsigned long long *bwtWithRanks[256];
 	unsigned int bwtWithRanksLen;
 	unsigned long long *alignedBWTWithRanks[256];
 	unsigned char *encodedChars;
-	unsigned int encodedCharsLen[256];
+	alignas(128) unsigned int encodedCharsLen[256];
 	unsigned int maxEncodedCharsLen;
-	unsigned int c[257];
+	alignas(128) unsigned int c[257];
 	unsigned int bInC;
 	unsigned char *encodedPattern;
 	unsigned int maxPatternLen;
@@ -194,8 +194,8 @@ private:
 	unsigned char *bwtWithRanks;
 	unsigned int bwtWithRanksLen;
 	unsigned char *alignedBWTWithRanks;
-	unsigned int lut[256][125];
-	unsigned int c[257];
+	alignas(128) unsigned int lut[256][125];
+	alignas(128) unsigned int c[257];
 	HT *ht;
 
 	int type;
@@ -264,9 +264,9 @@ public:
 class FMDummyWT : public Index {
 private:
 	WT *wt;
-	unsigned long long code[256];
-	unsigned int codeLen[256];
-	unsigned int c[257];
+	alignas(128) unsigned long long code[256];
+	alignas(128) unsigned int codeLen[256];
+	alignas(128) unsigned int c[257];
 	HT *ht;
 
 	int type;
