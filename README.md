@@ -76,7 +76,7 @@ Parameters:
       - FMDummy1::TYPE_512 - using 512b blocks: 64b of rank data and 448b of text data
 - selectedChars:
       - up to 16 ordinal character values, e.g. {'A','C','G','T'}
-      - "all" (default) - all characters from the text
+      - {} (default) - all characters from the text
 
 Constructors:
 ```
@@ -93,7 +93,7 @@ Parameters:
       - FMDummy1::TYPE_512 - using 512b blocks: 64b of rank data and 448b of text data
 - selectedChars:
       - up to 16 ordinal character values, e.g. {'A','C','G','T'}
-      - "all" (default) - all characters from the text
+      - {} (default) - all characters from the text
 - k - length of prefixes of suffixes from suffix array (k ≥ 2)
 - loadFactor - hash table load factor (0.0 < loadFactor < 1.0)
 
