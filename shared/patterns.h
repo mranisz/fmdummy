@@ -1,4 +1,4 @@
-#include <string.h>
+#include <vector>
 
 using namespace std;
 
@@ -7,12 +7,10 @@ using namespace std;
 
 class Patterns {
 private:
-	char *textFileName;
+	const char *textFileName;
 	unsigned int queriesNum;
 	unsigned int m;
-	string selectedChars;
-	unsigned int ordCharsLen = 0;
-	unsigned int *ordChars = NULL;
+	vector<unsigned char> selectedChars;
 	unsigned char **patterns;
 	unsigned int *counts = NULL;
 
@@ -21,10 +19,10 @@ private:
 	void initializePatterns();
 	void initializeSACounts();
 	unsigned int getSACount(unsigned int *sa, unsigned char *text, unsigned int saLen, unsigned char *pattern, int patternLength);
-	void setSelectedChars(string selectedChars);
+	void setSelectedChars(vector<unsigned char> selectedChars);
 
 public:
-	Patterns(char *textFileName, unsigned int queriesNum, unsigned int m, string selectedChars = "all") {
+	Patterns(const char *textFileName, unsigned int queriesNum, unsigned int m, vector<unsigned char> selectedChars = {}) {
 		this->textFileName = textFileName;
 		this->queriesNum = queriesNum;
 		this->m = m;

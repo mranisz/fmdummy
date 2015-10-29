@@ -130,9 +130,9 @@ void HT::load(FILE *inFile) {
 	}
 }
 
-unsigned int HT::getUniqueSuffixNum(unsigned char *text, unsigned int textLen, unsigned int *sa, unsigned int saLen, unsigned int *ordChars, unsigned int ordCharsLen) {
+unsigned int HT::getUniqueSuffixNum(unsigned char *text, unsigned int textLen, unsigned int *sa, unsigned int saLen, vector<unsigned char> selectedChars) {
 	unsigned int uniqueSuffixNum = 0;
-	bool selectedChars = (ordCharsLen != 0);
+	bool isSelectedChars = (selectedChars.size() != 0);
 
 	unsigned char *lastPattern = new unsigned char[this->k + 1];
 	for (unsigned int i = 0; i < this->k; ++i) lastPattern[i] = 255;
@@ -147,17 +147,17 @@ unsigned int HT::getUniqueSuffixNum(unsigned char *text, unsigned int textLen, u
 		if (strcmp((char *)pattern, (const char*)lastPattern) == 0) continue;
 		else {
 			strcpy((char *)lastPattern, (const char*)pattern);
-			if (selectedChars) {
+			if (isSelectedChars) {
 				bool rejectPattern = false;
 				for (unsigned int j = 0; j < this->k; ++j) {
-					bool symbolInOrdChars = false;
-					for (unsigned int l = 0; l < ordCharsLen; ++l) {
-						if ((unsigned int)pattern[j] == ordChars[l]) {
-							symbolInOrdChars = true;
+					bool symbolInSelectedChars = false;
+					for (vector<unsigned char>::iterator it = selectedChars.begin(); it != selectedChars.end(); ++it) {
+						if ((unsigned int)pattern[j] == (*it)) {
+							symbolInSelectedChars = true;
 							break;
 						}
 					}
-					if (!symbolInOrdChars) {
+					if (!symbolInSelectedChars) {
 						rejectPattern = true;
 						break;
 					}
@@ -238,8 +238,8 @@ void HT::build(unsigned char *text, unsigned int textLen, unsigned int *sa, unsi
 	fillLUT2(this->lut2, text, sa, saLen);
 }
 
-void HT::fillHTDataWithEntries(unsigned char *text, unsigned int textLen, unsigned int *sa, unsigned int saLen, unsigned int *ordChars, unsigned int ordCharsLen) {
-	bool selectedChars = (ordCharsLen != 0);
+void HT::fillHTDataWithEntries(unsigned char *text, unsigned int textLen, unsigned int *sa, unsigned int saLen, vector<unsigned char> selectedChars) {
+	bool isSelectedChars = (selectedChars.size() != 0);
 	unsigned long long hash = this->bucketsNum;
 	this->boundariesHT = new unsigned int[2 * this->bucketsNum + 32];
 	this->alignedBoundariesHT = this->boundariesHT;
@@ -277,17 +277,17 @@ void HT::fillHTDataWithEntries(unsigned char *text, unsigned int textLen, unsign
 				else this->alignedBoundariesHT[2 * hash + 1] = lastNotOutsideTextIndex;
 			}
 			notLastOutsideText = true;
-			if (selectedChars) {
+			if (isSelectedChars) {
 				bool rejectPattern = false;
 				for (unsigned int j = 0; j < this->k; ++j) {
-					bool symbolInOrdChars = false;
-					for (unsigned int l = 0; l < ordCharsLen; ++l) {
-						if ((unsigned int)pattern[j] == ordChars[l]) {
-							symbolInOrdChars = true;
+					bool symbolInSelectedChars = false;
+					for (vector<unsigned char>::iterator it = selectedChars.begin(); it != selectedChars.end(); ++it) {
+						if ((unsigned int)pattern[j] == (*it)) {
+							symbolInSelectedChars = true;
 							break;
 						}
 					}
-					if (!symbolInOrdChars) {
+					if (!symbolInSelectedChars) {
 						rejectPattern = true;
 						break;
 					}
@@ -316,10 +316,10 @@ void HT::fillHTDataWithEntries(unsigned char *text, unsigned int textLen, unsign
 	delete[] pattern;
 }
 
-void HT::buildWithEntries(unsigned char *text, unsigned int textLen, unsigned int *sa, unsigned int saLen, unsigned int *ordChars, unsigned int ordCharsLen) {
-	unsigned int uniqueSuffixNum = this->getUniqueSuffixNum(text, textLen, sa, saLen, ordChars, ordCharsLen);
+void HT::buildWithEntries(unsigned char *text, unsigned int textLen, unsigned int *sa, unsigned int saLen, vector<unsigned char> selectedChars) {
+	unsigned int uniqueSuffixNum = this->getUniqueSuffixNum(text, textLen, sa, saLen, selectedChars);
 	this->bucketsNum = (double)uniqueSuffixNum * (1.0 / this->loadFactor);
-	this->fillHTDataWithEntries(text, textLen, sa, saLen, ordChars, ordCharsLen);
+	this->fillHTDataWithEntries(text, textLen, sa, saLen, selectedChars);
 	fillLUT2(this->lut2, text, sa, saLen);
 }
 

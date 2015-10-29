@@ -1,12 +1,13 @@
 #include <cstdio>
 #include <iostream>
+#include <sstream>
 #include <stdlib.h>
 #include <algorithm>
 #include "common.h"
 #include "sais.h"
 #include "../libs/asmlib.h"
 
-unsigned long long getFileSize(char *inFileName, int elemSize) {
+unsigned long long getFileSize(const char *inFileName, int elemSize) {
 	FILE *InFile;
 	InFile = fopen(inFileName, "rb");
 	if (InFile == NULL) {
@@ -26,7 +27,7 @@ unsigned long long getFileSize(char *inFileName, int elemSize) {
 	return fileSize / elemSize;
 }
 
-FILE *openFile(char *inFileName, int elemSize, unsigned int &len) {
+FILE *openFile(const char *inFileName, int elemSize, unsigned int &len) {
 	FILE *InFile;
 	InFile = fopen(inFileName, "rb");
 	if (InFile == NULL) {
@@ -51,7 +52,7 @@ FILE *openFile(char *inFileName, int elemSize, unsigned int &len) {
 	return InFile;
 }
 
-unsigned char *readFileChar(char *inFileName, unsigned int &len, unsigned int addLen) {
+unsigned char *readFileChar(const char *inFileName, unsigned int &len, unsigned int addLen) {
 	FILE *InFile = openFile(inFileName, 1, len);
 	unsigned char *S = new unsigned char[len + addLen];
 	if (fread(S, (size_t)1, (size_t)len, InFile) != (size_t)len) {
@@ -62,7 +63,7 @@ unsigned char *readFileChar(char *inFileName, unsigned int &len, unsigned int ad
 	return S;
 }
 
-unsigned int *readFileInt(char *inFileName, unsigned int &len, unsigned int addLen) {
+unsigned int *readFileInt(const char *inFileName, unsigned int &len, unsigned int addLen) {
 	FILE *InFile = openFile(inFileName, 4, len);
 	unsigned int *S = new unsigned int[len + addLen];
 	if (fread(S, (size_t)4, (size_t)len, InFile) != (size_t)len) {
@@ -73,7 +74,7 @@ unsigned int *readFileInt(char *inFileName, unsigned int &len, unsigned int addL
 	return S;
 }
 
-unsigned long long *readFileLong(char *inFileName, unsigned int &len, unsigned int addLen) {
+unsigned long long *readFileLong(const char *inFileName, unsigned int &len, unsigned int addLen) {
 	FILE *InFile = openFile(inFileName, 8, len);
 	unsigned long long *S = new unsigned long long[len + addLen];
 	if (fread(S, (size_t)8, (size_t)len, InFile) != (size_t)len) {
@@ -84,7 +85,7 @@ unsigned long long *readFileLong(char *inFileName, unsigned int &len, unsigned i
 	return S;
 }
 
-bool fileExists(char *inFileName) {
+bool fileExists(const char *inFileName) {
 	FILE *InFile;
 	InFile = fopen(inFileName, "rb");
 	if (InFile == NULL) {
@@ -107,7 +108,7 @@ bool fileExists(char *inFileName) {
 	return true;
 }
 
-unsigned char *readText(char *inFileName, unsigned int &textLen, unsigned char eof) {
+unsigned char *readText(const char *inFileName, unsigned int &textLen, unsigned char eof) {
 	unsigned char *S = readFileChar(inFileName, textLen, 1);
 	S[textLen] = eof;
 	return S;
@@ -169,37 +170,15 @@ void fillArrayC(unsigned char *text, unsigned int textLen, unsigned int* C, bool
 	if (verbose) cout << "Done" << endl;
 }
 
-unsigned int *breakByDelimeter(string seq, char delim, unsigned int &tokensLen) {
-	char *s = (char *)seq.c_str();
-	int c1 = 1;
-	char *p = s;
-	while (*p != '\0') {
-		if (*p == delim) {
-			++c1;
-		}
-		++p;
+string getStringFromSelectedChars(vector<unsigned char> selectedChars, string separator) {
+	if (selectedChars.size() == 0) return "all";
+	stringstream ss;
+	for (vector<unsigned char>::iterator it = selectedChars.begin(); it != selectedChars.end(); ++it) {
+		ss << (unsigned int)(*it);
+		if (it + 1 != selectedChars.end()) ss << separator;
 	}
-	tokensLen = c1;
-	unsigned int *res = new unsigned int[c1];
-	char *token = new char[10];
-	c1 = 0;
-	int c2 = 0;
-	p = s;
-	while (*p != '\0') {
-		if (*p == delim) {
-			token[c1] = '\0';
-			c1 = 0;
-			res[c2++] = (unsigned int)atoi(token);
-		}
-		else {
-			token[c1++] = *p;
-		}
-		++p;
-	}
-	token[c1] = '\0';
-	res[c2] = (unsigned int)atoi(token);
-	delete[] token;
-	return res;
+	string s = ss.str();
+	return s;
 }
 
 void binarySearch(unsigned int *sa, unsigned char *text, unsigned int lStart, unsigned int rStart, unsigned char *pattern, int patternLength, unsigned int &beg, unsigned int &end) {

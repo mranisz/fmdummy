@@ -2,6 +2,7 @@
 #include <fstream>
 #include <string>
 #include <stdlib.h>
+#include <map>
 #include "shared/common.h"
 #include "shared/patterns.h"
 #include "shared/timer.h"
@@ -11,10 +12,28 @@ using namespace std;
 
 CStopWatch timer;
 
+map<string, FMDummy1::IndexType> FMDummy1IndexTypesMap = {{"256", FMDummy1::TYPE_256}, {"512", FMDummy1::TYPE_512}};
+map<string, vector<unsigned char>> FMDummy1SelectedCharsMap = {{"ACGT", {65, 67, 71, 84}}, {"all", {}}};
+map<string, FMDummy2::IndexType> FMDummy2IndexTypesMap = {{"256", FMDummy2::TYPE_256}, {"512", FMDummy2::TYPE_512}};
+map<string, FMDummy2::Schema> FMDummy2SchemaMap = {{"SCBO", FMDummy2::SCHEMA_SCBO}, {"CB", FMDummy2::SCHEMA_CB}};
+map<string, FMDummy2::BitsPerChar> FMDummy2BitsPerCharMap = {{"3", FMDummy2::BITS_3}, {"4", FMDummy2::BITS_4}};
+map<string, FMDummy3::IndexType> FMDummy3IndexTypesMap = {{"512", FMDummy3::TYPE_512}, {"1024", FMDummy3::TYPE_1024}};
+map<string, FMDummyWT::IndexType> FMDummyWTIndexTypesMap = {{"512", FMDummyWT::TYPE_512}, {"1024", FMDummyWT::TYPE_1024}};
+map<string, FMDummyWT::WTType> FMDummyWTWTTypeMap = {{"2", FMDummyWT::TYPE_WT2}, {"4", FMDummyWT::TYPE_WT4}, {"8", FMDummyWT::TYPE_WT8}};
+
+void fmDummy1(string indexType, string selectedChars, const char *textFileName, unsigned int queriesNum, unsigned int m);
+void fmDummy1hash(string indexType, string selectedChars, string k, string loadFactor, const char *textFileName, unsigned int queriesNum, unsigned int m);
+void fmDummy2(string indexType, string encodedSchema, string bits, const char *textFileName, unsigned int queriesNum, unsigned int m);
+void fmDummy2hash(string indexType, string encodedSchema, string bits, string k, string loadFactor, const char *textFileName, unsigned int queriesNum, unsigned int m);
+void fmDummy3(string indexType, const char *textFileName, unsigned int queriesNum, unsigned int m);
+void fmDummy3hash(string indexType, string k, string loadFactor, const char *textFileName, unsigned int queriesNum, unsigned int m);
+void fmDummyWT(string wtType, string indexType, const char *textFileName, unsigned int queriesNum, unsigned int m);
+void fmDummyWThash(string wtType, string indexType, string k, string loadFactor, const char *textFileName, unsigned int queriesNum, unsigned int m);
+
 void getUsage(char **argv) {
 	cout << "Select index you want to test:" << endl;
-	cout << "FMDummy1: ./" << argv[0] << " 1 256|512 selectedChars fileName q m" << endl;
-	cout << "FMDummy1hash: ./" << argv[0] << " 1hash 256|512 k loadFactor selectedChars fileName q m" << endl;
+	cout << "FMDummy1: ./" << argv[0] << " 1 256|512 all|ACGT fileName q m" << endl;
+	cout << "FMDummy1hash: ./" << argv[0] << " 1hash 256|512 k loadFactor all|ACGT fileName q m" << endl;
 	cout << "FMDummy2: ./" << argv[0] << " 2 256|512 SCBO|CB 3|4 fileName q m" << endl;
 	cout << "FMDummy2hash: ./" << argv[0] << " 2hash 256|512 SCBO|CB 3|4 k loadFactor fileName q m" << endl;
 	cout << "FMDummy3: ./" << argv[0] << " 3 512|1024 fileName q m" << endl;
@@ -26,18 +45,8 @@ void getUsage(char **argv) {
 	cout << "q - number of patterns (queries)" << endl;
 	cout << "m - pattern length" << endl;
 	cout << "k - suffix length to be hashed (k > 0)" << endl;
-	cout << "loadFactor - load factor to hash table (range: (0.0, 1.0))" << endl;
-	cout << "selectedChars - up to 16 ordinal character values separated by dots or \"all\" if you want to build index on all characters from the text" << endl << endl;
+	cout << "loadFactor - load factor to hash table (range: (0.0, 1.0))" << endl << endl;
 }
-
-void fmDummy1(string indexType, string selectedChars, char *textFileName, unsigned int queriesNum, unsigned int m);
-void fmDummy1hash(string indexType, string selectedChars, string k, string loadFactor, char *textFileName, unsigned int queriesNum, unsigned int m);
-void fmDummy2(string indexType, string encodedSchema, string bits, char *textFileName, unsigned int queriesNum, unsigned int m);
-void fmDummy2hash(string indexType, string encodedSchema, string bits, string k, string loadFactor, char *textFileName, unsigned int queriesNum, unsigned int m);
-void fmDummy3(string indexType, char *textFileName, unsigned int queriesNum, unsigned int m);
-void fmDummy3hash(string indexType, string k, string loadFactor, char *textFileName, unsigned int queriesNum, unsigned int m);
-void fmDummyWT(string wtType, string indexType, char *textFileName, unsigned int queriesNum, unsigned int m);
-void fmDummyWThash(string wtType, string indexType, string k, string loadFactor, char *textFileName, unsigned int queriesNum, unsigned int m);
 
 int main(int argc, char *argv[]) {
 	if (argc < 3) {
@@ -46,56 +55,56 @@ int main(int argc, char *argv[]) {
 	}
 
 	if ((string)argv[1] == "1") {
-		if (argc < 7) {
+		if (argc < 7 || FMDummy1IndexTypesMap.find(string(argv[2])) == FMDummy1IndexTypesMap.end() || FMDummy1SelectedCharsMap.find(string(argv[3])) == FMDummy1SelectedCharsMap.end()) {
 			getUsage(argv);
 			exit(1);
 		}
 		fmDummy1(string(argv[2]), string(argv[3]), argv[4], atoi(argv[5]), atoi(argv[6]));
 	}
 	else if ((string)argv[1] == "1hash") {
-		if (argc < 9) {
+		if (argc < 9 || FMDummy1IndexTypesMap.find(string(argv[2])) == FMDummy1IndexTypesMap.end() || FMDummy1SelectedCharsMap.find(string(argv[3])) == FMDummy1SelectedCharsMap.end()) {
 			getUsage(argv);
 			exit(1);
 		}
 		fmDummy1hash(string(argv[2]), string(argv[3]), string(argv[4]), string(argv[5]), argv[6], atoi(argv[7]), atoi(argv[8]));
 	}
 	else if ((string)argv[1] == "2") {
-		if (argc < 8) {
+		if (argc < 8 || FMDummy2IndexTypesMap.find(string(argv[2])) == FMDummy2IndexTypesMap.end() || FMDummy2SchemaMap.find(string(argv[3])) == FMDummy2SchemaMap.end() || FMDummy2BitsPerCharMap.find(string(argv[4])) == FMDummy2BitsPerCharMap.end()) {
 			getUsage(argv);
 			exit(1);
 		}
 		fmDummy2(string(argv[2]), string(argv[3]), string(argv[4]), argv[5], atoi(argv[6]), atoi(argv[7]));
 	}
 	else if ((string)argv[1] == "2hash") {
-		if (argc < 10) {
+		if (argc < 10 || FMDummy2IndexTypesMap.find(string(argv[2])) == FMDummy2IndexTypesMap.end() || FMDummy2SchemaMap.find(string(argv[3])) == FMDummy2SchemaMap.end() || FMDummy2BitsPerCharMap.find(string(argv[4])) == FMDummy2BitsPerCharMap.end()) {
 			getUsage(argv);
 			exit(1);
 		}
 		fmDummy2hash(string(argv[2]), string(argv[3]), string(argv[4]), string(argv[5]), string(argv[6]), argv[7], atoi(argv[8]), atoi(argv[9]));
 	}
 	else if ((string)argv[1] == "3") {
-		if (argc < 6) {
+		if (argc < 6 || FMDummy3IndexTypesMap.find(string(argv[2])) == FMDummy3IndexTypesMap.end()) {
 			getUsage(argv);
 			exit(1);
 		}
 		fmDummy3(string(argv[2]), argv[3], atoi(argv[4]), atoi(argv[5]));
 	}
 	else if ((string)argv[1] == "3hash") {
-		if (argc < 8) {
+		if (argc < 8 || FMDummy3IndexTypesMap.find(string(argv[2])) == FMDummy3IndexTypesMap.end()) {
 			getUsage(argv);
 			exit(1);
 		}
 		fmDummy3hash(string(argv[2]), string(argv[3]), string(argv[4]), argv[5], atoi(argv[6]), atoi(argv[7]));
 	}
 	else if ((string)argv[1] == "WT") {
-		if (argc < 7) {
+		if (argc < 7 || FMDummyWTWTTypeMap.find(string(argv[2])) == FMDummyWTWTTypeMap.end() || FMDummyWTIndexTypesMap.find(string(argv[3])) == FMDummyWTIndexTypesMap.end()) {
 			getUsage(argv);
 			exit(1);
 		}
 		fmDummyWT(string(argv[2]), string(argv[3]), argv[4], atoi(argv[5]), atoi(argv[6]));
 	}
 	else if ((string)argv[1] == "WThash") {
-		if (argc < 9) {
+		if (argc < 9 || FMDummyWTWTTypeMap.find(string(argv[2])) == FMDummyWTWTTypeMap.end() || FMDummyWTIndexTypesMap.find(string(argv[3])) == FMDummyWTIndexTypesMap.end()) {
 			getUsage(argv);
 			exit(1);
 		}
@@ -107,26 +116,26 @@ int main(int argc, char *argv[]) {
 	}
 }
 
-void fmDummy1(string indexType, string selectedChars, char *textFileName, unsigned int queriesNum, unsigned int m) {
+void fmDummy1(string indexType, string selectedChars, const char *textFileName, unsigned int queriesNum, unsigned int m) {
 
 	unsigned char* text = NULL;
 	unsigned int textLen;
 	FMDummy1 *FMD1;
 	string indexFileNameString = string("FMD1-") + (string)textFileName + "-" + indexType + "-" + selectedChars + ".idx";
-	char *indexFileName = (char *)indexFileNameString.c_str();
+	const char *indexFileName = indexFileNameString.c_str();
 
 	if (fileExists(indexFileName)) {
 		FMD1 = new FMDummy1();
 		FMD1->load(indexFileName);
 	} else {
-		FMD1 = new FMDummy1(indexType, selectedChars);
+		FMD1 = new FMDummy1(FMDummy1IndexTypesMap[indexType], FMDummy1SelectedCharsMap[selectedChars]);
 		FMD1->setVerbose(true);
 		text = readText(textFileName, textLen, 0);
 		FMD1->build(text, textLen);
 		FMD1->save(indexFileName);
 	}
 
-	Patterns *P = new Patterns(textFileName, queriesNum, m, selectedChars);
+	Patterns *P = new Patterns(textFileName, queriesNum, m, FMDummy1SelectedCharsMap[selectedChars]);
 	unsigned char **patterns = P->getPatterns();
 	unsigned int *indexCounts = new unsigned int[queriesNum];
 
@@ -158,7 +167,7 @@ void fmDummy1(string indexType, string selectedChars, char *textFileName, unsign
 	delete P;
 }
 
-void fmDummy1hash(string indexType, string selectedChars, string k, string loadFactor, char *textFileName, unsigned int queriesNum, unsigned int m) {
+void fmDummy1hash(string indexType, string selectedChars, string k, string loadFactor, const char *textFileName, unsigned int queriesNum, unsigned int m) {
 
 	unsigned char* text = NULL;
 	unsigned int textLen;
@@ -170,14 +179,14 @@ void fmDummy1hash(string indexType, string selectedChars, string k, string loadF
 		FMD1 = new FMDummy1();
 		FMD1->load(indexFileName);
 	} else {
-		FMD1 = new FMDummy1(indexType, selectedChars, atoi(k.c_str()), atof(loadFactor.c_str()));
+		FMD1 = new FMDummy1(FMDummy1IndexTypesMap[indexType], FMDummy1SelectedCharsMap[selectedChars], atoi(k.c_str()), atof(loadFactor.c_str()));
 		FMD1->setVerbose(true);
 		text = readText(textFileName, textLen, 0);
 		FMD1->build(text, textLen);
 		FMD1->save(indexFileName);
 	}
 
-	Patterns *P = new Patterns(textFileName, queriesNum, m, selectedChars);
+	Patterns *P = new Patterns(textFileName, queriesNum, m, FMDummy1SelectedCharsMap[selectedChars]);
 	unsigned char **patterns = P->getPatterns();
 	unsigned int *indexCounts = new unsigned int[queriesNum];
 
@@ -209,7 +218,7 @@ void fmDummy1hash(string indexType, string selectedChars, string k, string loadF
 	delete P;
 }
 
-void fmDummy2(string indexType, string encodedSchema, string bits, char *textFileName, unsigned int queriesNum, unsigned int m) {
+void fmDummy2(string indexType, string encodedSchema, string bits, const char *textFileName, unsigned int queriesNum, unsigned int m) {
 
 	unsigned char* text = NULL;
 	unsigned int textLen;
@@ -221,7 +230,7 @@ void fmDummy2(string indexType, string encodedSchema, string bits, char *textFil
 		FMD2 = new FMDummy2();
 		FMD2->load(indexFileName);
 	} else {
-		FMD2 = new FMDummy2(indexType, encodedSchema, bits);
+		FMD2 = new FMDummy2(FMDummy2IndexTypesMap[indexType], FMDummy2SchemaMap[encodedSchema], FMDummy2BitsPerCharMap[bits]);
 		FMD2->setVerbose(true);
 		text = readText(textFileName, textLen, 0);
 		FMD2->build(text, textLen);
@@ -260,7 +269,7 @@ void fmDummy2(string indexType, string encodedSchema, string bits, char *textFil
 	delete P;
 }
 
-void fmDummy2hash(string indexType, string encodedSchema, string bits, string k, string loadFactor, char *textFileName, unsigned int queriesNum, unsigned int m) {
+void fmDummy2hash(string indexType, string encodedSchema, string bits, string k, string loadFactor, const char *textFileName, unsigned int queriesNum, unsigned int m) {
 
 	unsigned char* text = NULL;
 	unsigned int textLen;
@@ -272,7 +281,7 @@ void fmDummy2hash(string indexType, string encodedSchema, string bits, string k,
 		FMD2 = new FMDummy2();
 		FMD2->load(indexFileName);
 	} else {
-		FMD2 = new FMDummy2(indexType, encodedSchema, bits, atoi(k.c_str()), atof(loadFactor.c_str()));
+		FMD2 = new FMDummy2(FMDummy2IndexTypesMap[indexType], FMDummy2SchemaMap[encodedSchema], FMDummy2BitsPerCharMap[bits], atoi(k.c_str()), atof(loadFactor.c_str()));
 		FMD2->setVerbose(true);
 		text = readText(textFileName, textLen, 0);
 		FMD2->build(text, textLen);
@@ -311,7 +320,7 @@ void fmDummy2hash(string indexType, string encodedSchema, string bits, string k,
 	delete P;
 }
 
-void fmDummy3(string indexType, char *textFileName, unsigned int queriesNum, unsigned int m) {
+void fmDummy3(string indexType, const char *textFileName, unsigned int queriesNum, unsigned int m) {
 
 	unsigned char* text = NULL;
 	unsigned int textLen;
@@ -323,14 +332,15 @@ void fmDummy3(string indexType, char *textFileName, unsigned int queriesNum, uns
 		FMD3 = new FMDummy3();
 		FMD3->load(indexFileName);
 	} else {
-		FMD3 = new FMDummy3(indexType);
+		FMD3 = new FMDummy3(FMDummy3IndexTypesMap[indexType]);
 		FMD3->setVerbose(true);
 		text = readText(textFileName, textLen, 0);
 		FMD3->build(text, textLen);
 		FMD3->save(indexFileName);
 	}
 
-	Patterns *P = new Patterns(textFileName, queriesNum, m, "65.67.71.84");
+	vector<unsigned char> selectedChars = {'A', 'C', 'G', 'T'};
+	Patterns *P = new Patterns(textFileName, queriesNum, m, selectedChars);
 	unsigned char **patterns = P->getPatterns();
 	unsigned int *indexCounts = new unsigned int[queriesNum];
 
@@ -362,7 +372,7 @@ void fmDummy3(string indexType, char *textFileName, unsigned int queriesNum, uns
 	delete P;
 }
 
-void fmDummy3hash(string indexType, string k, string loadFactor, char *textFileName, unsigned int queriesNum, unsigned int m) {
+void fmDummy3hash(string indexType, string k, string loadFactor, const char *textFileName, unsigned int queriesNum, unsigned int m) {
 
 	unsigned char* text = NULL;
 	unsigned int textLen;
@@ -374,14 +384,15 @@ void fmDummy3hash(string indexType, string k, string loadFactor, char *textFileN
 		FMD3 = new FMDummy3();
 		FMD3->load(indexFileName);
 	} else {
-		FMD3 = new FMDummy3(indexType, atoi(k.c_str()), atof(loadFactor.c_str()));
+		FMD3 = new FMDummy3(FMDummy3IndexTypesMap[indexType], atoi(k.c_str()), atof(loadFactor.c_str()));
 		FMD3->setVerbose(true);
 		text = readText(textFileName, textLen, 0);
 		FMD3->build(text, textLen);
 		FMD3->save(indexFileName);
 	}
 
-	Patterns *P = new Patterns(textFileName, queriesNum, m, "65.67.71.84");
+	vector<unsigned char> selectedChars = {'A', 'C', 'G', 'T'};
+	Patterns *P = new Patterns(textFileName, queriesNum, m, selectedChars);
 	unsigned char **patterns = P->getPatterns();
 	unsigned int *indexCounts = new unsigned int[queriesNum];
 
@@ -413,7 +424,7 @@ void fmDummy3hash(string indexType, string k, string loadFactor, char *textFileN
 	delete P;
 }
 
-void fmDummyWT(string wtType, string indexType, char *textFileName, unsigned int queriesNum, unsigned int m) {
+void fmDummyWT(string wtType, string indexType, const char *textFileName, unsigned int queriesNum, unsigned int m) {
 
 	unsigned char* text = NULL;
 	unsigned int textLen;
@@ -425,7 +436,7 @@ void fmDummyWT(string wtType, string indexType, char *textFileName, unsigned int
 		FMDWT = new FMDummyWT();
 		FMDWT->load(indexFileName);
 	} else {
-		FMDWT = new FMDummyWT(wtType, indexType);
+		FMDWT = new FMDummyWT(FMDummyWTWTTypeMap[wtType], FMDummyWTIndexTypesMap[indexType]);
 		FMDWT->setVerbose(true);
 		text = readText(textFileName, textLen, 0);
 		FMDWT->build(text, textLen);
@@ -464,7 +475,7 @@ void fmDummyWT(string wtType, string indexType, char *textFileName, unsigned int
 	delete P;
 }
 
-void fmDummyWThash(string wtType, string indexType, string k, string loadFactor, char *textFileName, unsigned int queriesNum, unsigned int m) {
+void fmDummyWThash(string wtType, string indexType, string k, string loadFactor, const char *textFileName, unsigned int queriesNum, unsigned int m) {
 
 	unsigned char* text = NULL;
 	unsigned int textLen;
@@ -476,7 +487,7 @@ void fmDummyWThash(string wtType, string indexType, string k, string loadFactor,
 		FMDWT = new FMDummyWT();
 		FMDWT->load(indexFileName);
 	} else {
-		FMDWT = new FMDummyWT(wtType, indexType, atoi(k.c_str()), atof(loadFactor.c_str()));
+		FMDWT = new FMDummyWT(FMDummyWTWTTypeMap[wtType], FMDummyWTIndexTypesMap[indexType], atoi(k.c_str()), atof(loadFactor.c_str()));
 		FMDWT->setVerbose(true);
 		text = readText(textFileName, textLen, 0);
 		FMDWT->build(text, textLen);

@@ -2,7 +2,6 @@
 #include "shared/wt.h"
 #include "shared/hash.h"
 #include <cstdio>
-#include <string.h>
 #include <vector>
 
 using namespace std;
@@ -17,26 +16,24 @@ private:
 	alignas(128) unsigned long long *bwtWithRanks[256];
 	unsigned int bwtWithRanksLen;
 	alignas(128) unsigned long long *alignedBWTWithRanks[256];
-	unsigned int *ordChars;
-	unsigned int ordCharsLen;
 	alignas(128) unsigned int c[257];
 	HT *ht;
 
 	int type;
+	vector<unsigned char> selectedChars;
 	bool allChars;
-	string selectedChars;
 	unsigned int k;
 	double loadFactor;
 
 	unsigned int textSize;
 
-	void (*builder)(unsigned long long **, unsigned int, unsigned int *, unsigned int, unsigned long long **, unsigned int &, unsigned long long **);
+	void (*builder)(unsigned long long **, unsigned int, vector<unsigned char>, unsigned long long **, unsigned int &, unsigned long long **);
 	unsigned int (FMDummy1::*countOperation)(unsigned char *, unsigned int);
 
 	void freeMemory();
 	void initialize();
-	void setType(string indexType);
-	void setSelectedChars(string selectedChars);
+	void setType(int indexType);
+	void setSelectedChars(vector<unsigned char> selectedChars);
 	void setK(unsigned int k);
 	void setLoadFactor(double loadFactor);
 	void setFunctions();
@@ -46,24 +43,23 @@ private:
 	unsigned int count_hash_512_counter40(unsigned char *pattern, unsigned int patternLen);
 
 public:
-	enum IndexTypesConst {
+	enum IndexType {
 		TYPE_256 = 1,
 		TYPE_512 = 2
 	};
-
 	FMDummy1() {
 		this->initialize();
 		this->setFunctions();
 	}
 
-	FMDummy1(string indexType, string selectedChars) {
+	FMDummy1(FMDummy1::IndexType indexType, vector<unsigned char> selectedChars) {
 		this->initialize();
 		this->setType(indexType);
 		this->setSelectedChars(selectedChars);
 		this->setFunctions();
 	}
 
-	FMDummy1(string indexType, string selectedChars, unsigned int k, double loadFactor) {
+	FMDummy1(FMDummy1::IndexType indexType, vector<unsigned char> selectedChars, unsigned int k, double loadFactor) {
 		this->initialize();
 		this->setType(indexType);
 		this->setSelectedChars(selectedChars);
@@ -77,8 +73,8 @@ public:
 	}
 
 	void build(unsigned char *text, unsigned int textLen);
-	void save(char *fileName);
-	void load(char *fileName);
+	void save(const char *fileName);
+	void load(const char *fileName);
 	void free();
 	unsigned int getIndexSize();
 	unsigned int getTextSize();
@@ -93,7 +89,7 @@ class FMDummy2 : public Index {
 private:
 	alignas(128) unsigned long long *bwtWithRanks[256];
 	unsigned int bwtWithRanksLen;
-	unsigned long long *alignedBWTWithRanks[256];
+	alignas(128) unsigned long long *alignedBWTWithRanks[256];
 	unsigned char *encodedChars;
 	alignas(128) unsigned int encodedCharsLen[256];
 	unsigned int maxEncodedCharsLen;
@@ -111,13 +107,13 @@ private:
 
 	unsigned int textSize;
 
-	void (*builder)(unsigned long long **, unsigned int, unsigned int *, unsigned int, unsigned long long **, unsigned int &, unsigned long long **);
+	void (*builder)(unsigned long long **, unsigned int, vector<unsigned char>, unsigned long long **, unsigned int &, unsigned long long **);
 	unsigned int (FMDummy2::*countOperation)(unsigned char *, unsigned int);
 
 	void freeMemory();
 	void initialize();
-	void setType(string indexType, string schema);
-	void setBitsPerChar(string bitsPerChar);
+	void setType(int indexType, int schema);
+	void setBitsPerChar(int bitsPerChar);
 	void setMaxEncodedCharsLen();
 	void setEncodedPattern(unsigned int maxPatternLen);
 	void setK(unsigned int k);
@@ -136,17 +132,17 @@ private:
 	unsigned int count_hash_SCBO_512_counter40(unsigned char *pattern, unsigned int patternLen);
 
 public:
-	enum IndexTypesConst {
+	enum IndexType {
 		TYPE_256 = 1,
 		TYPE_512 = 2
 	};
 
-	enum BitsPerCharConst {
+	enum BitsPerChar {
 		BITS_3 = 3,
 		BITS_4 = 4
 	};
 
-	enum SchemaConst {
+	enum Schema {
 		SCHEMA_SCBO = 1,
 		SCHEMA_CB = 2
 	};
@@ -156,14 +152,14 @@ public:
 		this->setFunctions();
 	}
 
-	FMDummy2(string indexType, string schema, string bitsPerChar) {
+	FMDummy2(FMDummy2::IndexType indexType, FMDummy2::Schema schema, FMDummy2::BitsPerChar bitsPerChar) {
 		this->initialize();
 		this->setType(indexType, schema);
 		this->setBitsPerChar(bitsPerChar);
 		this->setFunctions();
 	}
 
-	FMDummy2(string indexType, string schema, string bitsPerChar, unsigned int k, double loadFactor) {
+	FMDummy2(FMDummy2::IndexType indexType, FMDummy2::Schema schema, FMDummy2::BitsPerChar bitsPerChar, unsigned int k, double loadFactor) {
 		this->initialize();
 		this->setType(indexType, schema);
 		this->setBitsPerChar(bitsPerChar);
@@ -177,8 +173,8 @@ public:
 	}
 
 	void build(unsigned char *text, unsigned int textLen);
-	void save(char *fileName);
-	void load(char *fileName);
+	void save(const char *fileName);
+	void load(const char *fileName);
 	void free();
 	unsigned int getIndexSize();
 	unsigned int getTextSize();
@@ -208,7 +204,7 @@ private:
 
 	void freeMemory();
 	void initialize();
-	void setType(string indexType);
+	void setType(int indexType);
 	void setK(unsigned int k);
 	void setLoadFactor(double loadFactor);
 	void setFunctions();
@@ -220,7 +216,7 @@ private:
 	unsigned int count_hash_1024_enc125(unsigned char *pattern, unsigned int patternLen);
 
 public:
-	enum IndexTypesConst {
+	enum IndexType {
 		TYPE_512 = 1,
 		TYPE_1024 = 2
 	};
@@ -230,13 +226,13 @@ public:
 		this->setFunctions();
 	}
 
-	FMDummy3(string indexType) {
+	FMDummy3(FMDummy3::IndexType indexType) {
 		this->initialize();
 		this->setType(indexType);
 		this->setFunctions();
 	}
 
-	FMDummy3(string indexType, unsigned int k, double loadFactor) {
+	FMDummy3(FMDummy3::IndexType indexType, unsigned int k, double loadFactor) {
 		this->initialize();
 		this->setType(indexType);
 		this->setK(k);
@@ -249,8 +245,8 @@ public:
 	}
 
 	void build(unsigned char *text, unsigned int textLen);
-	void save(char *fileName);
-	void load(char *fileName);
+	void save(const char *fileName);
+	void load(const char *fileName);
 	void free();
 	unsigned int getIndexSize();
 	unsigned int getTextSize();
@@ -280,7 +276,7 @@ private:
 
 	void freeMemory();
 	void initialize();
-	void setType(string wtType, string indexType);
+	void setType(int wtType, int indexType);
 	void setK(unsigned int k);
 	void setLoadFactor(double loadFactor);
 	void setFunctions();
@@ -302,13 +298,13 @@ private:
 	unsigned int count_WT8hash_1024(unsigned char *pattern, unsigned int patternLen);
 
 public:
-	enum WTTypesConst {
+	enum WTType {
 		TYPE_WT2 = 2,
 		TYPE_WT4 = 4,
 		TYPE_WT8 = 8
 	};
 
-	enum IndexTypesConst {
+	enum IndexType {
 		TYPE_512 = 8,
 		TYPE_1024 = 16
 	};
@@ -318,13 +314,13 @@ public:
 		this->setFunctions();
 	}
 
-	FMDummyWT(string wtType, string indexType) {
+	FMDummyWT(FMDummyWT::WTType wtType, FMDummyWT::IndexType indexType) {
 		this->initialize();
 		this->setType(wtType, indexType);
 		this->setFunctions();
 	}
 
-	FMDummyWT(string wtType, string indexType, unsigned int k, double loadFactor) {
+	FMDummyWT(FMDummyWT::WTType wtType, FMDummyWT::IndexType indexType, unsigned int k, double loadFactor) {
 		this->initialize();
 		this->setType(wtType, indexType);
 		this->setK(k);
@@ -337,8 +333,8 @@ public:
 	}
 
 	void build(unsigned char *text, unsigned int textLen);
-	void save(char *fileName);
-	void load(char *fileName);
+	void save(const char *fileName);
+	void load(const char *fileName);
 	void free();
 	unsigned int getIndexSize();
 	unsigned int getTextSize();
@@ -350,14 +346,14 @@ public:
 /*SHARED STUFF*/
 
 unsigned char *getBinDenseForChar(unsigned char *bwt, unsigned int bwtLen, int ordChar);
-void buildRank_256_counter48(unsigned long long **bwtInLong, unsigned int bwtInLongLen, unsigned int *ordChars, unsigned int ordCharsLen, unsigned long long **bwtWithRanks, unsigned int &bwtWithRanksLen, unsigned long long **alignedBWTWithRanks);
-void buildRank_512_counter40(unsigned long long **bwtInLong, unsigned int bwtInLongLen, unsigned int *ordChars, unsigned int ordCharsLen, unsigned long long **bwtWithRanks, unsigned int &bwtWithRanksLen, unsigned long long **alignedBWTWithRanks);
+void buildRank_256_counter48(unsigned long long **bwtInLong, unsigned int bwtInLongLen, vector<unsigned char> selectedChars, unsigned long long **bwtWithRanks, unsigned int &bwtWithRanksLen, unsigned long long **alignedBWTWithRanks);
+void buildRank_512_counter40(unsigned long long **bwtInLong, unsigned int bwtInLongLen, vector<unsigned char> selectedChars, unsigned long long **bwtWithRanks, unsigned int &bwtWithRanksLen, unsigned long long **alignedBWTWithRanks);
 unsigned int count_256_counter48(unsigned char *pattern, unsigned int i, unsigned int *C, unsigned long long **bwtWithRanks, unsigned int firstVal, unsigned int lastVal);
 void getCountBoundaries_256_counter48(unsigned char *pattern, unsigned int i, unsigned int *C, unsigned long long **bwtWithRanks, unsigned int firstVal, unsigned int lastVal, unsigned int &leftBoundary, unsigned int &rightBoundary);
 unsigned int count_512_counter40(unsigned char *pattern, unsigned int i, unsigned int *C, unsigned long long **bwtWithRanks, unsigned int firstVal, unsigned int lastVal);
 void getCountBoundaries_512_counter40(unsigned char *pattern, unsigned int i, unsigned int *C, unsigned long long **bwtWithRanks, unsigned int firstVal, unsigned int lastVal, unsigned int &leftBoundary, unsigned int &rightBoundary);
-unsigned char *encode125(unsigned char* text, unsigned int textLen, unsigned int *selectedOrdChars, unsigned int &encodedTextLen);
-void fill125LUT(unsigned int *selectedOrdChars, unsigned int lut[][125]);
+unsigned char *encode125(unsigned char* text, unsigned int textLen, vector<unsigned char> selectedChars, unsigned int &encodedTextLen);
+void fill125LUT(vector<unsigned char> selectedChars, unsigned int lut[][125]);
 unsigned int count_512_enc125(unsigned char *pattern, unsigned int i, unsigned int *C, unsigned char *bwtWithRanks, unsigned int lut[][125], unsigned int firstVal, unsigned int lastVal);
 unsigned int count_1024_enc125(unsigned char *pattern, unsigned int i, unsigned int *C, unsigned char *bwtWithRanks, unsigned int lut[][125], unsigned int firstVal, unsigned int lastVal);
 unsigned int count_WT2_512_counter40(unsigned char *pattern, unsigned int i, unsigned int *C, WT *wt, unsigned int firstVal, unsigned int lastVal, unsigned long long *code, unsigned int *codeLen);

@@ -10,18 +10,21 @@ using namespace std;
 
 /*FMDUMMY1*/
 
-void FMDummy1::setType(string indexType) {
-	if (indexType == "512") this->type = FMDummy1::TYPE_512;
-	else if (indexType == "256") this->type = FMDummy1::TYPE_256;
-	else {
+void FMDummy1::setType(int indexType) {
+	if (indexType != FMDummy1::TYPE_256 && indexType != FMDummy1::TYPE_512) {
 		cout << "Error: not valid index type" << endl;
 		exit(1);
 	}
+	this->type = indexType;
 }
 
-void FMDummy1::setSelectedChars(string selectedChars) {
+void FMDummy1::setSelectedChars(vector<unsigned char> selectedChars) {
+	if (selectedChars.size() > 16) {
+		cout << "Error: not valid number of selected chars" << endl;
+		exit(1);
+	}
 	this->selectedChars = selectedChars;
-	if (selectedChars == "all") this->allChars = true;
+	if (selectedChars.size() == 0) this->allChars = true;
 	else this->allChars = false;
 }
 
@@ -84,8 +87,6 @@ void FMDummy1::initialize() {
 		this->alignedBWTWithRanks[i] = NULL;
 	}
 	this->bwtWithRanksLen = 0;
-	this->ordCharsLen = 0;
-	this->ordChars = NULL;
 	for (int i = 0; i < 257; ++i) this->c[i] = 0;
 	this->ht = NULL;
 
@@ -93,7 +94,7 @@ void FMDummy1::initialize() {
 	this->k = 0;
 	this->loadFactor = 0.0;
 	this->allChars = true;
-	this->selectedChars = "all";
+	this->selectedChars = {};
 
 	this->textSize = 0;
 
@@ -103,7 +104,6 @@ void FMDummy1::initialize() {
 
 void FMDummy1::freeMemory() {
 	for (int i = 0; i < 256; ++i) if (this->bwtWithRanks[i] != NULL) delete[] this->bwtWithRanks[i];
-	if (this->ordChars != NULL) delete[] this->ordChars;
 	if (this->ht != NULL) delete this->ht;
 }
 
@@ -115,20 +115,19 @@ void FMDummy1::build(unsigned char* text, unsigned int textLen) {
 		if (this->verbose) cout << "Counting char frequencies ... " << flush;
 		unsigned int charsFreq[256];
 		for (unsigned int i = 0; i < 256; ++i) charsFreq[i] = 0;
-		this->ordCharsLen = 0;
+		unsigned int selectedCharsLen = 0;
 		for (unsigned int i = 0; i < textLen; ++i) {
-			if (charsFreq[(unsigned int)text[i]] == 0) ++this->ordCharsLen;
+			if (charsFreq[(unsigned int)text[i]] == 0) ++selectedCharsLen;
 			++charsFreq[(unsigned int)text[i]];
 		}
 		if (this->verbose) cout << "Done" << endl;
-		if (this->ordCharsLen > 16) {
+		if (selectedCharsLen > 16) {
 			cout << "Error building index: text cannot contain more than 16 unique symbols" << endl;
 			exit(1);
 		}
-		this->ordChars = new unsigned int[this->ordCharsLen];
-		unsigned int counter = 0;
-		for (unsigned int i = 0; i < 256; ++i) if (charsFreq[i] > 0) this->ordChars[counter++] = i;
-	} else this->ordChars = breakByDelimeter(this->selectedChars, '.', this->ordCharsLen);
+		this->selectedChars = {};
+		for (unsigned int i = 0; i < 256; ++i) if (charsFreq[i] > 0) this->selectedChars.push_back(i);
+	}
 	unsigned int bwtLen;
 	unsigned char *bwt = NULL;
 	if (this->k > 1) {
@@ -137,7 +136,7 @@ void FMDummy1::build(unsigned char* text, unsigned int textLen) {
 		unsigned int *sa = getSA(text, textLen, saLen, 0, this->verbose);
 		if (this->verbose) cout << "Creating hash table ... " << flush;
 		if (this->allChars) this->ht->buildWithEntries(text, textLen, sa, saLen);
-		else this->ht->buildWithEntries(text, textLen, sa, saLen, this->ordChars, this->ordCharsLen);
+		else this->ht->buildWithEntries(text, textLen, sa, saLen, this->selectedChars);
 		if (this->verbose) cout << "Done" << endl;
 		bwt = getBWT(text, textLen, sa, saLen, bwtLen, this->verbose);
 		delete[] sa;
@@ -149,15 +148,15 @@ void FMDummy1::build(unsigned char* text, unsigned int textLen) {
 	unsigned int bwtDenseInLongLen = bwtDenseLen / sizeof(unsigned long long);
 	if (bwtDenseLen % sizeof(unsigned long long) > 0) ++bwtDenseInLongLen;
 	unsigned long long *bwtDenseInLong[256];
-	for (unsigned int i = 0; i < this->ordCharsLen; ++i) {
-		int ordChar = this->ordChars[i];
-		unsigned char *bwtDense = getBinDenseForChar(bwt, bwtLen, ordChar);
-		bwtDenseInLong[ordChar] = new unsigned long long[bwtDenseInLongLen + 8];
+	for (vector<unsigned char>::iterator it = selectedChars.begin(); it != selectedChars.end(); ++it) {
+		unsigned int selectedChar = (*it);
+		unsigned char *bwtDense = getBinDenseForChar(bwt, bwtLen, selectedChar);
+		bwtDenseInLong[selectedChar] = new unsigned long long[bwtDenseInLongLen + 8];
 		for (unsigned long long j = 0; j < bwtDenseInLongLen; ++j) {
-			bwtDenseInLong[ordChar][j] = ((unsigned long long)bwtDense[8 * j + 7] << 56) | ((unsigned long long)bwtDense[8 * j + 6] << 48) | ((unsigned long long)bwtDense[8 * j + 5] << 40) | ((unsigned long long)bwtDense[8 * j + 4] << 32) | ((unsigned long long)bwtDense[8 * j + 3] << 24) | ((unsigned long long)bwtDense[8 * j + 2] << 16) | ((unsigned long long)bwtDense[8 * j + 1] << 8) | (unsigned long long)bwtDense[8 * j];
+			bwtDenseInLong[selectedChar][j] = ((unsigned long long)bwtDense[8 * j + 7] << 56) | ((unsigned long long)bwtDense[8 * j + 6] << 48) | ((unsigned long long)bwtDense[8 * j + 5] << 40) | ((unsigned long long)bwtDense[8 * j + 4] << 32) | ((unsigned long long)bwtDense[8 * j + 3] << 24) | ((unsigned long long)bwtDense[8 * j + 2] << 16) | ((unsigned long long)bwtDense[8 * j + 1] << 8) | (unsigned long long)bwtDense[8 * j];
 		}
 		for (unsigned long long j = bwtDenseInLongLen; j < bwtDenseInLongLen + 8; ++j) {
-			bwtDenseInLong[ordChar][j] = 0ULL;
+			bwtDenseInLong[selectedChar][j] = 0ULL;
 		}
 		delete[] bwtDense;
 	}
@@ -167,20 +166,17 @@ void FMDummy1::build(unsigned char* text, unsigned int textLen) {
 	fillArrayC(text, textLen, this->c, verbose);
 
 	if (this->verbose) cout << "Interweaving BWT with ranks ... " << flush;
-	builder(bwtDenseInLong, bwtDenseInLongLen, this->ordChars, this->ordCharsLen, this->bwtWithRanks, this->bwtWithRanksLen, this->alignedBWTWithRanks);
+	builder(bwtDenseInLong, bwtDenseInLongLen, this->selectedChars, this->bwtWithRanks, this->bwtWithRanksLen, this->alignedBWTWithRanks);
 	if (this->verbose) cout << "Done" << endl;
 
-	for (unsigned int i = 0; i < this->ordCharsLen; ++i) delete[] bwtDenseInLong[this->ordChars[i]];
+	for (vector<unsigned char>::iterator it = selectedChars.begin(); it != selectedChars.end(); ++it) delete[] bwtDenseInLong[*it];
 	if (this->verbose) cout << "Index successfully built" << endl;
 }
 
 unsigned int FMDummy1::getIndexSize() {
-	unsigned int size = sizeof(this->ordCharsLen) + sizeof(this->bwtWithRanksLen) + sizeof(this->type) + sizeof(this->k) + sizeof(this->loadFactor) + sizeof(this->allChars) + this->selectedChars.size();
-	size += (257 * sizeof(unsigned int) + 256 * sizeof(unsigned long long*));
-	if (this->ordCharsLen > 0) {
-		size += (256 * sizeof(unsigned long long*));
-		size += (this->ordCharsLen * sizeof(unsigned char) + this->ordCharsLen * this->bwtWithRanksLen * sizeof(unsigned long long));
-	}
+	unsigned int size = sizeof(this->bwtWithRanksLen) + sizeof(this->type) + sizeof(this->k) + sizeof(this->loadFactor) + sizeof(this->allChars) + this->selectedChars.size();
+	size += (257 * sizeof(unsigned int) + 256 * sizeof(unsigned long long*) + 256 * sizeof(unsigned long long*));
+	if (this->selectedChars.size() > 0) size += (this->selectedChars.size() * sizeof(unsigned char) + this->selectedChars.size() * this->bwtWithRanksLen * sizeof(unsigned long long));
 	if (this->ht != NULL) size += this->ht->getHTSize();
 	return size;
 }
@@ -225,7 +221,7 @@ unsigned int *FMDummy1::locate(unsigned char *pattern, unsigned int patternLen) 
 	return 0;
 }
 
-void FMDummy1::save(char *fileName) {
+void FMDummy1::save(const char *fileName) {
 	if (this->verbose) cout << "Saving index in " << fileName << " ... " << flush;
 	bool nullPointer = false;
 	bool notNullPointer = true;
@@ -233,19 +229,17 @@ void FMDummy1::save(char *fileName) {
 	outFile = fopen(fileName, "w");
 	fwrite(&this->verbose, (size_t)sizeof(bool), (size_t)1, outFile);
 	fwrite(&this->type, (size_t)sizeof(int), (size_t)1, outFile);
-	unsigned int selectedCharsLen = this->selectedChars.size();
-	fwrite(&selectedCharsLen, (size_t)sizeof(unsigned int), (size_t)1, outFile);
-	fwrite(this->selectedChars.c_str(), (size_t)sizeof(char), (size_t)selectedCharsLen, outFile);
 	fwrite(&this->k, (size_t)sizeof(unsigned int), (size_t)1, outFile);
 	fwrite(&this->loadFactor, (size_t)sizeof(double), (size_t)1, outFile);
-	fwrite(&this->ordCharsLen, (size_t)sizeof(unsigned int), (size_t)1, outFile);
 	fwrite(&this->textSize, (size_t)sizeof(unsigned int), (size_t)1, outFile);
 	fwrite(this->c, (size_t)sizeof(unsigned int), (size_t)257, outFile);
 	fwrite(&this->bwtWithRanksLen, (size_t)sizeof(unsigned int), (size_t)1, outFile);
-	if (this->ordCharsLen > 0) {
-		fwrite(this->ordChars, (size_t)sizeof(unsigned int), (size_t)this->ordCharsLen, outFile);
-		for (unsigned int i = 0; i < this->ordCharsLen; ++i) {
-			fwrite(this->alignedBWTWithRanks[this->ordChars[i]], (size_t)sizeof(unsigned long long), (size_t)(this->bwtWithRanksLen - 16), outFile);
+	unsigned int selectedCharsLen = this->selectedChars.size();
+	fwrite(&selectedCharsLen, (size_t)sizeof(unsigned int), (size_t)1, outFile);
+	if (this->selectedChars.size() > 0) {
+		for (vector<unsigned char>::iterator it = selectedChars.begin(); it != selectedChars.end(); ++it) {
+			fwrite(&(*it), (size_t)sizeof(unsigned char), (size_t)1, outFile);
+			fwrite(this->alignedBWTWithRanks[*it], (size_t)sizeof(unsigned long long), (size_t)(this->bwtWithRanksLen - 16), outFile);
 		}
 	}
 	if (this->ht == NULL) fwrite(&nullPointer, (size_t)sizeof(bool), (size_t)1, outFile);
@@ -257,7 +251,7 @@ void FMDummy1::save(char *fileName) {
 	if (this->verbose) cout << "Done" << endl;
 }
 
-void FMDummy1::load(char *fileName) {
+void FMDummy1::load(const char *fileName) {
 	this->free();
 	bool isNotNullPointer;
 	FILE *inFile;
@@ -274,34 +268,12 @@ void FMDummy1::load(char *fileName) {
 		cout << "Error loading index from " << fileName << endl;
 		exit(1);
 	}
-	unsigned int selectedCharsLen;
-	result = fread(&selectedCharsLen, (size_t)sizeof(unsigned int), (size_t)1, inFile);
-	if (result != 1) {
-		cout << "Error loading index from " << fileName << endl;
-		exit(1);
-	}
-	char *selectedCharsTemp = new char[selectedCharsLen + 1];
-	result = fread(selectedCharsTemp, (size_t)sizeof(char), (size_t)selectedCharsLen, inFile);
-	if (result != selectedCharsLen) {
-		cout << "Error loading index from " << fileName << endl;
-		exit(1);
-	}
-	selectedCharsTemp[selectedCharsLen] = '\0';
-	this->selectedChars = selectedCharsTemp;
-	delete [] selectedCharsTemp;
-	if (this->selectedChars == "all") this->allChars = true;
-	else this->allChars = false;
 	result = fread(&this->k, (size_t)sizeof(unsigned int), (size_t)1, inFile);
 	if (result != 1) {
 		cout << "Error loading index from " << fileName << endl;
 		exit(1);
 	}
 	result = fread(&this->loadFactor, (size_t)sizeof(double), (size_t)1, inFile);
-	if (result != 1) {
-		cout << "Error loading index from " << fileName << endl;
-		exit(1);
-	}
-	result = fread(&this->ordCharsLen, (size_t)sizeof(unsigned int), (size_t)1, inFile);
 	if (result != 1) {
 		cout << "Error loading index from " << fileName << endl;
 		exit(1);
@@ -321,16 +293,22 @@ void FMDummy1::load(char *fileName) {
 		cout << "Error loading index from " << fileName << endl;
 		exit(1);
 	}
-	if (this->ordCharsLen > 0) {
-		this->ordChars = new unsigned int[this->ordCharsLen];
-		result = fread(this->ordChars, (size_t)sizeof(unsigned int), (size_t)this->ordCharsLen, inFile);
-		if (result != this->ordCharsLen) {
-			cout << "Error loading index from " << fileName << endl;
-			exit(1);
-		}
-		for (int i = 0; i < 256; ++i) this->alignedBWTWithRanks[i] = NULL;
-		for (unsigned int i = 0; i < this->ordCharsLen; ++i) {
-			unsigned int c = this->ordChars[i];
+	unsigned int selectedCharsLen;
+	result = fread(&selectedCharsLen, (size_t)sizeof(unsigned int), (size_t)1, inFile);
+	if (result != 1) {
+		cout << "Error loading index from " << fileName << endl;
+		exit(1);
+	}
+	this->selectedChars = {};
+	if (selectedCharsLen > 0) {
+		for (unsigned int i = 0; i < selectedCharsLen; ++i) {
+			unsigned char c;
+			result = fread(&c, (size_t)sizeof(unsigned char), (size_t)1, inFile);
+			if (result != 1) {
+				cout << "Error loading index from " << fileName << endl;
+				exit(1);
+			}
+			this->selectedChars.push_back(c);
 			this->bwtWithRanks[c] = new unsigned long long[this->bwtWithRanksLen];
 			this->alignedBWTWithRanks[c] = this->bwtWithRanks[c];
 			while ((unsigned long long)(this->alignedBWTWithRanks[c]) % 128) ++(this->alignedBWTWithRanks[c]);
@@ -340,7 +318,8 @@ void FMDummy1::load(char *fileName) {
 				exit(1);
 			}
 		}
-	}
+		this->allChars = false;
+	} else this->allChars = true;
 	result = fread(&isNotNullPointer, (size_t)sizeof(bool), (size_t)1, inFile);
 	if (result != 1) {
 		cout << "Error loading index from " << fileName << endl;
@@ -357,24 +336,25 @@ void FMDummy1::load(char *fileName) {
 
 /*FMDUMMY2*/
 
-void FMDummy2::setType(string indexType, string schema) {
-	if (indexType == "512") this->type = FMDummy2::TYPE_512;
-	else if (indexType == "256") this->type = FMDummy2::TYPE_256;
-	else {
+void FMDummy2::setType(int indexType, int schema) {
+	if (indexType != FMDummy2::TYPE_512 && indexType != FMDummy2::TYPE_256) {
 		cout << "Error: not valid index type" << endl;
 		exit(1);
 	}
-	if (schema == "CB") this->schema = FMDummy2::SCHEMA_CB;
-	else if (schema == "SCBO") this->schema = FMDummy2::SCHEMA_SCBO;
-	else {
+	this->type = indexType;
+	if (schema != FMDummy2::SCHEMA_CB && schema != FMDummy2::SCHEMA_SCBO) {
 		cout << "Error: not valid index schema" << endl;
 		exit(1);
 	}
+	this->schema = schema;
 }
 
-void FMDummy2::setBitsPerChar(string bitsPerChar) {
-	if (bitsPerChar == "3") this->bitsPerChar = FMDummy2::BITS_3;
-	else this->bitsPerChar = FMDummy2::BITS_4;
+void FMDummy2::setBitsPerChar(int bitsPerChar) {
+	if (bitsPerChar != FMDummy2::BITS_3 && bitsPerChar != FMDummy2::BITS_4) {
+		cout << "Error: not valid bits per char value" << endl;
+		exit(1);
+	}
+	this->bitsPerChar = bitsPerChar;
 }
 
 void FMDummy2::setEncodedPattern(unsigned int maxPatternLen) {
@@ -791,7 +771,7 @@ void FMDummy2::build(unsigned char *text, unsigned int textLen) {
 	unsigned int *encodedSA = getSA(encodedText, encodedTextLen, encodedSALen, 0, this->verbose);
 	unsigned char *bwt = getBWT(encodedText, encodedTextLen, encodedSA, encodedSALen, bwtLen, this->verbose);
 	if (this->ht == NULL) delete[] encodedSA;
-	unsigned int ordCharsLen = (unsigned int)exp2((double)this->bitsPerChar);
+	unsigned int encodedCharsLen = (unsigned int)exp2((double)this->bitsPerChar);
 	if (this->verbose) cout << "Compacting BWT ... " << flush;
 	++bwtLen;
 	unsigned int bwtDenseLen = (bwtLen / 8);
@@ -799,16 +779,16 @@ void FMDummy2::build(unsigned char *text, unsigned int textLen) {
 	unsigned int bwtDenseInLongLen = bwtDenseLen / sizeof(unsigned long long);
 	if (bwtDenseLen % sizeof(unsigned long long) > 0) ++bwtDenseInLongLen;
 	unsigned long long *bwtDenseInLong[256];
-	unsigned int *ordChars = new unsigned int[ordCharsLen];
-	for (unsigned int i = 0; i < ordCharsLen; ++i) {
-		ordChars[i] = i + 1;
-		unsigned char *bwtDense = getBinDenseForChar(bwt, bwtLen, ordChars[i]);
-		bwtDenseInLong[ordChars[i]] = new unsigned long long[bwtDenseInLongLen + 8];
+	vector<unsigned char> encodedChars = {};
+	for (unsigned int i = 0; i < encodedCharsLen; ++i) {
+		encodedChars.push_back(i + 1);
+		unsigned char *bwtDense = getBinDenseForChar(bwt, bwtLen, encodedChars[i]);
+		bwtDenseInLong[encodedChars[i]] = new unsigned long long[bwtDenseInLongLen + 8];
 		for (unsigned long long j = 0; j < bwtDenseInLongLen; ++j) {
-			bwtDenseInLong[ordChars[i]][j] = ((unsigned long long)bwtDense[8 * j + 7] << 56) | ((unsigned long long)bwtDense[8 * j + 6] << 48) | ((unsigned long long)bwtDense[8 * j + 5] << 40) | ((unsigned long long)bwtDense[8 * j + 4] << 32) | ((unsigned long long)bwtDense[8 * j + 3] << 24) | ((unsigned long long)bwtDense[8 * j + 2] << 16) | ((unsigned long long)bwtDense[8 * j + 1] << 8) | (unsigned long long)bwtDense[8 * j];
+			bwtDenseInLong[encodedChars[i]][j] = ((unsigned long long)bwtDense[8 * j + 7] << 56) | ((unsigned long long)bwtDense[8 * j + 6] << 48) | ((unsigned long long)bwtDense[8 * j + 5] << 40) | ((unsigned long long)bwtDense[8 * j + 4] << 32) | ((unsigned long long)bwtDense[8 * j + 3] << 24) | ((unsigned long long)bwtDense[8 * j + 2] << 16) | ((unsigned long long)bwtDense[8 * j + 1] << 8) | (unsigned long long)bwtDense[8 * j];
 		}
 		for (unsigned long long j = bwtDenseInLongLen; j < bwtDenseInLongLen + 8; ++j) {
-			bwtDenseInLong[ordChars[i]][j] = 0ULL;
+			bwtDenseInLong[encodedChars[i]][j] = 0ULL;
 		}
 		delete[] bwtDense;
 	}
@@ -819,7 +799,7 @@ void FMDummy2::build(unsigned char *text, unsigned int textLen) {
 	if (this->schema == FMDummy2::SCHEMA_CB) this->bInC = this->c[b];
 
 	if (this->verbose) cout << "Interweaving BWT with ranks ... " << flush;
-	builder(bwtDenseInLong, bwtDenseInLongLen, ordChars, ordCharsLen, this->bwtWithRanks, this->bwtWithRanksLen, this->alignedBWTWithRanks);
+	builder(bwtDenseInLong, bwtDenseInLongLen, encodedChars, this->bwtWithRanks, this->bwtWithRanksLen, this->alignedBWTWithRanks);
 	if (this->verbose) cout << "Done" << endl;
 	if (this->ht != NULL)  {
 		if (this->verbose) cout << "Modifying hash table for encoded text ... " << flush;
@@ -871,8 +851,7 @@ void FMDummy2::build(unsigned char *text, unsigned int textLen) {
 		delete[] encodedSA;
 	}
 
-	for (unsigned int i = 0; i < ordCharsLen; ++i) delete[] bwtDenseInLong[ordChars[i]];
-	delete[] ordChars;
+	for (vector<unsigned char>::iterator it = encodedChars.begin(); it != encodedChars.end(); ++it) delete[] bwtDenseInLong[*it];
 	delete[] encodedText;
 
 	if (this->verbose) cout << "Index successfully built" << endl;
@@ -880,7 +859,7 @@ void FMDummy2::build(unsigned char *text, unsigned int textLen) {
 
 unsigned int FMDummy2::getIndexSize() {
 	unsigned int size = (sizeof(this->type) + sizeof(this->schema) + sizeof(this->bitsPerChar) + sizeof(this->k) + sizeof(this->loadFactor) + sizeof(this->maxEncodedCharsLen) + sizeof(this->maxPatternLen) + sizeof(bInC) + sizeof(this->bwtWithRanksLen));
-	size += (257 * sizeof(unsigned int) + 256 * sizeof(unsigned long long *) + 256 * sizeof(unsigned int) + (this->maxEncodedCharsLen * this->maxPatternLen + 1) * sizeof(unsigned char));
+	size += (257 * sizeof(unsigned int) + 256 * sizeof(unsigned long long *) + 256 * sizeof(unsigned long long *) + 256 * sizeof(unsigned int) + (this->maxEncodedCharsLen * this->maxPatternLen + 1) * sizeof(unsigned char));
 	size += ((unsigned int)exp2((double)this->bitsPerChar) * this->bwtWithRanksLen * sizeof(unsigned long long) + this->maxEncodedCharsLen * 256 * sizeof(unsigned char));
 	if (this->ht != NULL) size += this->ht->getHTSize();
 	return size;
@@ -999,7 +978,7 @@ unsigned int *FMDummy2::locate(unsigned char *pattern, unsigned int patternLen) 
 	return 0;
 }
 
-void FMDummy2::save(char *fileName) {
+void FMDummy2::save(const char *fileName) {
 	if (this->verbose) cout << "Saving index in " << fileName << " ... " << flush;
 	bool nullPointer = false;
 	bool notNullPointer = true;
@@ -1032,7 +1011,7 @@ void FMDummy2::save(char *fileName) {
 	if (this->verbose) cout << "Done" << endl;
 }
 
-void FMDummy2::load(char *fileName) {
+void FMDummy2::load(const char *fileName) {
 	this->free();
 	bool isNotNullPointer;
 	FILE *inFile;
@@ -1134,13 +1113,12 @@ void FMDummy2::load(char *fileName) {
 
 /*FMDUMMY3*/
 
-void FMDummy3::setType(string indexType) {
-	if (indexType == "1024") this->type = FMDummy3::TYPE_1024;
-	else if (indexType == "512") this->type = FMDummy3::TYPE_512;
-	else {
+void FMDummy3::setType(int indexType) {
+	if (indexType != FMDummy3::TYPE_1024 && indexType != FMDummy3::TYPE_512) {
 		cout << "Error: not valid index type" << endl;
 		exit(1);
 	}
+	this->type = indexType;
 }
 
 void FMDummy3::setK(unsigned int k) {
@@ -1303,14 +1281,14 @@ void FMDummy3::build(unsigned char *text, unsigned int textLen) {
 	if (this->verbose) cout << "Done" << endl;
 	unsigned int bwtLen;
 	unsigned char *bwt = NULL;
-	unsigned int selectedOrdChars[4] = { (unsigned int)'A', (unsigned int)'C', (unsigned int)'G', (unsigned int)'T' };
+	vector<unsigned char> selectedChars = { 'A', 'C', 'G', 'T' };
 	if (this->k > 1) {
 		this->ht = new HT(this->k, this->loadFactor);
 		unsigned int saLen;
 		unsigned int *sa = getSA(convertedText, textLen, saLen, 0, this->verbose);
 		if (this->verbose) cout << "Creating hash table ... " << flush;
 
-		this->ht->buildWithEntries(convertedText, textLen, sa, saLen, selectedOrdChars, 4);
+		this->ht->buildWithEntries(convertedText, textLen, sa, saLen, selectedChars);
 		if (this->verbose) cout << "Done" << endl;
 		bwt = getBWT(convertedText, textLen, sa, saLen, bwtLen, this->verbose);
 		delete[] sa;
@@ -1318,10 +1296,10 @@ void FMDummy3::build(unsigned char *text, unsigned int textLen) {
 	if (this->verbose) cout << "Encoding BWT ... " << flush;
 	++bwtLen;
 	unsigned int bwtEnc125Len;
-	unsigned char *bwtEnc125 = encode125(bwt, bwtLen, selectedOrdChars, bwtEnc125Len);
+	unsigned char *bwtEnc125 = encode125(bwt, bwtLen, selectedChars, bwtEnc125Len);
 	delete[] bwt;
 	if (this->verbose) cout << "Done" << endl;
-	fill125LUT(selectedOrdChars, this->lut);
+	fill125LUT(selectedChars, this->lut);
 	fillArrayC(convertedText, textLen, this->c, verbose);
 	delete[] convertedText;
 	if (this->verbose) cout << "Interweaving BWT with ranks ... " << flush;
@@ -1386,7 +1364,7 @@ unsigned int *FMDummy3::locate(unsigned char *pattern, unsigned int patternLen) 
 	return 0;
 }
 
-void FMDummy3::save(char *fileName) {
+void FMDummy3::save(const char *fileName) {
 	if (this->verbose) cout << "Saving index in " << fileName << " ... " << flush;
 	bool nullPointer = false;
 	bool notNullPointer = true;
@@ -1410,7 +1388,7 @@ void FMDummy3::save(char *fileName) {
 	if (this->verbose) cout << "Done" << endl;
 }
 
-void FMDummy3::load(char *fileName) {
+void FMDummy3::load(const char *fileName) {
 	this->free();
 	bool isNotNullPointer;
 	FILE *inFile;
@@ -1483,20 +1461,17 @@ void FMDummy3::load(char *fileName) {
 
 /*FMDUMMYWT*/
 
-void FMDummyWT::setType(string wtType, string indexType) {
-	if (wtType == "2") this->wtType = FMDummyWT::TYPE_WT2;
-	else if (wtType == "4") this->wtType = FMDummyWT::TYPE_WT4;
-	else if (wtType == "8") this->wtType = FMDummyWT::TYPE_WT8;
-	else {
+void FMDummyWT::setType(int wtType, int indexType) {
+	if (wtType != FMDummyWT::TYPE_WT2 && wtType != FMDummyWT::TYPE_WT4 && wtType != FMDummyWT::TYPE_WT8) {
 		cout << "Error: not valid WT type" << endl;
 		exit(1);
 	}
-	if (indexType == "512") this->type = FMDummyWT::TYPE_512;
-	else if (indexType == "1024") this->type = FMDummyWT::TYPE_1024;
-	else {
+	this->wtType = wtType;
+	if (indexType != FMDummyWT::TYPE_512 && indexType != FMDummyWT::TYPE_1024) {
 		cout << "Error: not valid index type" << endl;
 		exit(1);
 	}
+	this->type = indexType;
 }
 
 void FMDummyWT::setK(unsigned int k) {
@@ -2000,7 +1975,7 @@ unsigned int *FMDummyWT::locate(unsigned char *pattern, unsigned int patternLen)
 	return 0;
 }
 
-void FMDummyWT::save(char *fileName) {
+void FMDummyWT::save(const char *fileName) {
 	bool nullPointer = false;
 	bool notNullPointer = true;
 	if (this->verbose) cout << "Saving index in " << fileName << " ... " << flush;
@@ -2029,7 +2004,7 @@ void FMDummyWT::save(char *fileName) {
 	if (this->verbose) cout << "Done" << endl;
 }
 
-void FMDummyWT::load(char *fileName) {
+void FMDummyWT::load(const char *fileName) {
 	this->free();
 	bool isNotNullPointer;
 	FILE *inFile;
@@ -2209,13 +2184,13 @@ unsigned char *getBinDenseForChar(unsigned char *bwt, unsigned int bwtLen, int o
 	return bwtDense;
 }
 
-void buildRank_256_counter48(unsigned long long **bwtInLong, unsigned int bwtInLongLen, unsigned int *ordChars, unsigned int ordCharsLen, unsigned long long **bwtWithRanks, unsigned int &bwtWithRanksLen, unsigned long long **alignedBWTWithRanks) {
+void buildRank_256_counter48(unsigned long long **bwtInLong, unsigned int bwtInLongLen, vector<unsigned char> selectedChars, unsigned long long **bwtWithRanks, unsigned int &bwtWithRanksLen, unsigned long long **alignedBWTWithRanks) {
 	unsigned long long *p, pops, rank, b1, b2;
 	for (int i = 0; i < 256; ++i) alignedBWTWithRanks[i] = NULL;
 	bwtWithRanksLen = (bwtInLongLen + (bwtInLongLen * 64) / 192 + 1 + 16);
 
-	for (unsigned int i = 0; i < ordCharsLen; ++i) {
-		unsigned int c = ordChars[i];
+	for (vector<unsigned char>::iterator it = selectedChars.begin(); it != selectedChars.end(); ++it) {
+		unsigned int c = (*it);
 		unsigned long long *resRank = new unsigned long long[(bwtInLongLen * 64) / 192 + 1];
 		p = bwtInLong[c];
 		rank = 0;
@@ -2243,13 +2218,13 @@ void buildRank_256_counter48(unsigned long long **bwtInLong, unsigned int bwtInL
 	}
 }
 
-void buildRank_512_counter40(unsigned long long **bwtInLong, unsigned int bwtInLongLen, unsigned int *ordChars, unsigned int ordCharsLen, unsigned long long **bwtWithRanks, unsigned int &bwtWithRanksLen, unsigned long long **alignedBWTWithRanks) {
+void buildRank_512_counter40(unsigned long long **bwtInLong, unsigned int bwtInLongLen, vector<unsigned char> selectedChars, unsigned long long **bwtWithRanks, unsigned int &bwtWithRanksLen, unsigned long long **alignedBWTWithRanks) {
 	unsigned long long *p, pop1, pop2, pop3, rank, b1, b2, b3;
 	for (int i = 0; i < 256; ++i) alignedBWTWithRanks[i] = NULL;
 	bwtWithRanksLen = (bwtInLongLen + (bwtInLongLen * 64) / 448 + 1 + 16);
 
-	for (unsigned int i = 0; i < ordCharsLen; ++i) {
-		unsigned int c = ordChars[i];
+	for (vector<unsigned char>::iterator it = selectedChars.begin(); it != selectedChars.end(); ++it) {
+		unsigned int c = (*it);
 		unsigned long long *resRank = new unsigned long long[(bwtInLongLen * 64) / 448 + 1];
 		p = bwtInLong[c];
 		rank = 0;
@@ -2445,7 +2420,7 @@ void getCountBoundaries_512_counter40(unsigned char *pattern, unsigned int i, un
 	rightBoundary = lastVal;
 }
 
-unsigned char *encode125(unsigned char* text, unsigned int textLen, unsigned int *selectedOrdChars, unsigned int &encodedTextLen) {
+unsigned char *encode125(unsigned char* text, unsigned int textLen, vector<unsigned char> selectedChars, unsigned int &encodedTextLen) {
 	encodedTextLen = textLen / 3;
 	if (textLen % 3 > 0) ++encodedTextLen;
 	unsigned char *textEnc125 = new unsigned char[encodedTextLen];
@@ -2456,7 +2431,7 @@ unsigned char *encode125(unsigned char* text, unsigned int textLen, unsigned int
 			bool encoded = false;
 			if (3 * i + k < textLen) {
 				for (int j = 0; j < 4; ++j) {
-					if (text[3 * i + k] == selectedOrdChars[j]) {
+					if (text[3 * i + k] == selectedChars[j]) {
 						encoded = true;
 						temp += j * (int)pow(5.0, (double)k);
 						break;
@@ -2478,7 +2453,7 @@ unsigned int occ(unsigned int *a, unsigned int aLen, unsigned int elem) {
 	return occ;
 }
 
-void fill125LUT(unsigned int *selectedOrdChars, unsigned int lut[][125]) {
+void fill125LUT(vector<unsigned char> selectedChars, unsigned int lut[][125]) {
 	for (int i = 0; i < 125; ++i) {
 		unsigned int first = i % 5;
 		unsigned int second = (i / 5) % 5;
@@ -2486,15 +2461,15 @@ void fill125LUT(unsigned int *selectedOrdChars, unsigned int lut[][125]) {
 
 		unsigned int a[3] = { first, second, third };
 
-		lut[selectedOrdChars[0]][i] = 0;
-		lut[selectedOrdChars[1]][i] = 0;
-		lut[selectedOrdChars[2]][i] = 0;
-		lut[selectedOrdChars[3]][i] = 0;
+		lut[selectedChars[0]][i] = 0;
+		lut[selectedChars[1]][i] = 0;
+		lut[selectedChars[2]][i] = 0;
+		lut[selectedChars[3]][i] = 0;
 		lut['N'][i] = 0;
 
 		switch (first) {
 		case 0: case 1: case 2: case 3:
-			lut[selectedOrdChars[first]][i] = occ(a, 3, first);
+			lut[selectedChars[first]][i] = occ(a, 3, first);
 			break;
 		default:
 			lut['N'][i] = occ(a, 3, 4);
@@ -2502,7 +2477,7 @@ void fill125LUT(unsigned int *selectedOrdChars, unsigned int lut[][125]) {
 
 		switch (second) {
 		case 0: case 1: case 2: case 3:
-			lut[selectedOrdChars[second]][i] = occ(a, 3, second);
+			lut[selectedChars[second]][i] = occ(a, 3, second);
 			break;
 		default:
 			lut['N'][i] = occ(a, 3, 4);
@@ -2510,7 +2485,7 @@ void fill125LUT(unsigned int *selectedOrdChars, unsigned int lut[][125]) {
 
 		switch (third) {
 		case 0: case 1: case 2: case 3:
-			lut[selectedOrdChars[third]][i] = occ(a, 3, third);
+			lut[selectedChars[third]][i] = occ(a, 3, third);
 			break;
 		default:
 			lut['N'][i] = occ(a, 3, 4);

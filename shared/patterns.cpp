@@ -12,7 +12,7 @@ void Patterns::initialize() {
 
 void Patterns::initializePatterns() {
 	stringstream ss;
-	ss << "patterns-" << this->textFileName << "-" << this->m << "-" << this->queriesNum << "-" << this->selectedChars << ".dat";
+	ss << "patterns-" << this->textFileName << "-" << this->m << "-" << this->queriesNum << "-" << getStringFromSelectedChars(this->selectedChars, ".") << ".dat";
 	string s = ss.str();
 	char *patternFileName = (char *)(s.c_str());
 	unsigned int textLen, queriesFirstIndexArrayLen;
@@ -21,15 +21,8 @@ void Patterns::initializePatterns() {
 
 	if (!fileExists(patternFileName)) {
 		cout << "Generating " << this->queriesNum << " patterns of length " << this->m << " from " << this->textFileName;
-		if (this->ordCharsLen != 0) {
-			cout << ", alphabet (ordinal): {";
-			for (unsigned int i = 0; i < this->ordCharsLen; ++i) {
-				cout << this->ordChars[i];
-				if ((i + 1) != this->ordCharsLen) {
-					cout << ", ";
-				}
-			}
-			cout << "}";
+		if (this->selectedChars.size() != 0) {
+			cout << ", alphabet (ordinal): {" << getStringFromSelectedChars(this->selectedChars, ", ") << "}";
 		}
 		cout << " ... " << flush;
 
@@ -41,14 +34,14 @@ void Patterns::initializePatterns() {
 
 		unsigned int genVal;
 
-		if (this->ordCharsLen != 0) {
+		if (this->selectedChars.size() != 0) {
 			for (unsigned long long i = 0; i < this->queriesNum; ++i) {
 				genVal = dis(gen);
 				queriesFirstIndexArray[i] = genVal;
 				for (unsigned int j = 0; j < this->m; ++j) {
 					bool inSigma = false;
-					for (unsigned int k = 0; k < this->ordCharsLen; ++k) {
-						if (text[j + genVal] == this->ordChars[k]) {
+					for (vector<unsigned char>::iterator it = this->selectedChars.begin(); it != this->selectedChars.end(); ++it) {
+						if (text[j + genVal] == (*it)) {
 							inSigma = true;
 							break;
 						}
@@ -96,7 +89,7 @@ void Patterns::initializePatterns() {
 
 void Patterns::initializeSACounts() {
 	stringstream ss;
-	ss << "counts-" << this->textFileName << "-" << this->m << "-" << this->queriesNum << "-" << this->selectedChars << ".dat";
+	ss << "counts-" << this->textFileName << "-" << this->m << "-" << this->queriesNum << "-" << getStringFromSelectedChars(this->selectedChars, ".") << ".dat";
 	string s = ss.str();
 	char *countsFileName = (char *)(s.c_str());
 
@@ -136,7 +129,6 @@ void Patterns::freeMemory() {
 	}
 	delete[] this->patterns;
 	delete[] this->counts;
-	delete[] this->ordChars;
 }
 
 
@@ -155,9 +147,8 @@ unsigned int *Patterns::getSACounts() {
 	return this->counts;
 }
 
-void Patterns::setSelectedChars(string selectedChars) {
+void Patterns::setSelectedChars(vector<unsigned char> selectedChars) {
 	this->selectedChars = selectedChars;
-	if (selectedChars != "all") this->ordChars = breakByDelimeter(selectedChars, '.', this->ordCharsLen);
 }
 
 unsigned int Patterns::getErrorCountsNumber(unsigned int *countsToCheck) {
