@@ -6,6 +6,8 @@
 #include "common.h"
 #include "patterns.h"
 
+namespace fmdummy {
+
 void Patterns::initialize() {
 	this->initializePatterns();
 }
@@ -160,4 +162,6 @@ unsigned int Patterns::getErrorCountsNumber(unsigned int *countsToCheck) {
 	}
 	cout << "Done" << endl;
 	return errorCountsNumber;
+}
+
 }

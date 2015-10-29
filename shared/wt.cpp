@@ -5,6 +5,8 @@
 
 using namespace std;
 
+namespace fmdummy {
+
 unsigned int WT::getWTSize() {
 	unsigned int size = sizeof(this->bitsLen) + sizeof(this->nodesLen) + sizeof(unsigned long long *);
 	size += (this->bitsLen * sizeof(unsigned long long) + this->nodesLen * sizeof(WT *));
@@ -82,4 +84,6 @@ void WT::load(FILE *inFile) {
 			this->nodes[i]->load(inFile);
 		} else this->nodes[i] = NULL;
 	}
+}
+
 }

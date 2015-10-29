@@ -9,6 +9,7 @@
 #include "fmdummy.h"
 
 using namespace std;
+using namespace fmdummy;
 
 CStopWatch timer;
 

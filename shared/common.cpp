@@ -7,6 +7,8 @@
 #include "sais.h"
 #include "../libs/asmlib.h"
 
+namespace fmdummy {
+
 unsigned long long getFileSize(const char *inFileName, int elemSize) {
 	FILE *InFile;
 	InFile = fopen(inFileName, "rb");
@@ -240,4 +242,6 @@ void encode(unsigned char *pattern, unsigned int patternLen, unsigned char *enco
 		for (unsigned int i = 0; i < encodedCharsLen[*p]; ++i) encodedPattern[encodedPatternLen++] = encodedChars[(unsigned int)(*p) * maxEncodedCharsLen + i];
 	}
 	encodedPattern[encodedPatternLen] = '\0';
+}
+
 }

@@ -9,6 +9,8 @@ using namespace std;
 #ifndef FMDUMMY_H_
 #define FMDUMMY_H_
 
+namespace fmdummy {
+
 /*FMDUMMY1*/
 
 class FMDummy1 : public Index {
@@ -363,5 +365,7 @@ unsigned int count_WT4_1024(unsigned char *pattern, unsigned int i, unsigned int
 unsigned int count_WT8_512(unsigned char *pattern, unsigned int i, unsigned int *C, WT *wt, unsigned int firstVal, unsigned int lastVal, unsigned long long *code, unsigned int *codeLen);
 unsigned int count_WT8_1024(unsigned char *pattern, unsigned int i, unsigned int *C, WT *wt, unsigned int firstVal, unsigned int lastVal, unsigned long long *code, unsigned int *codeLen);
 void encodeHuff(unsigned int d, unsigned char *text, unsigned int textLen, unsigned long long *huffCode, unsigned int *huffCodeLen);
+
+}
 
 #endif /* FMDUMMY_H_ */

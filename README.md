@@ -31,6 +31,7 @@ To use the FMDummy library:
 - compile it with "-std=c++11 -O3 -mpopcnt" options and link it with libraries:
   - fmdummy/libfmdummy.a
   - fmdummy/libs/libaelf64.a
+- use "fmdummy" namespace
 
 ##API
 There are several functions you can call on each of the FMDummy text index:
@@ -129,7 +130,7 @@ Parameters:
       - FMDummy2::TYPE_512 - using 512b blocks: 64b of rank data and 448b of encoded text data
 - schema:
       - FMDummy2::SCHEMA_SCBO - using SCBO encoding (A. Fariña, G. Navarro, J. Paramá. Boosting text compression with word-based statistical encoding. The Computer Journal, 55(1):111–131, 2012)
-      - FMDummy2::SCHEMA_CB - using CB encoding
+      - FMDummy2::SCHEMA_CB - using CB encoding (Sz. Grabowski, M. Raniszewski, S. Deorowicz. FM-index for dummies. arXiv:1506.04896, 2015)
 - bitsPerChars:
       - FMDummy2::BITS_4 (default) - using 4 bits to store the encoded symbol
       - FMDummy2::BITS_3 - using 3 bits to store the encoded symbol
@@ -214,6 +215,7 @@ FMDummyWT(FMDummyWT::WTType wtType, FMDummyWT::IndexType indexType, unsigned int
 #include "fmdummy/fmdummy.h"
 
 using namespace std;
+using namespace fmdummy;
 
 int main(int argc, char *argv[]) {
 

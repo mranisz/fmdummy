@@ -3,6 +3,8 @@
 #ifndef SHARED_HASH_H_
 #define SHARED_HASH_H_
 
+namespace fmdummy {
+
 class HT {
 private:
 	void freeMemory();
@@ -50,5 +52,7 @@ public:
 		this->freeMemory();
 	}
 };
+
+}
 
 #endif /* SHARED_HASH_H_ */

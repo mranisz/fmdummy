@@ -5,6 +5,8 @@ using namespace std;
 #ifndef SHARED_PATTERNS_H_
 #define SHARED_PATTERNS_H_
 
+namespace fmdummy {
+
 class Patterns {
 private:
 	const char *textFileName;
@@ -36,5 +38,7 @@ public:
 	unsigned int *getSACounts();
 	unsigned int getErrorCountsNumber(unsigned int *countsToCheck);
 };
+
+}
 
 #endif /* SHARED_PATTERNS_H_ */

@@ -1,6 +1,8 @@
 #ifndef SHARED_WT_H_
 #define SHARED_WT_H_
 
+namespace fmdummy {
+
 class WT {
 private:
 	void freeMemory();
@@ -32,5 +34,7 @@ public:
 		this->freeMemory();
 	}
 };
+
+}
 
 #endif /* SHARED_WT_H_ */

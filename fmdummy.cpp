@@ -8,6 +8,8 @@
 
 using namespace std;
 
+namespace fmdummy {
+
 /*FMDUMMY1*/
 
 void FMDummy1::setType(int indexType) {
@@ -3807,5 +3809,7 @@ unsigned int count_WT8_1024(unsigned char *pattern, unsigned int i, unsigned int
 
 	if (firstVal > lastVal) return 0;
 	else return lastVal - firstVal + 1;
+
+}
 
 }

@@ -8,6 +8,8 @@
 
 using namespace std;
 
+namespace fmdummy {
+
 const unsigned int HT::emptyValueHT = (unsigned int)-1;
 
 void HT::setK(unsigned int k) {
@@ -375,4 +377,6 @@ void HT::getBoundariesWithEntries(unsigned char *pattern, unsigned int &leftBoun
 		leftBoundary = 0;
 		rightBoundary = 0;
 	}
+}
+
 }
