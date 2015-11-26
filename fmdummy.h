@@ -1,3 +1,6 @@
+#ifndef FMDUMMY_H_
+#define FMDUMMY_H_
+
 #include "shared/common.h"
 #include "shared/wt.h"
 #include "shared/hash.h"
@@ -6,9 +9,6 @@
 
 using namespace std;
 
-#ifndef FMDUMMY_H_
-#define FMDUMMY_H_
-
 namespace fmdummy {
 
 /*FMDUMMY1*/
@@ -16,28 +16,24 @@ namespace fmdummy {
 class FMDummy1 : public Index {
 private:
 	alignas(128) unsigned long long *bwtWithRanks[256];
-	unsigned int bwtWithRanksLen;
 	alignas(128) unsigned long long *alignedBWTWithRanks[256];
+	unsigned int bwtWithRanksLen;
 	alignas(128) unsigned int c[257];
-	HT *ht;
+	HTExt *ht = NULL;
 
 	int type;
 	vector<unsigned char> selectedChars;
 	bool allChars;
-	unsigned int k;
-	double loadFactor;
 
-	unsigned int textSize;
+	unsigned int textLen;
 
-	void (*builder)(unsigned long long **, unsigned int, vector<unsigned char>, unsigned long long **, unsigned int &, unsigned long long **);
-	unsigned int (FMDummy1::*countOperation)(unsigned char *, unsigned int);
+	void (*builder)(unsigned long long **, unsigned int, vector<unsigned char>, unsigned long long **, unsigned int &, unsigned long long **) = NULL;
+	unsigned int (FMDummy1::*countOperation)(unsigned char *, unsigned int) = NULL;
 
 	void freeMemory();
 	void initialize();
 	void setType(int indexType);
 	void setSelectedChars(vector<unsigned char> selectedChars);
-	void setK(unsigned int k);
-	void setLoadFactor(double loadFactor);
 	void setFunctions();
 	unsigned int count_std_256_counter48(unsigned char *pattern, unsigned int patternLen);
 	unsigned int count_hash_256_counter48(unsigned char *pattern, unsigned int patternLen);
@@ -51,6 +47,8 @@ public:
 	};
 	FMDummy1() {
 		this->initialize();
+                this->setType(FMDummy1::TYPE_256);
+		this->setSelectedChars({});
 		this->setFunctions();
 	}
 
@@ -65,13 +63,13 @@ public:
 		this->initialize();
 		this->setType(indexType);
 		this->setSelectedChars(selectedChars);
-		this->setK(k);
-		this->setLoadFactor(loadFactor);
+                this->ht = new HTExt(HTExt::STANDARD, k, loadFactor);
 		this->setFunctions();
 	}
 
 	~FMDummy1() {
 		this->freeMemory();
+                if (this->ht != NULL) delete this->ht;
 	}
 
 	void build(unsigned char *text, unsigned int textLen);
@@ -90,8 +88,8 @@ public:
 class FMDummy2 : public Index {
 private:
 	alignas(128) unsigned long long *bwtWithRanks[256];
-	unsigned int bwtWithRanksLen;
 	alignas(128) unsigned long long *alignedBWTWithRanks[256];
+	unsigned int bwtWithRanksLen;
 	unsigned char *encodedChars;
 	alignas(128) unsigned int encodedCharsLen[256];
 	unsigned int maxEncodedCharsLen;
@@ -99,18 +97,16 @@ private:
 	unsigned int bInC;
 	unsigned char *encodedPattern;
 	unsigned int maxPatternLen;
-	HT *ht;
+	HTExt *ht = NULL;
 
 	int type;
 	int schema;
 	int bitsPerChar;
-	unsigned int k;
-	double loadFactor;
 
-	unsigned int textSize;
+	unsigned int textLen;
 
-	void (*builder)(unsigned long long **, unsigned int, vector<unsigned char>, unsigned long long **, unsigned int &, unsigned long long **);
-	unsigned int (FMDummy2::*countOperation)(unsigned char *, unsigned int);
+	void (*builder)(unsigned long long **, unsigned int, vector<unsigned char>, unsigned long long **, unsigned int &, unsigned long long **) = NULL;
+	unsigned int (FMDummy2::*countOperation)(unsigned char *, unsigned int) = NULL;
 
 	void freeMemory();
 	void initialize();
@@ -118,8 +114,6 @@ private:
 	void setBitsPerChar(int bitsPerChar);
 	void setMaxEncodedCharsLen();
 	void setEncodedPattern(unsigned int maxPatternLen);
-	void setK(unsigned int k);
-	void setLoadFactor(double loadFactor);
 	void setFunctions();
 	void encodePattern(unsigned char *pattern, unsigned int patternLen, unsigned int &encodedPatternLen, bool &wrongEncoding);
 	unsigned char *getEncodedInSCBO(unsigned char *text, unsigned int textLen, unsigned int &encodedTextLen);
@@ -151,6 +145,8 @@ public:
 
 	FMDummy2() {
 		this->initialize();
+                this->setType(FMDummy2::TYPE_256, FMDummy2::SCHEMA_SCBO);
+		this->setBitsPerChar(FMDummy2::BITS_4);
 		this->setFunctions();
 	}
 
@@ -165,13 +161,13 @@ public:
 		this->initialize();
 		this->setType(indexType, schema);
 		this->setBitsPerChar(bitsPerChar);
-		this->setK(k);
-		this->setLoadFactor(loadFactor);
+		this->ht = new HTExt(HTExt::STANDARD, k, loadFactor);
 		this->setFunctions();
 	}
 
 	~FMDummy2() {
 		this->freeMemory();
+                if (this->ht != NULL) delete this->ht;
 	}
 
 	void build(unsigned char *text, unsigned int textLen);
@@ -190,25 +186,21 @@ public:
 class FMDummy3 : public Index {
 private:
 	unsigned char *bwtWithRanks;
-	unsigned int bwtWithRanksLen;
 	unsigned char *alignedBWTWithRanks;
+	unsigned int bwtWithRanksLen;
 	alignas(128) unsigned int lut[256][125];
 	alignas(128) unsigned int c[257];
-	HT *ht;
+	HTExt *ht = NULL;
 
 	int type;
-	unsigned int k;
-	double loadFactor;
 
-	unsigned int textSize;
+	unsigned int textLen;
 
-	unsigned int (FMDummy3::*countOperation)(unsigned char *, unsigned int);
+	unsigned int (FMDummy3::*countOperation)(unsigned char *, unsigned int) = NULL;
 
 	void freeMemory();
 	void initialize();
 	void setType(int indexType);
-	void setK(unsigned int k);
-	void setLoadFactor(double loadFactor);
 	void setFunctions();
 	void buildRank_512_enc125(unsigned char *bwtEnc125, unsigned int bwtLen);
 	void buildRank_1024_enc125(unsigned char *bwtEnc125, unsigned int bwtLen);
@@ -225,6 +217,7 @@ public:
 
 	FMDummy3() {
 		this->initialize();
+                this->setType(FMDummy3::TYPE_512);
 		this->setFunctions();
 	}
 
@@ -237,13 +230,13 @@ public:
 	FMDummy3(FMDummy3::IndexType indexType, unsigned int k, double loadFactor) {
 		this->initialize();
 		this->setType(indexType);
-		this->setK(k);
-		this->setLoadFactor(loadFactor);
+		this->ht = new HTExt(HTExt::STANDARD, k, loadFactor);
 		this->setFunctions();
 	}
 
 	~FMDummy3() {
 		this->freeMemory();
+                if (this->ht != NULL) delete this->ht;
 	}
 
 	void build(unsigned char *text, unsigned int textLen);
@@ -265,22 +258,18 @@ private:
 	alignas(128) unsigned long long code[256];
 	alignas(128) unsigned int codeLen[256];
 	alignas(128) unsigned int c[257];
-	HT *ht;
+	HTExt *ht = NULL;
 
 	int type;
 	int wtType;
-	unsigned int k;
-	double loadFactor;
 
-	unsigned int textSize;
+	unsigned int textLen;
 
-	unsigned int (FMDummyWT::*countOperation)(unsigned char *, unsigned int);
+	unsigned int (FMDummyWT::*countOperation)(unsigned char *, unsigned int) = NULL;
 
 	void freeMemory();
 	void initialize();
 	void setType(int wtType, int indexType);
-	void setK(unsigned int k);
-	void setLoadFactor(double loadFactor);
 	void setFunctions();
 	WT *createWT2_512_counter40(unsigned char *text, unsigned int textLen, unsigned int wtLevel);
 	WT *createWT2_1024_counter32(unsigned char *text, unsigned int textLen, unsigned int wtLevel);
@@ -313,6 +302,7 @@ public:
 
 	FMDummyWT() {
 		this->initialize();
+                this->setType(FMDummyWT::TYPE_WT2, FMDummyWT::TYPE_512);
 		this->setFunctions();
 	}
 
@@ -325,13 +315,13 @@ public:
 	FMDummyWT(FMDummyWT::WTType wtType, FMDummyWT::IndexType indexType, unsigned int k, double loadFactor) {
 		this->initialize();
 		this->setType(wtType, indexType);
-		this->setK(k);
-		this->setLoadFactor(loadFactor);
+		this->ht = new HTExt(HTExt::STANDARD, k, loadFactor);
 		this->setFunctions();
 	}
 
 	~FMDummyWT() {
 		this->freeMemory();
+                if (this->ht != NULL) delete this->ht;
 	}
 
 	void build(unsigned char *text, unsigned int textLen);

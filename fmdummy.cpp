@@ -3,7 +3,6 @@
 #include <cmath>
 #include <queue>
 #include <algorithm>
-#include "shared/common.h"
 #include "fmdummy.h"
 
 using namespace std;
@@ -30,24 +29,8 @@ void FMDummy1::setSelectedChars(vector<unsigned char> selectedChars) {
 	else this->allChars = false;
 }
 
-void FMDummy1::setK(unsigned int k) {
-	if (k < 2) {
-		cout << "Error: not valid k value" << endl;
-		exit(1);
-	}
-	this->k = k;
-}
-
-void FMDummy1::setLoadFactor(double loadFactor) {
-	if (loadFactor <= 0.0 || loadFactor >= 1.0) {
-		cout << "Error: not valid loadFactor value" << endl;
-		exit(1);
-	}
-	this->loadFactor = loadFactor;
-}
-
 void FMDummy1::setFunctions() {
-	if (this->k > 1) {
+	if (this->ht != NULL) {
 		switch (this->type) {
 		case FMDummy1::TYPE_512:
 			this->builder = &buildRank_512_counter40;
@@ -90,29 +73,19 @@ void FMDummy1::initialize() {
 	}
 	this->bwtWithRanksLen = 0;
 	for (int i = 0; i < 257; ++i) this->c[i] = 0;
-	this->ht = NULL;
 
-	this->type = FMDummy1::TYPE_256;
-	this->k = 0;
-	this->loadFactor = 0.0;
-	this->allChars = true;
-	this->selectedChars = {};
-
-	this->textSize = 0;
-
-	this->builder = NULL;
-	this->countOperation = NULL;
+	this->textLen = 0;
 }
 
 void FMDummy1::freeMemory() {
 	for (int i = 0; i < 256; ++i) if (this->bwtWithRanks[i] != NULL) delete[] this->bwtWithRanks[i];
-	if (this->ht != NULL) delete this->ht;
+	if (this->ht != NULL) this->ht->free();
 }
 
 void FMDummy1::build(unsigned char* text, unsigned int textLen) {
 	checkNullChar(text, textLen);
-	this->freeMemory();
-	this->textSize = textLen;
+	this->free();
+	this->textLen = textLen;
 	if (this->allChars) {
 		if (this->verbose) cout << "Counting char frequencies ... " << flush;
 		unsigned int charsFreq[256];
@@ -132,13 +105,12 @@ void FMDummy1::build(unsigned char* text, unsigned int textLen) {
 	}
 	unsigned int bwtLen;
 	unsigned char *bwt = NULL;
-	if (this->k > 1) {
-		this->ht = new HT(this->k, this->loadFactor);
+	if (this->ht != NULL) {
 		unsigned int saLen;
 		unsigned int *sa = getSA(text, textLen, saLen, 0, this->verbose);
 		if (this->verbose) cout << "Creating hash table ... " << flush;
-		if (this->allChars) this->ht->buildWithEntries(text, textLen, sa, saLen);
-		else this->ht->buildWithEntries(text, textLen, sa, saLen, this->selectedChars);
+		if (this->allChars) this->ht->build(text, textLen, sa, saLen);
+		else this->ht->build(text, textLen, sa, saLen, this->selectedChars);
 		if (this->verbose) cout << "Done" << endl;
 		bwt = getBWT(text, textLen, sa, saLen, bwtLen, this->verbose);
 		delete[] sa;
@@ -176,15 +148,15 @@ void FMDummy1::build(unsigned char* text, unsigned int textLen) {
 }
 
 unsigned int FMDummy1::getIndexSize() {
-	unsigned int size = sizeof(this->bwtWithRanksLen) + sizeof(this->type) + sizeof(this->k) + sizeof(this->loadFactor) + sizeof(this->allChars) + this->selectedChars.size();
-	size += (257 * sizeof(unsigned int) + 256 * sizeof(unsigned long long*) + 256 * sizeof(unsigned long long*));
-	if (this->selectedChars.size() > 0) size += (this->selectedChars.size() * sizeof(unsigned char) + this->selectedChars.size() * this->bwtWithRanksLen * sizeof(unsigned long long));
+	unsigned int size = sizeof(this->bwtWithRanksLen) + sizeof(this->type) + sizeof(this->allChars) + sizeof(this->ht) + this->selectedChars.size();
+	size += (257 * sizeof(unsigned int) + 256 * sizeof(unsigned long long*) + 256 * sizeof(unsigned long long*) + this->selectedChars.size() * sizeof(unsigned char));
+        if (this->bwtWithRanksLen > 0) size += (this->selectedChars.size() * (this->bwtWithRanksLen + 16) * sizeof(unsigned long long));
 	if (this->ht != NULL) size += this->ht->getHTSize();
 	return size;
 }
 
 unsigned int FMDummy1::getTextSize() {
-	return this->textSize;
+	return this->textLen * sizeof(unsigned char);
 }
 
 unsigned int FMDummy1::count(unsigned char *pattern, unsigned int patternLen) {
@@ -202,7 +174,7 @@ unsigned int FMDummy1::count_std_512_counter40(unsigned char *pattern, unsigned 
 unsigned int FMDummy1::count_hash_256_counter48(unsigned char *pattern, unsigned int patternLen) {
 	if (this->ht->k <= patternLen) {
 		unsigned int leftBoundary, rightBoundary;
-		this->ht->getBoundariesWithEntries(pattern + (patternLen - this->ht->k), leftBoundary, rightBoundary);
+		this->ht->getBoundaries(pattern + (patternLen - this->ht->k), leftBoundary, rightBoundary);
 		return count_256_counter48(pattern, patternLen - this->ht->k, this->c, this->alignedBWTWithRanks, leftBoundary + 1, rightBoundary);
 	} else {
 		return this->count_std_256_counter48(pattern, patternLen);
@@ -212,7 +184,7 @@ unsigned int FMDummy1::count_hash_256_counter48(unsigned char *pattern, unsigned
 unsigned int FMDummy1::count_hash_512_counter40(unsigned char *pattern, unsigned int patternLen) {
 	if (this->ht->k <= patternLen) {
 		unsigned int leftBoundary, rightBoundary;
-		this->ht->getBoundariesWithEntries(pattern + (patternLen - this->ht->k), leftBoundary, rightBoundary);
+		this->ht->getBoundaries(pattern + (patternLen - this->ht->k), leftBoundary, rightBoundary);
 		return count_512_counter40(pattern, patternLen - this->ht->k, this->c, this->alignedBWTWithRanks, leftBoundary + 1, rightBoundary);
 	} else {
 		return this->count_std_512_counter40(pattern, patternLen);
@@ -231,9 +203,7 @@ void FMDummy1::save(const char *fileName) {
 	outFile = fopen(fileName, "w");
 	fwrite(&this->verbose, (size_t)sizeof(bool), (size_t)1, outFile);
 	fwrite(&this->type, (size_t)sizeof(int), (size_t)1, outFile);
-	fwrite(&this->k, (size_t)sizeof(unsigned int), (size_t)1, outFile);
-	fwrite(&this->loadFactor, (size_t)sizeof(double), (size_t)1, outFile);
-	fwrite(&this->textSize, (size_t)sizeof(unsigned int), (size_t)1, outFile);
+	fwrite(&this->textLen, (size_t)sizeof(unsigned int), (size_t)1, outFile);
 	fwrite(this->c, (size_t)sizeof(unsigned int), (size_t)257, outFile);
 	fwrite(&this->bwtWithRanksLen, (size_t)sizeof(unsigned int), (size_t)1, outFile);
 	unsigned int selectedCharsLen = this->selectedChars.size();
@@ -241,7 +211,7 @@ void FMDummy1::save(const char *fileName) {
 	if (this->selectedChars.size() > 0) {
 		for (vector<unsigned char>::iterator it = selectedChars.begin(); it != selectedChars.end(); ++it) {
 			fwrite(&(*it), (size_t)sizeof(unsigned char), (size_t)1, outFile);
-			fwrite(this->alignedBWTWithRanks[*it], (size_t)sizeof(unsigned long long), (size_t)(this->bwtWithRanksLen - 16), outFile);
+			fwrite(this->alignedBWTWithRanks[*it], (size_t)sizeof(unsigned long long), (size_t)this->bwtWithRanksLen, outFile);
 		}
 	}
 	if (this->ht == NULL) fwrite(&nullPointer, (size_t)sizeof(bool), (size_t)1, outFile);
@@ -255,6 +225,10 @@ void FMDummy1::save(const char *fileName) {
 
 void FMDummy1::load(const char *fileName) {
 	this->free();
+        if (this->ht != NULL) {
+                delete this->ht;
+                this->ht = NULL;
+        }
 	bool isNotNullPointer;
 	FILE *inFile;
 	inFile = fopen(fileName, "rb");
@@ -270,17 +244,7 @@ void FMDummy1::load(const char *fileName) {
 		cout << "Error loading index from " << fileName << endl;
 		exit(1);
 	}
-	result = fread(&this->k, (size_t)sizeof(unsigned int), (size_t)1, inFile);
-	if (result != 1) {
-		cout << "Error loading index from " << fileName << endl;
-		exit(1);
-	}
-	result = fread(&this->loadFactor, (size_t)sizeof(double), (size_t)1, inFile);
-	if (result != 1) {
-		cout << "Error loading index from " << fileName << endl;
-		exit(1);
-	}
-	result = fread(&this->textSize, (size_t)sizeof(unsigned int), (size_t)1, inFile);
+	result = fread(&this->textLen, (size_t)sizeof(unsigned int), (size_t)1, inFile);
 	if (result != 1) {
 		cout << "Error loading index from " << fileName << endl;
 		exit(1);
@@ -311,11 +275,11 @@ void FMDummy1::load(const char *fileName) {
 				exit(1);
 			}
 			this->selectedChars.push_back(c);
-			this->bwtWithRanks[c] = new unsigned long long[this->bwtWithRanksLen];
+			this->bwtWithRanks[c] = new unsigned long long[this->bwtWithRanksLen + 16];
 			this->alignedBWTWithRanks[c] = this->bwtWithRanks[c];
 			while ((unsigned long long)(this->alignedBWTWithRanks[c]) % 128) ++(this->alignedBWTWithRanks[c]);
-			result = fread(this->alignedBWTWithRanks[c], (size_t)sizeof(unsigned long long), (size_t)(this->bwtWithRanksLen - 16), inFile);
-			if (result != (this->bwtWithRanksLen - 16)) {
+			result = fread(this->alignedBWTWithRanks[c], (size_t)sizeof(unsigned long long), (size_t)this->bwtWithRanksLen, inFile);
+			if (result != this->bwtWithRanksLen) {
 				cout << "Error loading index from " << fileName << endl;
 				exit(1);
 			}
@@ -328,7 +292,7 @@ void FMDummy1::load(const char *fileName) {
 		exit(1);
 	}
 	if (isNotNullPointer) {
-		this->ht = new HT();
+		this->ht = new HTExt();
 		this->ht->load(inFile);
 	}
 	fclose(inFile);
@@ -371,24 +335,8 @@ void FMDummy2::setMaxEncodedCharsLen() {
 	this->setEncodedPattern(1000);
 }
 
-void FMDummy2::setK(unsigned int k) {
-	if (k < 2) {
-		cout << "Error: not valid k value" << endl;
-		exit(1);
-	}
-	this->k = k;
-}
-
-void FMDummy2::setLoadFactor(double loadFactor) {
-	if (loadFactor <= 0.0 || loadFactor >= 1.0) {
-		cout << "Error: not valid loadFactor value" << endl;
-		exit(1);
-	}
-	this->loadFactor = loadFactor;
-}
-
 void FMDummy2::setFunctions() {
-	if (this->k > 1) {
+	if (this->ht != NULL) {
 		switch (this->type) {
 		case FMDummy2::TYPE_512:
 			this->builder = &buildRank_512_counter40;
@@ -477,25 +425,15 @@ void FMDummy2::initialize() {
 	this->maxPatternLen = 0;
 	for (int i = 0; i < 257; ++i) this->c[i] = 0;
 	this->bInC = 0;
-	this->ht = NULL;
 
-	this->type = FMDummy2::TYPE_256;
-	this->schema = FMDummy2::SCHEMA_SCBO;
-	this->bitsPerChar = FMDummy2::BITS_4;
-	this->k = 0;
-	this->loadFactor = 0.0;
-
-	this->textSize = 0;
-
-	this->builder = NULL;
-	this->countOperation = NULL;
+	this->textLen = 0;
 }
 
 void FMDummy2::freeMemory() {
 	for (int i = 0; i < 256; ++i) if (this->bwtWithRanks[i] != NULL) delete[] this->bwtWithRanks[i];
 	if (this->encodedChars != NULL) delete[] this->encodedChars;
 	if (this->encodedPattern != NULL) delete[] this->encodedPattern;
-	if (this->ht != NULL) delete this->ht;
+	if (this->ht != NULL) this->ht->free();
 }
 
 bool sortCharsCount(unsigned int* i, unsigned int* j) {
@@ -741,14 +679,13 @@ unsigned char *FMDummy2::getEncodedInCB(unsigned char *text, unsigned int textLe
 
 void FMDummy2::build(unsigned char *text, unsigned int textLen) {
 	checkNullChar(text, textLen);
-	this->freeMemory();
-	this->textSize = textLen;
-	if (this->k > 1) {
-		this->ht = new HT(this->k, this->loadFactor);
+	this->free();
+	this->textLen = textLen;
+	if (this->ht != NULL) {
 		unsigned int saLen;
 		unsigned int *sa = getSA(text, textLen, saLen, 0, this->verbose);
 		if (this->verbose) cout << "Creating hash table ... " << flush;
-		this->ht->buildWithEntries(text, textLen, sa, saLen);
+		this->ht->build(text, textLen, sa, saLen);
 		if (this->verbose) cout << "Done" << endl;
 		delete[] sa;
 	}
@@ -860,15 +797,15 @@ void FMDummy2::build(unsigned char *text, unsigned int textLen) {
 }
 
 unsigned int FMDummy2::getIndexSize() {
-	unsigned int size = (sizeof(this->type) + sizeof(this->schema) + sizeof(this->bitsPerChar) + sizeof(this->k) + sizeof(this->loadFactor) + sizeof(this->maxEncodedCharsLen) + sizeof(this->maxPatternLen) + sizeof(bInC) + sizeof(this->bwtWithRanksLen));
-	size += (257 * sizeof(unsigned int) + 256 * sizeof(unsigned long long *) + 256 * sizeof(unsigned long long *) + 256 * sizeof(unsigned int) + (this->maxEncodedCharsLen * this->maxPatternLen + 1) * sizeof(unsigned char));
-	size += ((unsigned int)exp2((double)this->bitsPerChar) * this->bwtWithRanksLen * sizeof(unsigned long long) + this->maxEncodedCharsLen * 256 * sizeof(unsigned char));
+	unsigned int size = sizeof(this->type) + sizeof(this->schema) + sizeof(this->bitsPerChar) + sizeof(this->maxEncodedCharsLen) + sizeof(this->maxPatternLen) + sizeof(bInC) + sizeof(this->bwtWithRanksLen) + sizeof(this->ht);
+	size += (257 * sizeof(unsigned int) + 256 * sizeof(unsigned long long *) + 256 * sizeof(unsigned long long *) + 256 * sizeof(unsigned int) + (this->maxEncodedCharsLen * this->maxPatternLen + 1) * sizeof(unsigned char) + this->maxEncodedCharsLen * 256 * sizeof(unsigned char));
+	if (this->bwtWithRanksLen > 0) size += ((unsigned int)exp2((double)this->bitsPerChar) * (this->bwtWithRanksLen + 16) * sizeof(unsigned long long));
 	if (this->ht != NULL) size += this->ht->getHTSize();
 	return size;
 }
 
 unsigned int FMDummy2::getTextSize() {
-	return this->textSize;
+	return this->textLen * sizeof(unsigned char);
 }
 
 void FMDummy2::encodePattern(unsigned char *pattern, unsigned int patternLen, unsigned int &encodedPatternLen, bool &wrongEncoding) {
@@ -923,7 +860,7 @@ unsigned int FMDummy2::count_std_CB_512_counter40(unsigned char *pattern, unsign
 unsigned int FMDummy2::count_hash_SCBO_256_counter48(unsigned char *pattern, unsigned int patternLen) {
 	if (this->ht->k <= patternLen) {
 		unsigned int leftBoundary, rightBoundary;
-		this->ht->getBoundariesWithEntries(pattern + (patternLen - this->ht->k), leftBoundary, rightBoundary);
+		this->ht->getBoundaries(pattern + (patternLen - this->ht->k), leftBoundary, rightBoundary);
 		bool wrongEncoding = false;
 		unsigned int encodedPatternLen;
 		this->encodePattern(pattern, patternLen - this->ht->k, encodedPatternLen, wrongEncoding);
@@ -937,7 +874,7 @@ unsigned int FMDummy2::count_hash_SCBO_256_counter48(unsigned char *pattern, uns
 unsigned int FMDummy2::count_hash_CB_256_counter48(unsigned char *pattern, unsigned int patternLen) {
 	if (this->ht->k <= patternLen) {
 		unsigned int leftBoundary, rightBoundary;
-		this->ht->getBoundariesWithEntries(pattern + (patternLen - this->ht->k), leftBoundary, rightBoundary);
+		this->ht->getBoundaries(pattern + (patternLen - this->ht->k), leftBoundary, rightBoundary);
 		bool wrongEncoding = false;
 		unsigned int encodedPatternLen;
 		this->encodePattern(pattern, patternLen - this->ht->k, encodedPatternLen, wrongEncoding);
@@ -951,7 +888,7 @@ unsigned int FMDummy2::count_hash_CB_256_counter48(unsigned char *pattern, unsig
 unsigned int FMDummy2::count_hash_SCBO_512_counter40(unsigned char *pattern, unsigned int patternLen) {
 	if (this->ht->k <= patternLen) {
 		unsigned int leftBoundary, rightBoundary;
-		this->ht->getBoundariesWithEntries(pattern + (patternLen - this->ht->k), leftBoundary, rightBoundary);
+		this->ht->getBoundaries(pattern + (patternLen - this->ht->k), leftBoundary, rightBoundary);
 		bool wrongEncoding = false;
 		unsigned int encodedPatternLen;
 		this->encodePattern(pattern, patternLen - this->ht->k, encodedPatternLen, wrongEncoding);
@@ -965,7 +902,7 @@ unsigned int FMDummy2::count_hash_SCBO_512_counter40(unsigned char *pattern, uns
 unsigned int FMDummy2::count_hash_CB_512_counter40(unsigned char *pattern, unsigned int patternLen) {
 	if (this->ht->k <= patternLen) {
 		unsigned int leftBoundary, rightBoundary;
-		this->ht->getBoundariesWithEntries(pattern + (patternLen - this->ht->k), leftBoundary, rightBoundary);
+		this->ht->getBoundaries(pattern + (patternLen - this->ht->k), leftBoundary, rightBoundary);
 		bool wrongEncoding = false;
 		unsigned int encodedPatternLen;
 		this->encodePattern(pattern, patternLen - this->ht->k, encodedPatternLen, wrongEncoding);
@@ -990,9 +927,7 @@ void FMDummy2::save(const char *fileName) {
 	fwrite(&this->type, (size_t)sizeof(int), (size_t)1, outFile);
 	fwrite(&this->schema, (size_t)sizeof(int), (size_t)1, outFile);
 	fwrite(&this->bitsPerChar, (size_t)sizeof(int), (size_t)1, outFile);
-	fwrite(&this->k, (size_t)sizeof(unsigned int), (size_t)1, outFile);
-	fwrite(&this->loadFactor, (size_t)sizeof(double), (size_t)1, outFile);
-	fwrite(&this->textSize, (size_t)sizeof(unsigned int), (size_t)1, outFile);
+	fwrite(&this->textLen, (size_t)sizeof(unsigned int), (size_t)1, outFile);
 	fwrite(this->c, (size_t)sizeof(unsigned int), (size_t)257, outFile);
 	fwrite(this->encodedCharsLen, (size_t)sizeof(unsigned int), (size_t)256, outFile);
 	fwrite(this->encodedChars, (size_t)sizeof(unsigned char), (size_t)this->maxEncodedCharsLen * 256, outFile);
@@ -1000,7 +935,7 @@ void FMDummy2::save(const char *fileName) {
 	fwrite(&this->bwtWithRanksLen, (size_t)sizeof(unsigned int), (size_t)1, outFile);
 	if (this->bwtWithRanksLen > 0) {
 		for (unsigned int i = 1; i < maxChar + 1; ++i) {
-			fwrite(this->alignedBWTWithRanks[i], (size_t)sizeof(unsigned long long), (size_t)(this->bwtWithRanksLen - 16), outFile);
+			fwrite(this->alignedBWTWithRanks[i], (size_t)sizeof(unsigned long long), (size_t)this->bwtWithRanksLen, outFile);
 		}
 	}
 	if (this->schema == FMDummy2::SCHEMA_CB) fwrite(&this->bInC, (size_t)sizeof(unsigned int), (size_t)1, outFile);
@@ -1015,6 +950,10 @@ void FMDummy2::save(const char *fileName) {
 
 void FMDummy2::load(const char *fileName) {
 	this->free();
+        if (this->ht != NULL) {
+                delete this->ht;
+                this->ht = NULL;
+        }
 	bool isNotNullPointer;
 	FILE *inFile;
 	inFile = fopen(fileName, "rb");
@@ -1040,17 +979,7 @@ void FMDummy2::load(const char *fileName) {
 		cout << "Error loading index from " << fileName << endl;
 		exit(1);
 	}
-	result = fread(&this->k, (size_t)sizeof(unsigned int), (size_t)1, inFile);
-	if (result != 1) {
-		cout << "Error loading index from " << fileName << endl;
-		exit(1);
-	}
-	result = fread(&this->loadFactor, (size_t)sizeof(double), (size_t)1, inFile);
-	if (result != 1) {
-		cout << "Error loading index from " << fileName << endl;
-		exit(1);
-	}
-	result = fread(&this->textSize, (size_t)sizeof(unsigned int), (size_t)1, inFile);
+	result = fread(&this->textLen, (size_t)sizeof(unsigned int), (size_t)1, inFile);
 	if (result != 1) {
 		cout << "Error loading index from " << fileName << endl;
 		exit(1);
@@ -1081,11 +1010,11 @@ void FMDummy2::load(const char *fileName) {
 	if (this->bwtWithRanksLen > 0) {
 		for (int i = 0; i < 256; ++i) this->alignedBWTWithRanks[i] = NULL;
 		for (unsigned int i = 1; i < maxChar + 1; ++i) {
-			this->bwtWithRanks[i] = new unsigned long long[this->bwtWithRanksLen];
+			this->bwtWithRanks[i] = new unsigned long long[this->bwtWithRanksLen + 16];
 			this->alignedBWTWithRanks[i] = this->bwtWithRanks[i];
 			while ((unsigned long long)(this->alignedBWTWithRanks[i]) % 128) ++(this->alignedBWTWithRanks[i]);
-			result = fread(this->alignedBWTWithRanks[i], (size_t)sizeof(unsigned long long), (size_t)(this->bwtWithRanksLen - 16), inFile);
-			if (result != (this->bwtWithRanksLen - 16)) {
+			result = fread(this->alignedBWTWithRanks[i], (size_t)sizeof(unsigned long long), (size_t)this->bwtWithRanksLen, inFile);
+			if (result != this->bwtWithRanksLen) {
 				cout << "Error loading index from " << fileName << endl;
 				exit(1);
 			}
@@ -1104,7 +1033,7 @@ void FMDummy2::load(const char *fileName) {
 		exit(1);
 	}
 	if (isNotNullPointer) {
-		this->ht = new HT();
+		this->ht = new HTExt();
 		this->ht->load(inFile);
 	}
 	fclose(inFile);
@@ -1123,24 +1052,8 @@ void FMDummy3::setType(int indexType) {
 	this->type = indexType;
 }
 
-void FMDummy3::setK(unsigned int k) {
-	if (k < 2) {
-		cout << "Error: not valid k value" << endl;
-		exit(1);
-	}
-	this->k = k;
-}
-
-void FMDummy3::setLoadFactor(double loadFactor) {
-	if (loadFactor <= 0.0 || loadFactor >= 1.0) {
-		cout << "Error: not valid loadFactor value" << endl;
-		exit(1);
-	}
-	this->loadFactor = loadFactor;
-}
-
 void FMDummy3::setFunctions() {
-	if (this->k > 1) {
+	if (this->ht != NULL) {
 		switch (this->type) {
 		case FMDummy3::TYPE_1024:
 			this->countOperation = &FMDummy3::count_hash_1024_enc125;
@@ -1177,20 +1090,13 @@ void FMDummy3::initialize() {
 	this->alignedBWTWithRanks = NULL;
 	this->bwtWithRanksLen = 0;
 	for (int i = 0; i < 257; ++i) this->c[i] = 0;
-	this->ht = NULL;
 
-	this->type = FMDummy3::TYPE_512;
-	this->k = 0;
-	this->loadFactor = 0.0;
-
-	this->textSize = 0;
-
-	this->countOperation = NULL;
+	this->textLen = 0;
 }
 
 void FMDummy3::freeMemory() {
 	if (this->bwtWithRanks != NULL) delete[] this->bwtWithRanks;
-	if (this->ht != NULL) delete this->ht;
+	if (this->ht != NULL) this->ht->free();
 }
 
 void FMDummy3::buildRank_512_enc125(unsigned char *bwtEnc125, unsigned int bwtLen) {
@@ -1209,8 +1115,8 @@ void FMDummy3::buildRank_512_enc125(unsigned char *bwtEnc125, unsigned int bwtLe
 			if (i % 384 == 0) resRank[s][i / 384] = rank[s];
 		}
 	}
-	this->bwtWithRanksLen = bwtLen + 4 * 4 * ((bwtLen * 8) / 384 + 1) + 128;
-	this->bwtWithRanks = new unsigned char[this->bwtWithRanksLen];
+	this->bwtWithRanksLen = bwtLen + 4 * 4 * ((bwtLen * 8) / 384 + 1);
+	this->bwtWithRanks = new unsigned char[this->bwtWithRanksLen + 128];
 	this->alignedBWTWithRanks = this->bwtWithRanks;
 	while ((unsigned long long)this->alignedBWTWithRanks % 128) ++(this->alignedBWTWithRanks);
 	p = bwtEnc125;
@@ -1245,8 +1151,8 @@ void FMDummy3::buildRank_1024_enc125(unsigned char *bwtEnc125, unsigned int bwtL
 			if (i % 896 == 0) resRank[s][i / 896] = rank[s];
 		}
 	}
-	this->bwtWithRanksLen = bwtLen + 4 * 4 * ((bwtLen * 8) / 896 + 1) + 128;
-	this->bwtWithRanks = new unsigned char[this->bwtWithRanksLen];
+	this->bwtWithRanksLen = bwtLen + 4 * 4 * ((bwtLen * 8) / 896 + 1);
+	this->bwtWithRanks = new unsigned char[this->bwtWithRanksLen + 128];
 	this->alignedBWTWithRanks = this->bwtWithRanks;
 	while ((unsigned long long)this->alignedBWTWithRanks % 128) ++(this->alignedBWTWithRanks);
 	p = bwtEnc125;
@@ -1267,8 +1173,8 @@ void FMDummy3::buildRank_1024_enc125(unsigned char *bwtEnc125, unsigned int bwtL
 
 void FMDummy3::build(unsigned char *text, unsigned int textLen) {
 	checkNullChar(text, textLen);
-	this->freeMemory();
-	this->textSize = textLen;
+	this->free();
+	this->textLen = textLen;
 	if (this->verbose) cout << "Converting text ... " << flush;
 	unsigned char *convertedText = new unsigned char[textLen];
 	for (unsigned int i = 0; i < textLen; ++i) {
@@ -1284,13 +1190,12 @@ void FMDummy3::build(unsigned char *text, unsigned int textLen) {
 	unsigned int bwtLen;
 	unsigned char *bwt = NULL;
 	vector<unsigned char> selectedChars = { 'A', 'C', 'G', 'T' };
-	if (this->k > 1) {
-		this->ht = new HT(this->k, this->loadFactor);
+	if (this->ht != NULL) {
 		unsigned int saLen;
 		unsigned int *sa = getSA(convertedText, textLen, saLen, 0, this->verbose);
 		if (this->verbose) cout << "Creating hash table ... " << flush;
 
-		this->ht->buildWithEntries(convertedText, textLen, sa, saLen, selectedChars);
+		this->ht->build(convertedText, textLen, sa, saLen, selectedChars);
 		if (this->verbose) cout << "Done" << endl;
 		bwt = getBWT(convertedText, textLen, sa, saLen, bwtLen, this->verbose);
 		delete[] sa;
@@ -1319,15 +1224,15 @@ void FMDummy3::build(unsigned char *text, unsigned int textLen) {
 }
 
 unsigned int FMDummy3::getIndexSize() {
-	unsigned int size = sizeof(this->type) + sizeof(this->k) + sizeof(this->loadFactor) + sizeof(this->bwtWithRanksLen);
+	unsigned int size = sizeof(this->type) + sizeof(this->bwtWithRanksLen) + sizeof(this->ht);
 	size += (257 * sizeof(unsigned int) + sizeof(unsigned char*) + 256 * 125 * sizeof(unsigned int));
-	size += this->bwtWithRanksLen * sizeof(unsigned char);
+	if (this->bwtWithRanksLen > 0) size += (this->bwtWithRanksLen + 128) * sizeof(unsigned char);
 	if (this->ht != NULL) size += this->ht->getHTSize();
 	return size;
 }
 
 unsigned int FMDummy3::getTextSize() {
-	return this->textSize;
+	return this->textLen * sizeof(unsigned char);
 }
 
 unsigned int FMDummy3::count(unsigned char *pattern, unsigned int patternLen) {
@@ -1345,7 +1250,7 @@ unsigned int FMDummy3::count_std_1024_enc125(unsigned char *pattern, unsigned in
 unsigned int FMDummy3::count_hash_512_enc125(unsigned char *pattern, unsigned int patternLen) {
 	if (this->ht->k <= patternLen) {
 		unsigned int leftBoundary, rightBoundary;
-		this->ht->getBoundariesWithEntries(pattern + (patternLen - this->ht->k), leftBoundary, rightBoundary);
+		this->ht->getBoundaries(pattern + (patternLen - this->ht->k), leftBoundary, rightBoundary);
 		return count_512_enc125(pattern, patternLen - this->ht->k, this->c, this->alignedBWTWithRanks, this->lut, leftBoundary + 1, rightBoundary);
 	} else {
 		return this->count_std_512_enc125(pattern, patternLen);
@@ -1355,7 +1260,7 @@ unsigned int FMDummy3::count_hash_512_enc125(unsigned char *pattern, unsigned in
 unsigned int FMDummy3::count_hash_1024_enc125(unsigned char *pattern, unsigned int patternLen) {
 	if (this->ht->k <= patternLen) {
 		unsigned int leftBoundary, rightBoundary;
-		this->ht->getBoundariesWithEntries(pattern + (patternLen - this->ht->k), leftBoundary, rightBoundary);
+		this->ht->getBoundaries(pattern + (patternLen - this->ht->k), leftBoundary, rightBoundary);
 		return count_1024_enc125(pattern, patternLen - this->ht->k, this->c, this->alignedBWTWithRanks, this->lut, leftBoundary + 1, rightBoundary);
 	} else {
 		return this->count_std_1024_enc125(pattern, patternLen);
@@ -1374,13 +1279,11 @@ void FMDummy3::save(const char *fileName) {
 	outFile = fopen(fileName, "w");
 	fwrite(&this->verbose, (size_t)sizeof(bool), (size_t)1, outFile);
 	fwrite(&this->type, (size_t)sizeof(int), (size_t)1, outFile);
-	fwrite(&this->k, (size_t)sizeof(unsigned int), (size_t)1, outFile);
-	fwrite(&this->loadFactor, (size_t)sizeof(double), (size_t)1, outFile);
-	fwrite(&this->textSize, (size_t)sizeof(unsigned int), (size_t)1, outFile);
+	fwrite(&this->textLen, (size_t)sizeof(unsigned int), (size_t)1, outFile);
 	fwrite(this->c, (size_t)sizeof(unsigned int), (size_t)257, outFile);
 	fwrite(this->lut, (size_t)sizeof(unsigned int), (size_t)(256 * 125), outFile);
 	fwrite(&this->bwtWithRanksLen, (size_t)sizeof(unsigned int), (size_t)1, outFile);
-	if (this->bwtWithRanksLen > 0) fwrite(this->alignedBWTWithRanks, (size_t)sizeof(unsigned char), (size_t)(this->bwtWithRanksLen - 128), outFile);
+	if (this->bwtWithRanksLen > 0) fwrite(this->alignedBWTWithRanks, (size_t)sizeof(unsigned char), (size_t)this->bwtWithRanksLen, outFile);
 	if (this->ht == NULL) fwrite(&nullPointer, (size_t)sizeof(bool), (size_t)1, outFile);
 	else {
 		fwrite(&notNullPointer, (size_t)sizeof(bool), (size_t)1, outFile);
@@ -1392,6 +1295,10 @@ void FMDummy3::save(const char *fileName) {
 
 void FMDummy3::load(const char *fileName) {
 	this->free();
+        if (this->ht != NULL) {
+                delete this->ht;
+                this->ht = NULL;
+        }
 	bool isNotNullPointer;
 	FILE *inFile;
 	inFile = fopen(fileName, "rb");
@@ -1407,17 +1314,7 @@ void FMDummy3::load(const char *fileName) {
 		cout << "Error loading index from " << fileName << endl;
 		exit(1);
 	}
-	result = fread(&this->k, (size_t)sizeof(unsigned int), (size_t)1, inFile);
-	if (result != 1) {
-		cout << "Error loading index from " << fileName << endl;
-		exit(1);
-	}
-	result = fread(&this->loadFactor, (size_t)sizeof(double), (size_t)1, inFile);
-	if (result != 1) {
-		cout << "Error loading index from " << fileName << endl;
-		exit(1);
-	}
-	result = fread(&this->textSize, (size_t)sizeof(unsigned int), (size_t)1, inFile);
+	result = fread(&this->textLen, (size_t)sizeof(unsigned int), (size_t)1, inFile);
 	if (result != 1) {
 		cout << "Error loading index from " << fileName << endl;
 		exit(1);
@@ -1438,11 +1335,11 @@ void FMDummy3::load(const char *fileName) {
 		exit(1);
 	}
 	if (this->bwtWithRanksLen > 0) {
-		this->bwtWithRanks = new unsigned char[this->bwtWithRanksLen];
+		this->bwtWithRanks = new unsigned char[this->bwtWithRanksLen + 128];
 		this->alignedBWTWithRanks = this->bwtWithRanks;
 		while ((unsigned long long)this->alignedBWTWithRanks % 128) ++this->alignedBWTWithRanks;
-		result = fread(this->alignedBWTWithRanks, (size_t)sizeof(unsigned char), (size_t)(this->bwtWithRanksLen - 128), inFile);
-		if (result != (this->bwtWithRanksLen - 128)) {
+		result = fread(this->alignedBWTWithRanks, (size_t)sizeof(unsigned char), (size_t)this->bwtWithRanksLen, inFile);
+		if (result != this->bwtWithRanksLen) {
 			cout << "Error loading index from " << fileName << endl;
 			exit(1);
 		}
@@ -1453,7 +1350,7 @@ void FMDummy3::load(const char *fileName) {
 		exit(1);
 	}
 	if (isNotNullPointer) {
-		this->ht = new HT();
+		this->ht = new HTExt();
 		this->ht->load(inFile);
 	}
 	fclose(inFile);
@@ -1476,24 +1373,8 @@ void FMDummyWT::setType(int wtType, int indexType) {
 	this->type = indexType;
 }
 
-void FMDummyWT::setK(unsigned int k) {
-	if (k < 2) {
-		cout << "Error: not valid k value" << endl;
-		exit(1);
-	}
-	this->k = k;
-}
-
-void FMDummyWT::setLoadFactor(double loadFactor) {
-	if (loadFactor <= 0.0 || loadFactor >= 1.0) {
-		cout << "Error: not valid loadFactor value" << endl;
-		exit(1);
-	}
-	this->loadFactor = loadFactor;
-}
-
 void FMDummyWT::setFunctions() {
-	if (this->k > 1) {
+	if (this->ht != NULL) {
 		switch (this->wtType) {
 		case FMDummyWT::TYPE_WT2:
 			switch (this->type) {
@@ -1593,7 +1474,6 @@ void FMDummyWT::free() {
 
 void FMDummyWT::initialize() {
 	this->wt = NULL;
-	this->ht = NULL;
 
 	for (int i = 0; i < 256; ++i) {
 		this->code[i] = 0;
@@ -1601,19 +1481,12 @@ void FMDummyWT::initialize() {
 	}
 	for (int i = 0; i < 257; ++i) this->c[i] = 0;
 
-	this->wtType = FMDummyWT::TYPE_WT2;
-	this->type = FMDummyWT::TYPE_512;
-	this->k = 0;
-	this->loadFactor = 0.0;
-
-	this->textSize = 0;
-
-	this->countOperation = NULL;
+	this->textLen = 0;
 }
 
 void FMDummyWT::freeMemory() {
 	if (this->wt != NULL) delete this->wt;
-	if (this->ht != NULL) delete this->ht;
+	if (this->ht != NULL) this->ht->free();
 }
 
 WT *FMDummyWT::createWT2_512_counter40(unsigned char *text, unsigned int textLen, unsigned int wtLevel) {
@@ -1915,16 +1788,15 @@ WT *FMDummyWT::createWT8(unsigned char *text, unsigned int textLen, unsigned int
 
 void FMDummyWT::build(unsigned char *text, unsigned int textLen) {
 	checkNullChar(text, textLen);
-	this->freeMemory();
-	this->textSize = textLen;
+	this->free();
+	this->textLen = textLen;
 	unsigned int bwtLen;
 	unsigned char *bwt = NULL;
-	if (this->k > 1) {
-		this->ht = new HT(this->k, this->loadFactor);
+	if (this->ht != NULL) {
 		unsigned int saLen;
 		unsigned int *sa = getSA(text, textLen, saLen, 0, this->verbose);
 		if (this->verbose) cout << "Creating hash table ... " << flush;
-		this->ht->buildWithEntries(text, textLen, sa, saLen);
+		this->ht->build(text, textLen, sa, saLen);
 		if (this->verbose) cout << "Done" << endl;
 		bwt = getBWT(text, textLen, sa, saLen, bwtLen, this->verbose);
 		delete[] sa;
@@ -1958,7 +1830,7 @@ void FMDummyWT::build(unsigned char *text, unsigned int textLen) {
 }
 
 unsigned int FMDummyWT::getIndexSize() {
-	unsigned int size = sizeof(this->type) + sizeof(this->wtType) + sizeof(this->k) + sizeof(this->loadFactor) + sizeof(WT *) + sizeof(HT *);
+	unsigned int size = sizeof(this->type) + sizeof(this->wtType) + sizeof(this->wt) + sizeof(this->ht);
 	size += (257 * sizeof(unsigned int) + 256 * sizeof(unsigned int) + 256 * sizeof(unsigned long long));
 	if (this->wt != NULL) size += this->wt->getWTSize();
 	if (this->ht != NULL) size += this->ht->getHTSize();
@@ -1966,7 +1838,7 @@ unsigned int FMDummyWT::getIndexSize() {
 }
 
 unsigned int FMDummyWT::getTextSize() {
-	return this->textSize;
+	return this->textLen * sizeof(unsigned char);
 }
 
 unsigned int FMDummyWT::count(unsigned char *pattern, unsigned int patternLen) {
@@ -1986,9 +1858,7 @@ void FMDummyWT::save(const char *fileName) {
 	fwrite(&this->verbose, (size_t)sizeof(bool), (size_t)1, outFile);
 	fwrite(&this->wtType, (size_t)sizeof(int), (size_t)1, outFile);
 	fwrite(&this->type, (size_t)sizeof(int), (size_t)1, outFile);
-	fwrite(&this->k, (size_t)sizeof(unsigned int), (size_t)1, outFile);
-	fwrite(&this->loadFactor, (size_t)sizeof(double), (size_t)1, outFile);
-	fwrite(&this->textSize, (size_t)sizeof(unsigned int), (size_t)1, outFile);
+	fwrite(&this->textLen, (size_t)sizeof(unsigned int), (size_t)1, outFile);
 	fwrite(this->c, (size_t)sizeof(unsigned int), (size_t)257, outFile);
 	fwrite(this->code, (size_t)sizeof(unsigned long long), (size_t)256, outFile);
 	fwrite(this->codeLen, (size_t)sizeof(unsigned int), (size_t)256, outFile);
@@ -2008,6 +1878,10 @@ void FMDummyWT::save(const char *fileName) {
 
 void FMDummyWT::load(const char *fileName) {
 	this->free();
+        if (this->ht != NULL) {
+                delete this->ht;
+                this->ht = NULL;
+        }
 	bool isNotNullPointer;
 	FILE *inFile;
 	inFile = fopen(fileName, "rb");
@@ -2028,17 +1902,7 @@ void FMDummyWT::load(const char *fileName) {
 		cout << "Error loading index from " << fileName << endl;
 		exit(1);
 	}
-	result = fread(&this->k, (size_t)sizeof(unsigned int), (size_t)1, inFile);
-	if (result != 1) {
-		cout << "Error loading index from " << fileName << endl;
-		exit(1);
-	}
-	result = fread(&this->loadFactor, (size_t)sizeof(double), (size_t)1, inFile);
-	if (result != 1) {
-		cout << "Error loading index from " << fileName << endl;
-		exit(1);
-	}
-	result = fread(&this->textSize, (size_t)sizeof(unsigned int), (size_t)1, inFile);
+	result = fread(&this->textLen, (size_t)sizeof(unsigned int), (size_t)1, inFile);
 	if (result != 1) {
 		cout << "Error loading index from " << fileName << endl;
 		exit(1);
@@ -2073,7 +1937,7 @@ void FMDummyWT::load(const char *fileName) {
 		exit(1);
 	}
 	if (isNotNullPointer) {
-		this->ht = new HT();
+		this->ht = new HTExt();
 		this->ht->load(inFile);
 	}
 	fclose(inFile);
@@ -2108,7 +1972,7 @@ unsigned int FMDummyWT::count_WT8std_1024(unsigned char *pattern, unsigned int p
 unsigned int FMDummyWT::count_WT2hash_512_counter40(unsigned char *pattern, unsigned int patternLen) {
 	if (this->ht->k <= patternLen) {
 		unsigned int leftBoundary, rightBoundary;
-		this->ht->getBoundariesWithEntries(pattern + (patternLen - this->ht->k), leftBoundary, rightBoundary);
+		this->ht->getBoundaries(pattern + (patternLen - this->ht->k), leftBoundary, rightBoundary);
 		return count_WT2_512_counter40(pattern, patternLen - this->ht->k, this->c, this->wt, leftBoundary + 1, rightBoundary, this->code, this->codeLen);
 	} else {
 		return this->count_WT2std_512_counter40(pattern, patternLen);
@@ -2118,7 +1982,7 @@ unsigned int FMDummyWT::count_WT2hash_512_counter40(unsigned char *pattern, unsi
 unsigned int FMDummyWT::count_WT2hash_1024_counter32(unsigned char *pattern, unsigned int patternLen) {
 	if (this->ht->k <= patternLen) {
 		unsigned int leftBoundary, rightBoundary;
-		this->ht->getBoundariesWithEntries(pattern + (patternLen - this->ht->k), leftBoundary, rightBoundary);
+		this->ht->getBoundaries(pattern + (patternLen - this->ht->k), leftBoundary, rightBoundary);
 		return count_WT2_1024_counter32(pattern, patternLen - this->ht->k, this->c, this->wt, leftBoundary + 1, rightBoundary, this->code, this->codeLen);
 	} else {
 		return this->count_WT2std_1024_counter32(pattern, patternLen);
@@ -2128,7 +1992,7 @@ unsigned int FMDummyWT::count_WT2hash_1024_counter32(unsigned char *pattern, uns
 unsigned int FMDummyWT::count_WT4hash_512(unsigned char *pattern, unsigned int patternLen) {
 	if (this->ht->k <= patternLen) {
 		unsigned int leftBoundary, rightBoundary;
-		this->ht->getBoundariesWithEntries(pattern + (patternLen - this->ht->k), leftBoundary, rightBoundary);
+		this->ht->getBoundaries(pattern + (patternLen - this->ht->k), leftBoundary, rightBoundary);
 		return count_WT4_512(pattern, patternLen - this->ht->k, this->c, this->wt, leftBoundary + 1, rightBoundary, this->code, this->codeLen);
 	} else {
 		return this->count_WT4std_512(pattern, patternLen);
@@ -2138,7 +2002,7 @@ unsigned int FMDummyWT::count_WT4hash_512(unsigned char *pattern, unsigned int p
 unsigned int FMDummyWT::count_WT4hash_1024(unsigned char *pattern, unsigned int patternLen) {
 	if (this->ht->k <= patternLen) {
 		unsigned int leftBoundary, rightBoundary;
-		this->ht->getBoundariesWithEntries(pattern + (patternLen - this->ht->k), leftBoundary, rightBoundary);
+		this->ht->getBoundaries(pattern + (patternLen - this->ht->k), leftBoundary, rightBoundary);
 		return count_WT4_1024(pattern, patternLen - this->ht->k, this->c, this->wt, leftBoundary + 1, rightBoundary, this->code, this->codeLen);
 	} else {
 		return this->count_WT4std_1024(pattern, patternLen);
@@ -2148,7 +2012,7 @@ unsigned int FMDummyWT::count_WT4hash_1024(unsigned char *pattern, unsigned int 
 unsigned int FMDummyWT::count_WT8hash_512(unsigned char *pattern, unsigned int patternLen) {
 	if (this->ht->k <= patternLen) {
 		unsigned int leftBoundary, rightBoundary;
-		this->ht->getBoundariesWithEntries(pattern + (patternLen - this->ht->k), leftBoundary, rightBoundary);
+		this->ht->getBoundaries(pattern + (patternLen - this->ht->k), leftBoundary, rightBoundary);
 		return count_WT8_512(pattern, patternLen - this->ht->k, this->c, this->wt, leftBoundary + 1, rightBoundary, this->code, this->codeLen);
 	} else {
 		return this->count_WT8std_512(pattern, patternLen);
@@ -2158,7 +2022,7 @@ unsigned int FMDummyWT::count_WT8hash_512(unsigned char *pattern, unsigned int p
 unsigned int FMDummyWT::count_WT8hash_1024(unsigned char *pattern, unsigned int patternLen) {
 	if (this->ht->k <= patternLen) {
 		unsigned int leftBoundary, rightBoundary;
-		this->ht->getBoundariesWithEntries(pattern + (patternLen - this->ht->k), leftBoundary, rightBoundary);
+		this->ht->getBoundaries(pattern + (patternLen - this->ht->k), leftBoundary, rightBoundary);
 		return count_WT8_1024(pattern, patternLen - this->ht->k, this->c, this->wt, leftBoundary + 1, rightBoundary, this->code, this->codeLen);
 	} else {
 		return this->count_WT8std_1024(pattern, patternLen);
@@ -2189,7 +2053,7 @@ unsigned char *getBinDenseForChar(unsigned char *bwt, unsigned int bwtLen, int o
 void buildRank_256_counter48(unsigned long long **bwtInLong, unsigned int bwtInLongLen, vector<unsigned char> selectedChars, unsigned long long **bwtWithRanks, unsigned int &bwtWithRanksLen, unsigned long long **alignedBWTWithRanks) {
 	unsigned long long *p, pops, rank, b1, b2;
 	for (int i = 0; i < 256; ++i) alignedBWTWithRanks[i] = NULL;
-	bwtWithRanksLen = (bwtInLongLen + (bwtInLongLen * 64) / 192 + 1 + 16);
+	bwtWithRanksLen = bwtInLongLen + (bwtInLongLen * 64) / 192 + 1;
 
 	for (vector<unsigned char>::iterator it = selectedChars.begin(); it != selectedChars.end(); ++it) {
 		unsigned int c = (*it);
@@ -2207,7 +2071,7 @@ void buildRank_256_counter48(unsigned long long **bwtInLong, unsigned int bwtInL
 			rank += pops;
 			pops = 0;
 		}
-		bwtWithRanks[c] = new unsigned long long[bwtWithRanksLen];
+		bwtWithRanks[c] = new unsigned long long[bwtWithRanksLen + 16];
 		alignedBWTWithRanks[c] = bwtWithRanks[c];
 		while ((unsigned long long)alignedBWTWithRanks[c] % 128) ++(alignedBWTWithRanks[c]);
 		p = bwtInLong[c];
@@ -2223,7 +2087,7 @@ void buildRank_256_counter48(unsigned long long **bwtInLong, unsigned int bwtInL
 void buildRank_512_counter40(unsigned long long **bwtInLong, unsigned int bwtInLongLen, vector<unsigned char> selectedChars, unsigned long long **bwtWithRanks, unsigned int &bwtWithRanksLen, unsigned long long **alignedBWTWithRanks) {
 	unsigned long long *p, pop1, pop2, pop3, rank, b1, b2, b3;
 	for (int i = 0; i < 256; ++i) alignedBWTWithRanks[i] = NULL;
-	bwtWithRanksLen = (bwtInLongLen + (bwtInLongLen * 64) / 448 + 1 + 16);
+	bwtWithRanksLen = bwtInLongLen + (bwtInLongLen * 64) / 448 + 1;
 
 	for (vector<unsigned char>::iterator it = selectedChars.begin(); it != selectedChars.end(); ++it) {
 		unsigned int c = (*it);
@@ -2240,7 +2104,7 @@ void buildRank_512_counter40(unsigned long long **bwtInLong, unsigned int bwtInL
 			resRank[j] = rank + b1 + b2 + b3;
 			rank += pop1 + pop2 + pop3 + __builtin_popcountll(*(p + 6));
 		}
-		bwtWithRanks[c] = new unsigned long long[bwtWithRanksLen];
+		bwtWithRanks[c] = new unsigned long long[bwtWithRanksLen + 16];
 		alignedBWTWithRanks[c] = bwtWithRanks[c];
 		while ((unsigned long long)alignedBWTWithRanks[c] % 128) ++(alignedBWTWithRanks[c]);
 		p = bwtInLong[c];

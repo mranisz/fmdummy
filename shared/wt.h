@@ -10,8 +10,8 @@ private:
 
 public:
 	unsigned long long *bits;
-	unsigned int bitsLen;
 	unsigned long long *alignedBits;
+	unsigned int bitsLen;
 	WT** nodes;
 	unsigned int nodesLen;
 

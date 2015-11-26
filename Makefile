@@ -11,7 +11,7 @@ CFLAGS=-Wall -std=c++11 -O3 -mpopcnt
 	
 all: testFMDummy
 
-testFMDummy: testFMDummy.cpp libfmdummy.a libs/libaelf64.a
+testFMDummy: testFMDummy.cpp libfmdummy.a libs/$(ASMLIB)
 	$(CXX) $(CFLAGS) testFMDummy.cpp libfmdummy.a libs/$(ASMLIB) -o testFMDummy
 
 libfmdummy.a: fmdummy.h fmdummy.cpp shared/common.h shared/common.cpp shared/patterns.h shared/patterns.cpp shared/sais.h shared/sais.c shared/timer.h shared/timer.cpp shared/xxhash.h shared/xxhash.c shared/hash.h shared/hash.cpp shared/wt.h shared/wt.cpp

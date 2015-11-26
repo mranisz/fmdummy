@@ -11,7 +11,7 @@
 using namespace std;
 using namespace fmdummy;
 
-CStopWatch timer;
+ChronoStopWatch timer;
 
 map<string, FMDummy1::IndexType> FMDummy1IndexTypesMap = {{"256", FMDummy1::TYPE_256}, {"512", FMDummy1::TYPE_512}};
 map<string, vector<unsigned char>> FMDummy1SelectedCharsMap = {{"ACGT", {65, 67, 71, 84}}, {"all", {}}};
@@ -19,97 +19,65 @@ map<string, FMDummy2::IndexType> FMDummy2IndexTypesMap = {{"256", FMDummy2::TYPE
 map<string, FMDummy2::Schema> FMDummy2SchemaMap = {{"SCBO", FMDummy2::SCHEMA_SCBO}, {"CB", FMDummy2::SCHEMA_CB}};
 map<string, FMDummy2::BitsPerChar> FMDummy2BitsPerCharMap = {{"3", FMDummy2::BITS_3}, {"4", FMDummy2::BITS_4}};
 map<string, FMDummy3::IndexType> FMDummy3IndexTypesMap = {{"512", FMDummy3::TYPE_512}, {"1024", FMDummy3::TYPE_1024}};
-map<string, FMDummyWT::IndexType> FMDummyWTIndexTypesMap = {{"512", FMDummyWT::TYPE_512}, {"1024", FMDummyWT::TYPE_1024}};
 map<string, FMDummyWT::WTType> FMDummyWTWTTypeMap = {{"2", FMDummyWT::TYPE_WT2}, {"4", FMDummyWT::TYPE_WT4}, {"8", FMDummyWT::TYPE_WT8}};
+map<string, FMDummyWT::IndexType> FMDummyWTIndexTypesMap = {{"512", FMDummyWT::TYPE_512}, {"1024", FMDummyWT::TYPE_1024}};
 
 void fmDummy1(string indexType, string selectedChars, const char *textFileName, unsigned int queriesNum, unsigned int m);
-void fmDummy1hash(string indexType, string selectedChars, string k, string loadFactor, const char *textFileName, unsigned int queriesNum, unsigned int m);
+void fmDummy1Hash(string indexType, string selectedChars, string k, string loadFactor, const char *textFileName, unsigned int queriesNum, unsigned int m);
 void fmDummy2(string indexType, string encodedSchema, string bits, const char *textFileName, unsigned int queriesNum, unsigned int m);
-void fmDummy2hash(string indexType, string encodedSchema, string bits, string k, string loadFactor, const char *textFileName, unsigned int queriesNum, unsigned int m);
+void fmDummy2Hash(string indexType, string encodedSchema, string bits, string k, string loadFactor, const char *textFileName, unsigned int queriesNum, unsigned int m);
 void fmDummy3(string indexType, const char *textFileName, unsigned int queriesNum, unsigned int m);
-void fmDummy3hash(string indexType, string k, string loadFactor, const char *textFileName, unsigned int queriesNum, unsigned int m);
+void fmDummy3Hash(string indexType, string k, string loadFactor, const char *textFileName, unsigned int queriesNum, unsigned int m);
 void fmDummyWT(string wtType, string indexType, const char *textFileName, unsigned int queriesNum, unsigned int m);
-void fmDummyWThash(string wtType, string indexType, string k, string loadFactor, const char *textFileName, unsigned int queriesNum, unsigned int m);
+void fmDummyWTHash(string wtType, string indexType, string k, string loadFactor, const char *textFileName, unsigned int queriesNum, unsigned int m);
 
 void getUsage(char **argv) {
 	cout << "Select index you want to test:" << endl;
-	cout << "FMDummy1: ./" << argv[0] << " 1 256|512 all|ACGT fileName q m" << endl;
-	cout << "FMDummy1hash: ./" << argv[0] << " 1hash 256|512 k loadFactor all|ACGT fileName q m" << endl;
-	cout << "FMDummy2: ./" << argv[0] << " 2 256|512 SCBO|CB 3|4 fileName q m" << endl;
-	cout << "FMDummy2hash: ./" << argv[0] << " 2hash 256|512 SCBO|CB 3|4 k loadFactor fileName q m" << endl;
-	cout << "FMDummy3: ./" << argv[0] << " 3 512|1024 fileName q m" << endl;
-	cout << "FMDummy3hash: ./" << argv[0] << " 3 512|1024 k loadFactor fileName q m" << endl;
-	cout << "FMDummyWT: ./" << argv[0] << " WT 2|4|8 512|1024 fileName q m" << endl;
-	cout << "FMDummyWThash: ./" << argv[0] << " WThash 2|4|8 k loadFactor 512|1024 fileName q m" << endl;
+	cout << "FMDummy1: ./" << argv[0] << " 1 256|512 all|ACGT fileName patternNum patternLen" << endl;
+	cout << "FMDummy1-hash: ./" << argv[0] << " 1 256|512 all|ACGT k loadFactor fileName patternNum patternLen" << endl;
+        cout << "FMDummy2: ./" << argv[0] << " 2 256|512 SCBO|CB 3|4 fileName patternNum patternLen" << endl;
+	cout << "FMDummy2-hash: ./" << argv[0] << " 2 256|512 SCBO|CB 3|4 k loadFactor fileName patternNum patternLen" << endl;
+        cout << "FMDummy3: ./" << argv[0] << " 3 512|1024 fileName patternNum patternLen" << endl;
+	cout << "FMDummy3-hash: ./" << argv[0] << " 3 512|1024 k loadFactor fileName patternNum patternLen" << endl;
+	cout << "FMDummyWT: ./" << argv[0] << " WT 2|4|8 512|1024 fileName patternNum patternLen" << endl;
+	cout << "FMDummyWT-hash: ./" << argv[0] << " WT 2|4|8 512|1024 k loadFactor fileName patternNum patternLen" << endl;
 	cout << "where:" << endl;
 	cout << "fileName - name of text file" << endl;
-	cout << "q - number of patterns (queries)" << endl;
-	cout << "m - pattern length" << endl;
+	cout << "patternNum - number of patterns" << endl;
+	cout << "patternLen - pattern length" << endl;
 	cout << "k - suffix length to be hashed (k > 0)" << endl;
-	cout << "loadFactor - load factor to hash table (range: (0.0, 1.0))" << endl << endl;
+	cout << "loadFactor - load factor of hash table (range: (0.0, 1.0))" << endl << endl;
 }
 
 int main(int argc, char *argv[]) {
-	if (argc < 3) {
+	if (argc < 6) {
 		getUsage(argv);
 		return 1;
 	}
 
 	if ((string)argv[1] == "1") {
-		if (argc < 7 || FMDummy1IndexTypesMap.find(string(argv[2])) == FMDummy1IndexTypesMap.end() || FMDummy1SelectedCharsMap.find(string(argv[3])) == FMDummy1SelectedCharsMap.end()) {
-			getUsage(argv);
-			exit(1);
+                if (FMDummy1IndexTypesMap.find(string(argv[2])) != FMDummy1IndexTypesMap.end() && FMDummy1SelectedCharsMap.find(string(argv[3])) != FMDummy1SelectedCharsMap.end()) {
+                    if (argc == 7) fmDummy1(string(argv[2]), string(argv[3]), argv[4], atoi(argv[5]), atoi(argv[6]));    
+                    else if (argc == 9) fmDummy1Hash(string(argv[2]), string(argv[3]), string(argv[4]), string(argv[5]), argv[6], atoi(argv[7]), atoi(argv[8]));
 		}
-		fmDummy1(string(argv[2]), string(argv[3]), argv[4], atoi(argv[5]), atoi(argv[6]));
-	}
-	else if ((string)argv[1] == "1hash") {
-		if (argc < 9 || FMDummy1IndexTypesMap.find(string(argv[2])) == FMDummy1IndexTypesMap.end() || FMDummy1SelectedCharsMap.find(string(argv[3])) == FMDummy1SelectedCharsMap.end()) {
-			getUsage(argv);
-			exit(1);
-		}
-		fmDummy1hash(string(argv[2]), string(argv[3]), string(argv[4]), string(argv[5]), argv[6], atoi(argv[7]), atoi(argv[8]));
-	}
+        }
 	else if ((string)argv[1] == "2") {
-		if (argc < 8 || FMDummy2IndexTypesMap.find(string(argv[2])) == FMDummy2IndexTypesMap.end() || FMDummy2SchemaMap.find(string(argv[3])) == FMDummy2SchemaMap.end() || FMDummy2BitsPerCharMap.find(string(argv[4])) == FMDummy2BitsPerCharMap.end()) {
-			getUsage(argv);
-			exit(1);
+		if (FMDummy2IndexTypesMap.find(string(argv[2])) != FMDummy2IndexTypesMap.end() && FMDummy2SchemaMap.find(string(argv[3])) != FMDummy2SchemaMap.end() && FMDummy2BitsPerCharMap.find(string(argv[4])) != FMDummy2BitsPerCharMap.end()) {
+                        if (argc == 8) fmDummy2(string(argv[2]), string(argv[3]), string(argv[4]), argv[5], atoi(argv[6]), atoi(argv[7]));
+                        else if (argc == 10) fmDummy2Hash(string(argv[2]), string(argv[3]), string(argv[4]), string(argv[5]), string(argv[6]), argv[7], atoi(argv[8]), atoi(argv[9]));
 		}
-		fmDummy2(string(argv[2]), string(argv[3]), string(argv[4]), argv[5], atoi(argv[6]), atoi(argv[7]));
-	}
-	else if ((string)argv[1] == "2hash") {
-		if (argc < 10 || FMDummy2IndexTypesMap.find(string(argv[2])) == FMDummy2IndexTypesMap.end() || FMDummy2SchemaMap.find(string(argv[3])) == FMDummy2SchemaMap.end() || FMDummy2BitsPerCharMap.find(string(argv[4])) == FMDummy2BitsPerCharMap.end()) {
-			getUsage(argv);
-			exit(1);
-		}
-		fmDummy2hash(string(argv[2]), string(argv[3]), string(argv[4]), string(argv[5]), string(argv[6]), argv[7], atoi(argv[8]), atoi(argv[9]));
 	}
 	else if ((string)argv[1] == "3") {
-		if (argc < 6 || FMDummy3IndexTypesMap.find(string(argv[2])) == FMDummy3IndexTypesMap.end()) {
-			getUsage(argv);
-			exit(1);
+		if (FMDummy3IndexTypesMap.find(string(argv[2])) != FMDummy3IndexTypesMap.end()) {
+                        if (argc == 6) fmDummy3(string(argv[2]), argv[3], atoi(argv[4]), atoi(argv[5]));
+                        else if (argc == 8) fmDummy3Hash(string(argv[2]), string(argv[3]), string(argv[4]), argv[5], atoi(argv[6]), atoi(argv[7]));
 		}
-		fmDummy3(string(argv[2]), argv[3], atoi(argv[4]), atoi(argv[5]));
-	}
-	else if ((string)argv[1] == "3hash") {
-		if (argc < 8 || FMDummy3IndexTypesMap.find(string(argv[2])) == FMDummy3IndexTypesMap.end()) {
-			getUsage(argv);
-			exit(1);
-		}
-		fmDummy3hash(string(argv[2]), string(argv[3]), string(argv[4]), argv[5], atoi(argv[6]), atoi(argv[7]));
 	}
 	else if ((string)argv[1] == "WT") {
-		if (argc < 7 || FMDummyWTWTTypeMap.find(string(argv[2])) == FMDummyWTWTTypeMap.end() || FMDummyWTIndexTypesMap.find(string(argv[3])) == FMDummyWTIndexTypesMap.end()) {
-			getUsage(argv);
-			exit(1);
+		if (FMDummyWTWTTypeMap.find(string(argv[2])) != FMDummyWTWTTypeMap.end() && FMDummyWTIndexTypesMap.find(string(argv[2])) != FMDummyWTIndexTypesMap.end()) {
+                        if (argc == 7) fmDummyWT(string(argv[2]), string(argv[3]), argv[4], atoi(argv[5]), atoi(argv[6]));
+                        else if (argc == 9) fmDummyWTHash(string(argv[2]), string(argv[3]), string(argv[4]), string(argv[5]), argv[6], atoi(argv[7]), atoi(argv[8]));
 		}
-		fmDummyWT(string(argv[2]), string(argv[3]), argv[4], atoi(argv[5]), atoi(argv[6]));
-	}
-	else if ((string)argv[1] == "WThash") {
-		if (argc < 9 || FMDummyWTWTTypeMap.find(string(argv[2])) == FMDummyWTWTTypeMap.end() || FMDummyWTIndexTypesMap.find(string(argv[3])) == FMDummyWTIndexTypesMap.end()) {
-			getUsage(argv);
-			exit(1);
-		}
-		fmDummyWThash(string(argv[2]), string(argv[3]), string(argv[4]), string(argv[5]), argv[6], atoi(argv[7]), atoi(argv[8]));
 	}
 	else {
 		getUsage(argv);
@@ -122,7 +90,7 @@ void fmDummy1(string indexType, string selectedChars, const char *textFileName, 
 	unsigned char* text = NULL;
 	unsigned int textLen;
 	FMDummy1 *FMD1;
-	string indexFileNameString = string("FMD1-") + (string)textFileName + "-" + indexType + "-" + selectedChars + ".idx";
+	string indexFileNameString = "FMD1-" + (string)textFileName + "-" + indexType + "-" + selectedChars + ".idx";
 	const char *indexFileName = indexFileNameString.c_str();
 
 	if (fileExists(indexFileName)) {
@@ -149,7 +117,7 @@ void fmDummy1(string indexType, string selectedChars, const char *textFileName, 
 	string resultFileName = "results/fmdummy/" + string(textFileName) + "_count_FMDummy1.txt";
 	fstream resultFile(resultFileName.c_str(), ios::out | ios::binary | ios::app);
 	double size = (double)FMD1->getIndexSize() / (double)FMD1->getTextSize();
-	cout << "count FMDummy1_" << indexType << "_" << selectedChars << " " << textFileName << " m=" << m << " queries=" << queriesNum << " size=" << size << "n time=" << timer.getElapsedTime() << endl;
+	cout << "count FMDummy1-" << indexType << "-" << selectedChars << " " << textFileName << " m=" << m << " queries=" << queriesNum << " size=" << size << "n time=" << timer.getElapsedTime() << endl;
 	resultFile << m << " " << queriesNum << " " << indexType << " " << selectedChars << " " << size << " " << timer.getElapsedTime();
 
 	unsigned int differences = P->getErrorCountsNumber(indexCounts);
@@ -168,12 +136,12 @@ void fmDummy1(string indexType, string selectedChars, const char *textFileName, 
 	delete P;
 }
 
-void fmDummy1hash(string indexType, string selectedChars, string k, string loadFactor, const char *textFileName, unsigned int queriesNum, unsigned int m) {
+void fmDummy1Hash(string indexType, string selectedChars, string k, string loadFactor, const char *textFileName, unsigned int queriesNum, unsigned int m) {
 
 	unsigned char* text = NULL;
 	unsigned int textLen;
 	FMDummy1 *FMD1;
-	string indexFileNameString = string("FMD1hash-") + (string)textFileName + "-" + indexType + "-" + selectedChars + "-" +  k + "-" + loadFactor + ".idx";
+	string indexFileNameString = "FMD1-hash-" + (string)textFileName + "-" + indexType + "-" + selectedChars + "-" +  k + "-" + loadFactor + ".idx";
 	char *indexFileName = (char *)indexFileNameString.c_str();
 
 	if (fileExists(indexFileName)) {
@@ -197,10 +165,10 @@ void fmDummy1hash(string indexType, string selectedChars, string k, string loadF
 	}
 	timer.stopTimer();
 
-	string resultFileName = "results/fmdummy/" + string(textFileName) + "_count_FMDummy1hash.txt";
+	string resultFileName = "results/fmdummy/" + string(textFileName) + "_count_FMDummy1-hash.txt";
 	fstream resultFile(resultFileName.c_str(), ios::out | ios::binary | ios::app);
 	double size = (double)FMD1->getIndexSize() / (double)FMD1->getTextSize();
-	cout << "count FMDummy1hash_" << indexType << "_" << selectedChars << "_" << k << "_" << loadFactor << " " << textFileName << " m=" << m << " queries=" << queriesNum << " size=" << size << "n time=" << timer.getElapsedTime() << endl;
+	cout << "count FMDummy1-hash-" << indexType << "-" << selectedChars << "-" << k << "-" << loadFactor << " " << textFileName << " m=" << m << " queries=" << queriesNum << " size=" << size << "n time=" << timer.getElapsedTime() << endl;
 	resultFile << m << " " << queriesNum << " " << indexType << " " << selectedChars << " " << k << " " << loadFactor << " " << size << " " << timer.getElapsedTime();
 
 	unsigned int differences = P->getErrorCountsNumber(indexCounts);
@@ -224,7 +192,7 @@ void fmDummy2(string indexType, string encodedSchema, string bits, const char *t
 	unsigned char* text = NULL;
 	unsigned int textLen;
 	FMDummy2 *FMD2;
-	string indexFileNameString = string("FMD2-") + (string)textFileName + "-" + indexType + "-" + encodedSchema + "-" + bits + ".idx";
+	string indexFileNameString = "FMD2-" + (string)textFileName + "-" + indexType + "-" + encodedSchema + "-" + bits + ".idx";
 	char *indexFileName = (char *)indexFileNameString.c_str();
 
 	if (fileExists(indexFileName)) {
@@ -251,7 +219,7 @@ void fmDummy2(string indexType, string encodedSchema, string bits, const char *t
 	string resultFileName = "results/fmdummy/" + string(textFileName) + "_count_FMDummy2.txt";
 	fstream resultFile(resultFileName.c_str(), ios::out | ios::binary | ios::app);
 	double size = (double)FMD2->getIndexSize() / (double)FMD2->getTextSize();
-	cout << "count FMDummy2_" << indexType << "_" << encodedSchema << "_" << bits << " " << textFileName << " m=" << m << " queries=" << queriesNum << " size=" << size << "n time=" << timer.getElapsedTime() << endl;
+	cout << "count FMDummy2-" << indexType << "-" << encodedSchema << "-" << bits << " " << textFileName << " m=" << m << " queries=" << queriesNum << " size=" << size << "n time=" << timer.getElapsedTime() << endl;
 	resultFile << m << " " << queriesNum << " " << indexType << " " << encodedSchema << " " << bits << " " << size << " " << timer.getElapsedTime();
 
 	unsigned int differences = P->getErrorCountsNumber(indexCounts);
@@ -270,12 +238,12 @@ void fmDummy2(string indexType, string encodedSchema, string bits, const char *t
 	delete P;
 }
 
-void fmDummy2hash(string indexType, string encodedSchema, string bits, string k, string loadFactor, const char *textFileName, unsigned int queriesNum, unsigned int m) {
+void fmDummy2Hash(string indexType, string encodedSchema, string bits, string k, string loadFactor, const char *textFileName, unsigned int queriesNum, unsigned int m) {
 
 	unsigned char* text = NULL;
 	unsigned int textLen;
 	FMDummy2 *FMD2;
-	string indexFileNameString = string("FMD2hash-") + (string)textFileName + "-" + indexType + "-" + encodedSchema + "-" + bits + "-" +  k + "-" + loadFactor + ".idx";
+	string indexFileNameString = "FMD2-hash-" + (string)textFileName + "-" + indexType + "-" + encodedSchema + "-" + bits + "-" +  k + "-" + loadFactor + ".idx";
 	char *indexFileName = (char *)indexFileNameString.c_str();
 
 	if (fileExists(indexFileName)) {
@@ -299,10 +267,10 @@ void fmDummy2hash(string indexType, string encodedSchema, string bits, string k,
 	}
 	timer.stopTimer();
 
-	string resultFileName = "results/fmdummy/" + string(textFileName) + "_count_FMDummy2hash.txt";
+	string resultFileName = "results/fmdummy/" + string(textFileName) + "_count_FMDummy2-hash.txt";
 	fstream resultFile(resultFileName.c_str(), ios::out | ios::binary | ios::app);
 	double size = (double)FMD2->getIndexSize() / (double)FMD2->getTextSize();
-	cout << "count FMDummy2hash_" << indexType << "_" << encodedSchema << "_" << bits << "_" << k << "_" << loadFactor << " " << textFileName << " m=" << m << " queries=" << queriesNum << " size=" << size << "n time=" << timer.getElapsedTime() << endl;
+	cout << "count FMDummy2-hash-" << indexType << "-" << encodedSchema << "-" << bits << "-" << k << "-" << loadFactor << " " << textFileName << " m=" << m << " queries=" << queriesNum << " size=" << size << "n time=" << timer.getElapsedTime() << endl;
 	resultFile << m << " " << queriesNum << " " << indexType << " " << encodedSchema << " " << bits << " " << k << " " << loadFactor << " " << size << " " << timer.getElapsedTime();
 
 	unsigned int differences = P->getErrorCountsNumber(indexCounts);
@@ -326,7 +294,7 @@ void fmDummy3(string indexType, const char *textFileName, unsigned int queriesNu
 	unsigned char* text = NULL;
 	unsigned int textLen;
 	FMDummy3 *FMD3;
-	string indexFileNameString = string("FMD3-") + (string)textFileName + "-" + indexType + ".idx";
+	string indexFileNameString = "FMD3-" + (string)textFileName + "-" + indexType + ".idx";
 	char *indexFileName = (char *)indexFileNameString.c_str();
 
 	if (fileExists(indexFileName)) {
@@ -354,7 +322,7 @@ void fmDummy3(string indexType, const char *textFileName, unsigned int queriesNu
 	string resultFileName = "results/fmdummy/" + string(textFileName) + "_count_FMDummy3.txt";
 	fstream resultFile(resultFileName.c_str(), ios::out | ios::binary | ios::app);
 	double size = (double)FMD3->getIndexSize() / (double)FMD3->getTextSize();
-	cout << "count FMDummy3_" << indexType << " " << textFileName << " m=" << m << " queries=" << queriesNum << " size=" << size << "n time=" << timer.getElapsedTime() << endl;
+	cout << "count FMDummy3-" << indexType << " " << textFileName << " m=" << m << " queries=" << queriesNum << " size=" << size << "n time=" << timer.getElapsedTime() << endl;
 	resultFile << m << " " << queriesNum << " " << indexType << " " << size << " " << timer.getElapsedTime();
 
 	unsigned int differences = P->getErrorCountsNumber(indexCounts);
@@ -373,12 +341,12 @@ void fmDummy3(string indexType, const char *textFileName, unsigned int queriesNu
 	delete P;
 }
 
-void fmDummy3hash(string indexType, string k, string loadFactor, const char *textFileName, unsigned int queriesNum, unsigned int m) {
+void fmDummy3Hash(string indexType, string k, string loadFactor, const char *textFileName, unsigned int queriesNum, unsigned int m) {
 
 	unsigned char* text = NULL;
 	unsigned int textLen;
 	FMDummy3 *FMD3;
-	string indexFileNameString = string("FMD3hash-") + (string)textFileName + "-" + indexType + "-" +  k + "-" + loadFactor + ".idx";
+	string indexFileNameString = "FMD3-hash-" + (string)textFileName + "-" + indexType + "-" +  k + "-" + loadFactor + ".idx";
 	char *indexFileName = (char *)indexFileNameString.c_str();
 
 	if (fileExists(indexFileName)) {
@@ -403,10 +371,10 @@ void fmDummy3hash(string indexType, string k, string loadFactor, const char *tex
 	}
 	timer.stopTimer();
 
-	string resultFileName = "results/fmdummy/" + string(textFileName) + "_count_FMDummy3hash.txt";
+	string resultFileName = "results/fmdummy/" + string(textFileName) + "_count_FMDummy3-hash.txt";
 	fstream resultFile(resultFileName.c_str(), ios::out | ios::binary | ios::app);
 	double size = (double)FMD3->getIndexSize() / (double)FMD3->getTextSize();
-	cout << "count FMDummy3hash_" << indexType << "_" << k << "_" << loadFactor << " " << textFileName << " m=" << m << " queries=" << queriesNum << " size=" << size << "n time=" << timer.getElapsedTime() << endl;
+	cout << "count FMDummy3-hash-" << indexType << "-" << k << "-" << loadFactor << " " << textFileName << " m=" << m << " queries=" << queriesNum << " size=" << size << "n time=" << timer.getElapsedTime() << endl;
 	resultFile << m << " " << queriesNum << " " << indexType << " " << k << " " << loadFactor << " " << size << " " << timer.getElapsedTime();
 
 	unsigned int differences = P->getErrorCountsNumber(indexCounts);
@@ -430,7 +398,7 @@ void fmDummyWT(string wtType, string indexType, const char *textFileName, unsign
 	unsigned char* text = NULL;
 	unsigned int textLen;
 	FMDummyWT *FMDWT;
-	string indexFileNameString = string("FMDWT-") + (string)textFileName + "-" + wtType + "-" + indexType + ".idx";
+	string indexFileNameString = "FMDWT-" + (string)textFileName + "-" + wtType + "-" + indexType + ".idx";
 	char *indexFileName = (char *)indexFileNameString.c_str();
 
 	if (fileExists(indexFileName)) {
@@ -457,7 +425,7 @@ void fmDummyWT(string wtType, string indexType, const char *textFileName, unsign
 	string resultFileName = "results/fmdummy/" + string(textFileName) + "_count_FMDummyWT.txt";
 	fstream resultFile(resultFileName.c_str(), ios::out | ios::binary | ios::app);
 	double size = (double)FMDWT->getIndexSize() / (double)FMDWT->getTextSize();
-	cout << "count FMDummyWT" << wtType << "_" << indexType << " " << textFileName << " m=" << m << " queries=" << queriesNum << " size=" << size << "n time=" << timer.getElapsedTime() << endl;
+	cout << "count FMDummyWT-" << wtType << "-" << indexType << " " << textFileName << " m=" << m << " queries=" << queriesNum << " size=" << size << "n time=" << timer.getElapsedTime() << endl;
 	resultFile << m << " " << queriesNum << " " << wtType << " " << indexType << " " << size << " " << timer.getElapsedTime();
 
 	unsigned int differences = P->getErrorCountsNumber(indexCounts);
@@ -476,12 +444,12 @@ void fmDummyWT(string wtType, string indexType, const char *textFileName, unsign
 	delete P;
 }
 
-void fmDummyWThash(string wtType, string indexType, string k, string loadFactor, const char *textFileName, unsigned int queriesNum, unsigned int m) {
+void fmDummyWTHash(string wtType, string indexType, string k, string loadFactor, const char *textFileName, unsigned int queriesNum, unsigned int m) {
 
 	unsigned char* text = NULL;
 	unsigned int textLen;
 	FMDummyWT *FMDWT;
-	string indexFileNameString = string("FMDWThash-") + (string)textFileName + "-" + wtType + "-" + indexType + "-" +  k + "-" + loadFactor + ".idx";
+	string indexFileNameString = "FMDWT-hash-" + (string)textFileName + "-" + wtType + "-" + indexType + "-" +  k + "-" + loadFactor + ".idx";
 	char *indexFileName = (char *)indexFileNameString.c_str();
 
 	if (fileExists(indexFileName)) {
@@ -505,10 +473,10 @@ void fmDummyWThash(string wtType, string indexType, string k, string loadFactor,
 	}
 	timer.stopTimer();
 
-	string resultFileName = "results/fmdummy/" + string(textFileName) + "_count_FMDummyWThash.txt";
+	string resultFileName = "results/fmdummy/" + string(textFileName) + "_count_FMDummyWT-hash.txt";
 	fstream resultFile(resultFileName.c_str(), ios::out | ios::binary | ios::app);
 	double size = (double)FMDWT->getIndexSize() / (double)FMDWT->getTextSize();
-	cout << "count FMDummyWT" << wtType << "hash_" << indexType << "_" << k << "_" << loadFactor << " " << textFileName << " m=" << m << " queries=" << queriesNum << " size=" << size << "n time=" << timer.getElapsedTime() << endl;
+	cout << "count FMDummyWT-hash-" << wtType << "-" << indexType << "-" << k << "-" << loadFactor << " " << textFileName << " m=" << m << " queries=" << queriesNum << " size=" << size << "n time=" << timer.getElapsedTime() << endl;
 	resultFile << m << " " << queriesNum << " " << wtType << " " << indexType << " " << k << " " << loadFactor << " " << size << " " << timer.getElapsedTime();
 
 	unsigned int differences = P->getErrorCountsNumber(indexCounts);

@@ -10,11 +10,11 @@ The FMDummy text indexes require:
 - C++11 ready compiler such as g++ version 4.7 or higher
 - a 64-bit operating system
 - text size is limited to (FMDummy2 limitations are the worst cases for incompressible text, usually they are not so strong):
-    - 4GB for FMDummy1(hash), FMDummy3(hash) and FMDummyWT(hash)
-    - 0.8GB for FMDummy2(hash) with SCBO schema and 3 bitsPerChar
-    - 1.2GB for FMDummy2(hash) with SCBO schema and 4 bitsPerChar
-    - 1.1GB for FMDummy2(hash) with CB schema and 3 bitsPerChar
-    - 1.5GB for FMDummy2(hash) with CB schema and 4 bitsPerChar
+    - 4GB for FMDummy1, FMDummy3 and FMDummyWT
+    - 0.8GB for FMDummy2 with SCBO schema and 3 bitsPerChar
+    - 1.2GB for FMDummy2 with SCBO schema and 4 bitsPerChar
+    - 1.1GB for FMDummy2 with CB schema and 3 bitsPerChar
+    - 1.5GB for FMDummy2 with CB schema and 4 bitsPerChar
 
 
 ##Installation
@@ -30,7 +30,7 @@ To use the FMDummy library:
 - include "fmdummy/fmdummy.h" to your project
 - compile it with "-std=c++11 -O3 -mpopcnt" options and link it with libraries:
   - fmdummy/libfmdummy.a
-  - fmdummy/libs/libaelf64.a
+  - fmdummy/libs/libaelf64.a (linux) or fmdummy/libs/libacof64.lib (windows)
 - use "fmdummy" namespace
 
 ##API
@@ -86,7 +86,7 @@ FMDummy1(FMDummy1::IndexType indexType, vector<unsigned char> selectedChars);
 ```
 
 ##FMDummy1-hash
-FMDummy1-hash is FMDummy1 with hashed k-symbol prefixes of suffixes from suffix array to speed up searches (k ≥ 2). This variant is particularly efficient in speed for short patterns (not much longer than k). Note that patterns shorter than k are handled by standard variant of FMDummy1 index.
+FMDummy1-hash is FMDummy1 with hashed k-symbol prefixes of suffixes from suffix array to speed up searches (k ≥ 2). This variant is particularly efficient in speed for short patterns (not much longer than k).
 
 Parameters:
 - indexType:
@@ -97,6 +97,9 @@ Parameters:
       - {} (default) - all characters from the text
 - k - length of prefixes of suffixes from suffix array (k ≥ 2)
 - loadFactor - hash table load factor (0.0 < loadFactor < 1.0)
+
+Limitations: 
+- pattern length >= k (patterns shorter than k are handled by standard variant of FMDummy1 index)
 
 Constructors:
 ```
@@ -122,7 +125,7 @@ FMDummy2(FMDummy2::IndexType indexType, FMDummy2::Schema schema, FMDummy2::BitsP
 ```
 
 ##FMDummy2-hash
-FMDummy2-hash is FMDummy2 with hashed k-symbol prefixes of suffixes from suffix array to speed up searches (k ≥ 2). This variant is particularly efficient in speed for short patterns (not much longer than k). Note that patterns shorter than k are handled by standard variant of FMDummy2 index.
+FMDummy2-hash is FMDummy2 with hashed k-symbol prefixes of suffixes from suffix array to speed up searches (k ≥ 2). This variant is particularly efficient in speed for short patterns (not much longer than k).
 
 Parameters:
 - indexType:
@@ -136,6 +139,9 @@ Parameters:
       - FMDummy2::BITS_3 - using 3 bits to store the encoded symbol
 - k - length of prefixes of suffixes from suffix array (k ≥ 2)
 - loadFactor - hash table load factor (0.0 < loadFactor < 1.0)
+
+Limitations: 
+- pattern length >= k (patterns shorter than k are handled by standard variant of FMDummy2 index)
 
 Constructors:
 ```
@@ -157,7 +163,7 @@ FMDummy3(FMDummy3::IndexType indexType);
 ```
 
 ##FMDummy3-hash
-FMDummy3-hash is FMDummy3 with hashed k-symbol prefixes of suffixes from suffix array to speed up searches (k ≥ 2). This variant is particularly efficient in speed for short patterns (not much longer than k). Note that patterns shorter than k are handled by standard variant of FMDummy3 index.
+FMDummy3-hash is FMDummy3 with hashed k-symbol prefixes of suffixes from suffix array to speed up searches (k ≥ 2). This variant is particularly efficient in speed for short patterns (not much longer than k).
 
 Parameters:
 - indexType:
@@ -165,6 +171,9 @@ Parameters:
       - FMDummy3::TYPE_1024 - using 1024b blocks: 128b of rank data and 896b of text data
 - k - length of prefixes of suffixes from suffix array (k ≥ 2)
 - loadFactor - hash table load factor (0.0 < loadFactor < 1.0)
+
+Limitations: 
+- pattern length >= k (patterns shorter than k are handled by standard variant of FMDummy3 index)
 
 Constructors:
 ```
@@ -188,7 +197,7 @@ FMDummyWT(FMDummyWT::WTType wtType, FMDummyWT::IndexType indexType);
 ```
 
 ##FMDummyWT-hash
-FMDummyWT-hash is FMDummyWT with hashed k-symbol prefixes of suffixes from suffix array to speed up searches (k ≥ 2). This variant is particularly efficient in speed for short patterns (not much longer than k). Note that patterns shorter than k are handled by standard variant of FMDummyWT index.
+FMDummyWT-hash is FMDummyWT with hashed k-symbol prefixes of suffixes from suffix array to speed up searches (k ≥ 2). This variant is particularly efficient in speed for short patterns (not much longer than k).
 
 Parameters:
 - wtType:
@@ -200,6 +209,9 @@ Parameters:
       - FMDummyWT::TYPE_1024 - using 1024b blocks: 64b of rank data and 960b of encoded text data
 - k - length of prefixes of suffixes from suffix array (k ≥ 2)
 - loadFactor - hash table load factor (0.0 < loadFactor < 1.0)
+
+Limitations: 
+- pattern length >= k (patterns shorter than k are handled by standard variant of FMDummyWT index)
 
 Constructors:
 ```
@@ -255,6 +267,7 @@ int main(int argc, char *argv[]) {
 }
 ```
 Using other FMDummy indexes is analogous.
+
 ##External resources used in FMDummy project
 - Suffix array building by Yuta Mori (sais)
 - A multi-platform library of highly optimized functions for C and C++ by Agner Fog (asmlib)

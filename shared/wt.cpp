@@ -9,7 +9,7 @@ namespace fmdummy {
 
 unsigned int WT::getWTSize() {
 	unsigned int size = sizeof(this->bitsLen) + sizeof(this->nodesLen) + sizeof(unsigned long long *);
-	size += (this->bitsLen * sizeof(unsigned long long) + this->nodesLen * sizeof(WT *));
+	size += ((this->bitsLen + 16) * sizeof(unsigned long long) + this->nodesLen * sizeof(WT *));
 	for (unsigned int i = 0; i < this->nodesLen; ++i) if (this->nodes[i] != NULL) size += this->nodes[i]->getWTSize();
 	return size;
 }
@@ -37,7 +37,7 @@ void WT::save(FILE *outFile) {
 	bool nullNode = false;
 	bool notNullNode = true;
 	fwrite(&this->bitsLen, (size_t)sizeof(unsigned int), (size_t)1, outFile);
-	if (this->bitsLen > 0) fwrite(this->alignedBits, (size_t)sizeof(unsigned long long), (size_t)(this->bitsLen - 16), outFile);
+	if (this->bitsLen > 0) fwrite(this->alignedBits, (size_t)sizeof(unsigned long long), (size_t)this->bitsLen, outFile);
 	fwrite(&this->nodesLen, (size_t)sizeof(unsigned int), (size_t)1, outFile);
 	for (unsigned int i = 0; i < this->nodesLen; ++i) {
 		if (this->nodes[i] == NULL) fwrite(&nullNode, (size_t)sizeof(bool), (size_t)1, outFile);
@@ -58,11 +58,11 @@ void WT::load(FILE *inFile) {
 		exit(1);
 	}
 	if (this->bitsLen > 0) {
-		this->bits = new unsigned long long[this->bitsLen];
+		this->bits = new unsigned long long[this->bitsLen + 16];
 		this->alignedBits = this->bits;
 		while ((unsigned long long)(this->alignedBits) % 128) ++(this->alignedBits);
-		result = fread(this->alignedBits, (size_t)sizeof(unsigned long long), (size_t)(this->bitsLen - 16), inFile);
-		if (result != (this->bitsLen - 16)) {
+		result = fread(this->alignedBits, (size_t)sizeof(unsigned long long), (size_t)this->bitsLen, inFile);
+		if (result != this->bitsLen) {
 			cout << "Error loading index" << endl;
 			exit(1);
 		}
