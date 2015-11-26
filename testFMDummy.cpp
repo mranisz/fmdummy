@@ -52,7 +52,7 @@ void getUsage(char **argv) {
 int main(int argc, char *argv[]) {
 	if (argc < 6) {
 		getUsage(argv);
-		return 1;
+		exit(1);
 	}
 
 	if ((string)argv[1] == "1") {
@@ -132,6 +132,7 @@ void fmDummy1(string indexType, string selectedChars, const char *textFileName, 
 	delete[] indexCounts;
 	delete FMD1;
 	delete P;
+        exit(0);
 }
 
 void fmDummy1Hash(string indexType, string selectedChars, string k, string loadFactor, const char *textFileName, unsigned int queriesNum, unsigned int m) {
@@ -183,6 +184,7 @@ void fmDummy1Hash(string indexType, string selectedChars, string k, string loadF
 	delete[] indexCounts;
 	delete FMD1;
 	delete P;
+        exit(0);
 }
 
 void fmDummy2(string indexType, string encodedSchema, string bits, const char *textFileName, unsigned int queriesNum, unsigned int m) {
@@ -234,6 +236,7 @@ void fmDummy2(string indexType, string encodedSchema, string bits, const char *t
 	delete[] indexCounts;
 	delete FMD2;
 	delete P;
+        exit(0);
 }
 
 void fmDummy2Hash(string indexType, string encodedSchema, string bits, string k, string loadFactor, const char *textFileName, unsigned int queriesNum, unsigned int m) {
@@ -285,6 +288,7 @@ void fmDummy2Hash(string indexType, string encodedSchema, string bits, string k,
 	delete[] indexCounts;
 	delete FMD2;
 	delete P;
+        exit(0);
 }
 
 void fmDummy3(string indexType, const char *textFileName, unsigned int queriesNum, unsigned int m) {
@@ -337,6 +341,7 @@ void fmDummy3(string indexType, const char *textFileName, unsigned int queriesNu
 	delete[] indexCounts;
 	delete FMD3;
 	delete P;
+        exit(0);
 }
 
 void fmDummy3Hash(string indexType, string k, string loadFactor, const char *textFileName, unsigned int queriesNum, unsigned int m) {
@@ -389,6 +394,7 @@ void fmDummy3Hash(string indexType, string k, string loadFactor, const char *tex
 	delete[] indexCounts;
 	delete FMD3;
 	delete P;
+        exit(0);
 }
 
 void fmDummyWT(string wtType, string indexType, const char *textFileName, unsigned int queriesNum, unsigned int m) {
@@ -440,6 +446,7 @@ void fmDummyWT(string wtType, string indexType, const char *textFileName, unsign
 	delete[] indexCounts;
 	delete FMDWT;
 	delete P;
+        exit(0);
 }
 
 void fmDummyWTHash(string wtType, string indexType, string k, string loadFactor, const char *textFileName, unsigned int queriesNum, unsigned int m) {
@@ -491,4 +498,5 @@ void fmDummyWTHash(string wtType, string indexType, string k, string loadFactor,
 	delete[] indexCounts;
 	delete FMDWT;
 	delete P;
+        exit(0);
 }
