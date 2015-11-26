@@ -74,15 +74,13 @@ int main(int argc, char *argv[]) {
 		}
 	}
 	else if ((string)argv[1] == "WT") {
-		if (FMDummyWTWTTypeMap.find(string(argv[2])) != FMDummyWTWTTypeMap.end() && FMDummyWTIndexTypesMap.find(string(argv[2])) != FMDummyWTIndexTypesMap.end()) {
+		if (FMDummyWTWTTypeMap.find(string(argv[2])) != FMDummyWTWTTypeMap.end() && FMDummyWTIndexTypesMap.find(string(argv[3])) != FMDummyWTIndexTypesMap.end()) {
                         if (argc == 7) fmDummyWT(string(argv[2]), string(argv[3]), argv[4], atoi(argv[5]), atoi(argv[6]));
                         else if (argc == 9) fmDummyWTHash(string(argv[2]), string(argv[3]), string(argv[4]), string(argv[5]), argv[6], atoi(argv[7]), atoi(argv[8]));
 		}
 	}
-	else {
-		getUsage(argv);
-		exit(1);
-	}
+        getUsage(argv);
+        exit(1);
 }
 
 void fmDummy1(string indexType, string selectedChars, const char *textFileName, unsigned int queriesNum, unsigned int m) {
