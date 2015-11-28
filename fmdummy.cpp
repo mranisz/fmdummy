@@ -558,7 +558,7 @@ unsigned char *FMDummy2::getEncodedInSCBO(unsigned char *text, unsigned int text
 		}
 	}
 
-	unsigned char *encodedText = new unsigned char[totalTotal];
+	unsigned char *encodedText = new unsigned char[totalTotal + 1];
 	encodedTextLen = 0;
 
 	for (unsigned int i = 0; i < textLen; ++i) {
@@ -567,7 +567,7 @@ unsigned char *FMDummy2::getEncodedInSCBO(unsigned char *text, unsigned int text
 			encodedText[encodedTextLen++] = this->encodedChars[(unsigned int)ch * maxSymbolLen + j];
 		}
 	}
-
+        encodedText[encodedTextLen] = '\0';
 	return encodedText;
 }
 
@@ -664,7 +664,7 @@ unsigned char *FMDummy2::getEncodedInCB(unsigned char *text, unsigned int textLe
 	}
 	++b;
 
-	unsigned char *encodedText = new unsigned char[totalTotal];
+	unsigned char *encodedText = new unsigned char[totalTotal + 1];
 	encodedTextLen = 0;
 
 	for (unsigned int i = 0; i < textLen; ++i) {
@@ -673,7 +673,7 @@ unsigned char *FMDummy2::getEncodedInCB(unsigned char *text, unsigned int textLe
 			encodedText[encodedTextLen++] = this->encodedChars[(unsigned int)ch * maxSymbolLen + j];
 		}
 	}
-
+        encodedText[encodedTextLen] = '\0';
 	return encodedText;
 }
 

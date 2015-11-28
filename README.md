@@ -107,6 +107,7 @@ FMDummy1(FMDummy1::IndexType indexType, vector<unsigned char> selectedChars, uns
 ```
 
 ##FMDummy2
+
 Parameters:
 - indexType:
       - FMDummy2::TYPE_256 (default) - using 256b blocks: 64b of rank data and 192b of encoded text data
@@ -181,6 +182,7 @@ FMDummy3(FMDummy3::IndexType indexType, unsigned int k, double loadFactor);
 ```
 
 ##FMDummyWT
+
 Parameters:
 - wtType:
       - FMDummyWT::TYPE_WT2 (default) - using wavelet tree for 2-ary Huffman encoded text
