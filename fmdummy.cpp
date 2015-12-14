@@ -746,7 +746,7 @@ void FMDummy2::build(unsigned char *text, unsigned int textLen) {
 		unsigned int encodedPatternLen;
 		for (unsigned int i = 0; i < this->ht->bucketsNum; ++i) {
 			if (this->ht->alignedBoundariesHT[2 * i] != HT::emptyValueHT) {
-				encode(this->ht->alignedEntriesHT + (i * this->ht->k), this->ht->k, this->encodedChars, this->encodedCharsLen, this->maxEncodedCharsLen, encodedPattern, encodedPatternLen);
+				encode(this->ht->alignedEntriesHT + (i * this->ht->prefixLength), this->ht->prefixLength, this->encodedChars, this->encodedCharsLen, this->maxEncodedCharsLen, encodedPattern, encodedPatternLen);
 				switch (this->schema) {
 				case FMDummy2::SCHEMA_SCBO:
 					switch(this->type) {
