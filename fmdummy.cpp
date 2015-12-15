@@ -681,11 +681,15 @@ void FMDummy2::build(unsigned char *text, unsigned int textLen) {
 	checkNullChar(text, textLen);
 	this->free();
 	this->textLen = textLen;
+        unsigned char *cutOutEntries = NULL;
 	if (this->ht != NULL) {
 		unsigned int saLen;
 		unsigned int *sa = getSA(text, textLen, saLen, 0, this->verbose);
 		if (this->verbose) cout << "Creating hash table ... " << flush;
-		this->ht->build(text, textLen, sa, saLen);
+                unsigned int uniqueSuffixNum = getUniqueSuffixNum(this->ht->k, text, textLen, sa, saLen);
+                unsigned long long bucketsNum = (double)uniqueSuffixNum * (1.0 / this->ht->loadFactor);
+                cutOutEntries = new unsigned char[bucketsNum * 2];
+		this->ht->build(text, textLen, sa, saLen, {}, cutOutEntries);
 		if (this->verbose) cout << "Done" << endl;
 		delete[] sa;
 	}
@@ -742,11 +746,16 @@ void FMDummy2::build(unsigned char *text, unsigned int textLen) {
 	if (this->verbose) cout << "Done" << endl;
 	if (this->ht != NULL)  {
 		if (this->verbose) cout << "Modifying hash table for encoded text ... " << flush;
+                unsigned char *entry = new unsigned char[this->ht->k + 1];
+                entry[this->ht->k] = '\0';
 		unsigned char *encodedPattern = new unsigned char[this->maxEncodedCharsLen * this->ht->k + 1];
 		unsigned int encodedPatternLen;
 		for (unsigned int i = 0; i < this->ht->bucketsNum; ++i) {
 			if (this->ht->alignedBoundariesHT[2 * i] != HT::emptyValueHT) {
-				encode(this->ht->alignedEntriesHT + (i * this->ht->prefixLength), this->ht->prefixLength, this->encodedChars, this->encodedCharsLen, this->maxEncodedCharsLen, encodedPattern, encodedPatternLen);
+                                entry[0] = cutOutEntries[i * 2];
+                                entry[1] = cutOutEntries[i * 2 + 1];
+                                for (unsigned int j = 0; j < this->ht->prefixLength; ++j) entry[j + 2] = this->ht->alignedEntriesHT[i * this->ht->prefixLength + j];
+				encode(entry, this->ht->k, this->encodedChars, this->encodedCharsLen, this->maxEncodedCharsLen, encodedPattern, encodedPatternLen);
 				switch (this->schema) {
 				case FMDummy2::SCHEMA_SCBO:
 					switch(this->type) {
@@ -772,6 +781,8 @@ void FMDummy2::build(unsigned char *text, unsigned int textLen) {
 			}
 		}
 		delete[] encodedPattern;
+                delete[] cutOutEntries;
+                delete[] entry;
 		encodedPattern = new unsigned char[this->maxEncodedCharsLen * 2 + 1];
 		unsigned char lutPattern[3];
 		lutPattern[2] = '\0';
