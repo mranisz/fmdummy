@@ -745,6 +745,7 @@ void FMDummy2::build(unsigned char *text, unsigned int textLen) {
 	builder(bwtDenseInLong, bwtDenseInLongLen, encodedChars, this->bwtWithRanks, this->bwtWithRanksLen, this->alignedBWTWithRanks);
 	if (this->verbose) cout << "Done" << endl;
 	if (this->ht != NULL)  {
+                unsigned int diff;
 		if (this->verbose) cout << "Modifying hash table for encoded text ... " << flush;
                 unsigned char *entry = new unsigned char[this->ht->k + 1];
                 entry[this->ht->k] = '\0';
@@ -752,11 +753,12 @@ void FMDummy2::build(unsigned char *text, unsigned int textLen) {
 		unsigned int encodedPatternLen;
 		for (unsigned int i = 0; i < this->ht->bucketsNum; ++i) {
 			if (this->ht->alignedBoundariesHT[2 * i] != HT::emptyValueHT) {
-                                entry[0] = cutOutEntries[i * 2];
-                                entry[1] = cutOutEntries[i * 2 + 1];
+                                entry[0] = cutOutEntries[2 * i];
+                                entry[1] = cutOutEntries[2 * i + 1];
                                 for (unsigned int j = 0; j < this->ht->prefixLength; ++j) entry[j + 2] = this->ht->alignedEntriesHT[i * this->ht->prefixLength + j];
 				encode(entry, this->ht->k, this->encodedChars, this->encodedCharsLen, this->maxEncodedCharsLen, encodedPattern, encodedPatternLen);
-				switch (this->schema) {
+				diff = this->ht->alignedBoundariesHT[2 * i + 1] - this->ht->alignedBoundariesHT[2 * i];
+                                switch (this->schema) {
 				case FMDummy2::SCHEMA_SCBO:
 					switch(this->type) {
 					case FMDummy2::TYPE_256:
@@ -778,6 +780,7 @@ void FMDummy2::build(unsigned char *text, unsigned int textLen) {
 					}
 					break;
 				}
+                                this->ht->alignedBoundariesHT[2 * i + 1] = this->ht->alignedBoundariesHT[2 * i] + diff;
 			}
 		}
 		delete[] encodedPattern;
@@ -789,11 +792,12 @@ void FMDummy2::build(unsigned char *text, unsigned int textLen) {
 		for (int i = 0; i < 256; ++i) {
 			lutPattern[0] = (unsigned char)i;
 			for (int j = 0; j < 256; ++j) {
+                                diff = this->ht->lut2[i][j][1] - this->ht->lut2[i][j][0];
 				lutPattern[1] = (unsigned char)j;
 				unsigned int encodedPatternLen;
 				encode(lutPattern, 2, this->encodedChars, this->encodedCharsLen, this->maxEncodedCharsLen, encodedPattern, encodedPatternLen);
 				binarySearch(encodedSA, encodedText, 0, encodedSALen, encodedPattern, encodedPatternLen, this->ht->lut2[i][j][0], this->ht->lut2[i][j][1]);
-				++this->ht->lut2[i][j][1];
+				this->ht->lut2[i][j][1] = this->ht->lut2[i][j][0] + diff;
 			}
 		}
 		delete[] encodedPattern;
