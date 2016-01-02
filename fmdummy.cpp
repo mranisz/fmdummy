@@ -108,13 +108,13 @@ void FMDummy1::build(unsigned char* text, unsigned int textLen) {
 	if (this->ht != NULL) {
 		unsigned int saLen;
 		unsigned int *sa = getSA(text, textLen, saLen, 0, this->verbose);
-		if (this->verbose) cout << "Creating hash table ... " << flush;
+		if (this->verbose) cout << "Building hash table ... " << flush;
 		if (this->allChars) this->ht->build(text, textLen, sa, saLen);
 		else this->ht->build(text, textLen, sa, saLen, this->selectedChars);
 		if (this->verbose) cout << "Done" << endl;
-		bwt = getBWT(text, textLen, sa, saLen, bwtLen, this->verbose);
+		bwt = getBWT(text, textLen, sa, saLen, bwtLen, 0, this->verbose);
 		delete[] sa;
-	} else bwt = getBWT(text, textLen, bwtLen, this->verbose);
+	} else bwt = getBWT(text, textLen, bwtLen, 0, this->verbose);
 	if (this->verbose) cout << "Compacting BWT for selected chars ... " << flush;
 	++bwtLen;
 	unsigned int bwtDenseLen = (bwtLen / 8);
@@ -172,23 +172,17 @@ unsigned int FMDummy1::count_std_512_counter40(unsigned char *pattern, unsigned 
 }
 
 unsigned int FMDummy1::count_hash_256_counter48(unsigned char *pattern, unsigned int patternLen) {
-	if (this->ht->k <= patternLen) {
-		unsigned int leftBoundary, rightBoundary;
-		this->ht->getBoundaries(pattern + (patternLen - this->ht->k), leftBoundary, rightBoundary);
-		return count_256_counter48(pattern, patternLen - this->ht->k, this->c, this->alignedBWTWithRanks, leftBoundary + 1, rightBoundary);
-	} else {
-		return this->count_std_256_counter48(pattern, patternLen);
-	}
+	if (patternLen < this->ht->k) return this->count_std_256_counter48(pattern, patternLen);
+        unsigned int leftBoundary, rightBoundary;
+        this->ht->getBoundaries(pattern + (patternLen - this->ht->k), leftBoundary, rightBoundary);
+        return count_256_counter48(pattern, patternLen - this->ht->k, this->c, this->alignedBWTWithRanks, leftBoundary + 1, rightBoundary);
 }
 
 unsigned int FMDummy1::count_hash_512_counter40(unsigned char *pattern, unsigned int patternLen) {
-	if (this->ht->k <= patternLen) {
-		unsigned int leftBoundary, rightBoundary;
-		this->ht->getBoundaries(pattern + (patternLen - this->ht->k), leftBoundary, rightBoundary);
-		return count_512_counter40(pattern, patternLen - this->ht->k, this->c, this->alignedBWTWithRanks, leftBoundary + 1, rightBoundary);
-	} else {
-		return this->count_std_512_counter40(pattern, patternLen);
-	}
+	if (patternLen < this->ht->k) return this->count_std_512_counter40(pattern, patternLen);
+        unsigned int leftBoundary, rightBoundary;
+        this->ht->getBoundaries(pattern + (patternLen - this->ht->k), leftBoundary, rightBoundary);
+        return count_512_counter40(pattern, patternLen - this->ht->k, this->c, this->alignedBWTWithRanks, leftBoundary + 1, rightBoundary);
 }
 
 unsigned int *FMDummy1::locate(unsigned char *pattern, unsigned int patternLen) {
@@ -685,7 +679,7 @@ void FMDummy2::build(unsigned char *text, unsigned int textLen) {
 	if (this->ht != NULL) {
 		unsigned int saLen;
 		unsigned int *sa = getSA(text, textLen, saLen, 0, this->verbose);
-		if (this->verbose) cout << "Creating hash table ... " << flush;
+		if (this->verbose) cout << "Building hash table ... " << flush;
                 unsigned int uniqueSuffixNum = getUniqueSuffixNum(this->ht->k, text, textLen, sa, saLen);
                 unsigned long long bucketsNum = (double)uniqueSuffixNum * (1.0 / this->ht->loadFactor);
                 cutOutEntries = new unsigned char[bucketsNum * 2];
@@ -712,7 +706,7 @@ void FMDummy2::build(unsigned char *text, unsigned int textLen) {
 	unsigned int bwtLen;
 	unsigned int encodedSALen;
 	unsigned int *encodedSA = getSA(encodedText, encodedTextLen, encodedSALen, 0, this->verbose);
-	unsigned char *bwt = getBWT(encodedText, encodedTextLen, encodedSA, encodedSALen, bwtLen, this->verbose);
+	unsigned char *bwt = getBWT(encodedText, encodedTextLen, encodedSA, encodedSALen, bwtLen, 0, this->verbose);
 	if (this->ht == NULL) delete[] encodedSA;
 	unsigned int encodedCharsLen = (unsigned int)exp2((double)this->bitsPerChar);
 	if (this->verbose) cout << "Compacting BWT ... " << flush;
@@ -873,59 +867,47 @@ unsigned int FMDummy2::count_std_CB_512_counter40(unsigned char *pattern, unsign
 }
 
 unsigned int FMDummy2::count_hash_SCBO_256_counter48(unsigned char *pattern, unsigned int patternLen) {
-	if (this->ht->k <= patternLen) {
-		unsigned int leftBoundary, rightBoundary;
-		this->ht->getBoundaries(pattern + (patternLen - this->ht->k), leftBoundary, rightBoundary);
-		bool wrongEncoding = false;
-		unsigned int encodedPatternLen;
-		this->encodePattern(pattern, patternLen - this->ht->k, encodedPatternLen, wrongEncoding);
-		if (wrongEncoding) return 0;
-		return count_256_counter48(encodedPattern, encodedPatternLen, this->c, this->alignedBWTWithRanks, leftBoundary + 1, rightBoundary);
-	} else {
-		return this->count_std_SCBO_256_counter48(pattern, patternLen);
-	}
+	if (patternLen < this->ht->k) return this->count_std_SCBO_256_counter48(pattern, patternLen);
+        unsigned int leftBoundary, rightBoundary;
+        this->ht->getBoundaries(pattern + (patternLen - this->ht->k), leftBoundary, rightBoundary);
+        bool wrongEncoding = false;
+        unsigned int encodedPatternLen;
+        this->encodePattern(pattern, patternLen - this->ht->k, encodedPatternLen, wrongEncoding);
+        if (wrongEncoding) return 0;
+        return count_256_counter48(encodedPattern, encodedPatternLen, this->c, this->alignedBWTWithRanks, leftBoundary + 1, rightBoundary);
 }
 
 unsigned int FMDummy2::count_hash_CB_256_counter48(unsigned char *pattern, unsigned int patternLen) {
-	if (this->ht->k <= patternLen) {
-		unsigned int leftBoundary, rightBoundary;
-		this->ht->getBoundaries(pattern + (patternLen - this->ht->k), leftBoundary, rightBoundary);
-		bool wrongEncoding = false;
-		unsigned int encodedPatternLen;
-		this->encodePattern(pattern, patternLen - this->ht->k, encodedPatternLen, wrongEncoding);
-		if (wrongEncoding) return 0;
-		return count_256_counter48(encodedPattern, encodedPatternLen, this->c, this->alignedBWTWithRanks, leftBoundary + 1, rightBoundary);
-	} else {
-		return this->count_std_CB_256_counter48(pattern, patternLen);
-	}
+	if (patternLen < this->ht->k) return this->count_std_CB_256_counter48(pattern, patternLen);
+        unsigned int leftBoundary, rightBoundary;
+        this->ht->getBoundaries(pattern + (patternLen - this->ht->k), leftBoundary, rightBoundary);
+        bool wrongEncoding = false;
+        unsigned int encodedPatternLen;
+        this->encodePattern(pattern, patternLen - this->ht->k, encodedPatternLen, wrongEncoding);
+        if (wrongEncoding) return 0;
+        return count_256_counter48(encodedPattern, encodedPatternLen, this->c, this->alignedBWTWithRanks, leftBoundary + 1, rightBoundary);
 }
 
 unsigned int FMDummy2::count_hash_SCBO_512_counter40(unsigned char *pattern, unsigned int patternLen) {
-	if (this->ht->k <= patternLen) {
-		unsigned int leftBoundary, rightBoundary;
-		this->ht->getBoundaries(pattern + (patternLen - this->ht->k), leftBoundary, rightBoundary);
-		bool wrongEncoding = false;
-		unsigned int encodedPatternLen;
-		this->encodePattern(pattern, patternLen - this->ht->k, encodedPatternLen, wrongEncoding);
-		if (wrongEncoding) return 0;
-		return count_512_counter40(encodedPattern, encodedPatternLen, this->c, this->alignedBWTWithRanks, leftBoundary + 1, rightBoundary);
-	} else {
-		return this->count_std_SCBO_512_counter40(pattern, patternLen);
-	}
+	if (patternLen < this->ht->k) return this->count_std_SCBO_512_counter40(pattern, patternLen);
+        unsigned int leftBoundary, rightBoundary;
+        this->ht->getBoundaries(pattern + (patternLen - this->ht->k), leftBoundary, rightBoundary);
+        bool wrongEncoding = false;
+        unsigned int encodedPatternLen;
+        this->encodePattern(pattern, patternLen - this->ht->k, encodedPatternLen, wrongEncoding);
+        if (wrongEncoding) return 0;
+        return count_512_counter40(encodedPattern, encodedPatternLen, this->c, this->alignedBWTWithRanks, leftBoundary + 1, rightBoundary);
 }
 
 unsigned int FMDummy2::count_hash_CB_512_counter40(unsigned char *pattern, unsigned int patternLen) {
-	if (this->ht->k <= patternLen) {
-		unsigned int leftBoundary, rightBoundary;
-		this->ht->getBoundaries(pattern + (patternLen - this->ht->k), leftBoundary, rightBoundary);
-		bool wrongEncoding = false;
-		unsigned int encodedPatternLen;
-		this->encodePattern(pattern, patternLen - this->ht->k, encodedPatternLen, wrongEncoding);
-		if (wrongEncoding) return 0;
-		return count_512_counter40(encodedPattern, encodedPatternLen, this->c, this->alignedBWTWithRanks, leftBoundary + 1, rightBoundary);
-	} else {
-		return this->count_std_CB_512_counter40(pattern, patternLen);
-	}
+	if (patternLen < this->ht->k) return this->count_std_CB_512_counter40(pattern, patternLen);
+        unsigned int leftBoundary, rightBoundary;
+        this->ht->getBoundaries(pattern + (patternLen - this->ht->k), leftBoundary, rightBoundary);
+        bool wrongEncoding = false;
+        unsigned int encodedPatternLen;
+        this->encodePattern(pattern, patternLen - this->ht->k, encodedPatternLen, wrongEncoding);
+        if (wrongEncoding) return 0;
+        return count_512_counter40(encodedPattern, encodedPatternLen, this->c, this->alignedBWTWithRanks, leftBoundary + 1, rightBoundary);
 }
 
 unsigned int *FMDummy2::locate(unsigned char *pattern, unsigned int patternLen) {
@@ -1208,13 +1190,13 @@ void FMDummy3::build(unsigned char *text, unsigned int textLen) {
 	if (this->ht != NULL) {
 		unsigned int saLen;
 		unsigned int *sa = getSA(convertedText, textLen, saLen, 0, this->verbose);
-		if (this->verbose) cout << "Creating hash table ... " << flush;
+		if (this->verbose) cout << "Building hash table ... " << flush;
 
 		this->ht->build(convertedText, textLen, sa, saLen, selectedChars);
 		if (this->verbose) cout << "Done" << endl;
-		bwt = getBWT(convertedText, textLen, sa, saLen, bwtLen, this->verbose);
+		bwt = getBWT(convertedText, textLen, sa, saLen, bwtLen, 0, this->verbose);
 		delete[] sa;
-	} else bwt = getBWT(convertedText, textLen, bwtLen, this->verbose);
+	} else bwt = getBWT(convertedText, textLen, bwtLen, 0, this->verbose);
 	if (this->verbose) cout << "Encoding BWT ... " << flush;
 	++bwtLen;
 	unsigned int bwtEnc125Len;
@@ -1263,23 +1245,17 @@ unsigned int FMDummy3::count_std_1024_enc125(unsigned char *pattern, unsigned in
 }
 
 unsigned int FMDummy3::count_hash_512_enc125(unsigned char *pattern, unsigned int patternLen) {
-	if (this->ht->k <= patternLen) {
-		unsigned int leftBoundary, rightBoundary;
-		this->ht->getBoundaries(pattern + (patternLen - this->ht->k), leftBoundary, rightBoundary);
-		return count_512_enc125(pattern, patternLen - this->ht->k, this->c, this->alignedBWTWithRanks, this->lut, leftBoundary + 1, rightBoundary);
-	} else {
-		return this->count_std_512_enc125(pattern, patternLen);
-	}
+	if (patternLen < this->ht->k) return this->count_std_512_enc125(pattern, patternLen);
+        unsigned int leftBoundary, rightBoundary;
+        this->ht->getBoundaries(pattern + (patternLen - this->ht->k), leftBoundary, rightBoundary);
+        return count_512_enc125(pattern, patternLen - this->ht->k, this->c, this->alignedBWTWithRanks, this->lut, leftBoundary + 1, rightBoundary);
 }
 
 unsigned int FMDummy3::count_hash_1024_enc125(unsigned char *pattern, unsigned int patternLen) {
-	if (this->ht->k <= patternLen) {
-		unsigned int leftBoundary, rightBoundary;
-		this->ht->getBoundaries(pattern + (patternLen - this->ht->k), leftBoundary, rightBoundary);
-		return count_1024_enc125(pattern, patternLen - this->ht->k, this->c, this->alignedBWTWithRanks, this->lut, leftBoundary + 1, rightBoundary);
-	} else {
-		return this->count_std_1024_enc125(pattern, patternLen);
-	}
+	if (patternLen < this->ht->k) return this->count_std_1024_enc125(pattern, patternLen);
+        unsigned int leftBoundary, rightBoundary;
+        this->ht->getBoundaries(pattern + (patternLen - this->ht->k), leftBoundary, rightBoundary);
+        return count_1024_enc125(pattern, patternLen - this->ht->k, this->c, this->alignedBWTWithRanks, this->lut, leftBoundary + 1, rightBoundary);
 }
 
 unsigned int *FMDummy3::locate(unsigned char *pattern, unsigned int patternLen) {
@@ -1810,16 +1786,16 @@ void FMDummyWT::build(unsigned char *text, unsigned int textLen) {
 	if (this->ht != NULL) {
 		unsigned int saLen;
 		unsigned int *sa = getSA(text, textLen, saLen, 0, this->verbose);
-		if (this->verbose) cout << "Creating hash table ... " << flush;
+		if (this->verbose) cout << "Building hash table ... " << flush;
 		this->ht->build(text, textLen, sa, saLen);
 		if (this->verbose) cout << "Done" << endl;
-		bwt = getBWT(text, textLen, sa, saLen, bwtLen, this->verbose);
+		bwt = getBWT(text, textLen, sa, saLen, bwtLen, 0, this->verbose);
 		delete[] sa;
-	} else bwt = getBWT(text, textLen, bwtLen, this->verbose);
+	} else bwt = getBWT(text, textLen, bwtLen, 0, this->verbose);
 	if (this->verbose) cout << "Huffman encoding ... " << flush;
 	encodeHuff(this->wtType, bwt, bwtLen, this->code, this->codeLen);
 	if (this->verbose) cout << "Done" << endl;
-	if (this->verbose) cout << "Creating WT ... " << flush;
+	if (this->verbose) cout << "Building WT ... " << flush;
 	switch (this->wtType) {
 	case FMDummyWT::TYPE_WT2:
 		switch (this->type) {
@@ -1985,63 +1961,45 @@ unsigned int FMDummyWT::count_WT8std_1024(unsigned char *pattern, unsigned int p
 }
 
 unsigned int FMDummyWT::count_WT2hash_512_counter40(unsigned char *pattern, unsigned int patternLen) {
-	if (this->ht->k <= patternLen) {
-		unsigned int leftBoundary, rightBoundary;
-		this->ht->getBoundaries(pattern + (patternLen - this->ht->k), leftBoundary, rightBoundary);
-		return count_WT2_512_counter40(pattern, patternLen - this->ht->k, this->c, this->wt, leftBoundary + 1, rightBoundary, this->code, this->codeLen);
-	} else {
-		return this->count_WT2std_512_counter40(pattern, patternLen);
-	}
+	if (patternLen < this->ht->k) return this->count_WT2std_512_counter40(pattern, patternLen);
+        unsigned int leftBoundary, rightBoundary;
+        this->ht->getBoundaries(pattern + (patternLen - this->ht->k), leftBoundary, rightBoundary);
+        return count_WT2_512_counter40(pattern, patternLen - this->ht->k, this->c, this->wt, leftBoundary + 1, rightBoundary, this->code, this->codeLen);
 }
 
 unsigned int FMDummyWT::count_WT2hash_1024_counter32(unsigned char *pattern, unsigned int patternLen) {
-	if (this->ht->k <= patternLen) {
-		unsigned int leftBoundary, rightBoundary;
-		this->ht->getBoundaries(pattern + (patternLen - this->ht->k), leftBoundary, rightBoundary);
-		return count_WT2_1024_counter32(pattern, patternLen - this->ht->k, this->c, this->wt, leftBoundary + 1, rightBoundary, this->code, this->codeLen);
-	} else {
-		return this->count_WT2std_1024_counter32(pattern, patternLen);
-	}
+	if (patternLen < this->ht->k) return this->count_WT2std_1024_counter32(pattern, patternLen);
+        unsigned int leftBoundary, rightBoundary;
+        this->ht->getBoundaries(pattern + (patternLen - this->ht->k), leftBoundary, rightBoundary);
+        return count_WT2_1024_counter32(pattern, patternLen - this->ht->k, this->c, this->wt, leftBoundary + 1, rightBoundary, this->code, this->codeLen);
 }
 
 unsigned int FMDummyWT::count_WT4hash_512(unsigned char *pattern, unsigned int patternLen) {
-	if (this->ht->k <= patternLen) {
-		unsigned int leftBoundary, rightBoundary;
-		this->ht->getBoundaries(pattern + (patternLen - this->ht->k), leftBoundary, rightBoundary);
-		return count_WT4_512(pattern, patternLen - this->ht->k, this->c, this->wt, leftBoundary + 1, rightBoundary, this->code, this->codeLen);
-	} else {
-		return this->count_WT4std_512(pattern, patternLen);
-	}
+	if (patternLen < this->ht->k) return this->count_WT4std_512(pattern, patternLen);
+        unsigned int leftBoundary, rightBoundary;
+        this->ht->getBoundaries(pattern + (patternLen - this->ht->k), leftBoundary, rightBoundary);
+        return count_WT4_512(pattern, patternLen - this->ht->k, this->c, this->wt, leftBoundary + 1, rightBoundary, this->code, this->codeLen);
 }
 
 unsigned int FMDummyWT::count_WT4hash_1024(unsigned char *pattern, unsigned int patternLen) {
-	if (this->ht->k <= patternLen) {
-		unsigned int leftBoundary, rightBoundary;
-		this->ht->getBoundaries(pattern + (patternLen - this->ht->k), leftBoundary, rightBoundary);
-		return count_WT4_1024(pattern, patternLen - this->ht->k, this->c, this->wt, leftBoundary + 1, rightBoundary, this->code, this->codeLen);
-	} else {
-		return this->count_WT4std_1024(pattern, patternLen);
-	}
+	if (patternLen < this->ht->k) return this->count_WT4std_1024(pattern, patternLen);
+        unsigned int leftBoundary, rightBoundary;
+        this->ht->getBoundaries(pattern + (patternLen - this->ht->k), leftBoundary, rightBoundary);
+        return count_WT4_1024(pattern, patternLen - this->ht->k, this->c, this->wt, leftBoundary + 1, rightBoundary, this->code, this->codeLen);
 }
 
 unsigned int FMDummyWT::count_WT8hash_512(unsigned char *pattern, unsigned int patternLen) {
-	if (this->ht->k <= patternLen) {
-		unsigned int leftBoundary, rightBoundary;
-		this->ht->getBoundaries(pattern + (patternLen - this->ht->k), leftBoundary, rightBoundary);
-		return count_WT8_512(pattern, patternLen - this->ht->k, this->c, this->wt, leftBoundary + 1, rightBoundary, this->code, this->codeLen);
-	} else {
-		return this->count_WT8std_512(pattern, patternLen);
-	}
+	if (patternLen < this->ht->k) return this->count_WT8std_512(pattern, patternLen);
+        unsigned int leftBoundary, rightBoundary;
+        this->ht->getBoundaries(pattern + (patternLen - this->ht->k), leftBoundary, rightBoundary);
+        return count_WT8_512(pattern, patternLen - this->ht->k, this->c, this->wt, leftBoundary + 1, rightBoundary, this->code, this->codeLen);
 }
 
 unsigned int FMDummyWT::count_WT8hash_1024(unsigned char *pattern, unsigned int patternLen) {
-	if (this->ht->k <= patternLen) {
-		unsigned int leftBoundary, rightBoundary;
-		this->ht->getBoundaries(pattern + (patternLen - this->ht->k), leftBoundary, rightBoundary);
-		return count_WT8_1024(pattern, patternLen - this->ht->k, this->c, this->wt, leftBoundary + 1, rightBoundary, this->code, this->codeLen);
-	} else {
-		return this->count_WT8std_1024(pattern, patternLen);
-	}
+	if (patternLen < this->ht->k) return this->count_WT8std_1024(pattern, patternLen);
+        unsigned int leftBoundary, rightBoundary;
+        this->ht->getBoundaries(pattern + (patternLen - this->ht->k), leftBoundary, rightBoundary);
+        return count_WT8_1024(pattern, patternLen - this->ht->k, this->c, this->wt, leftBoundary + 1, rightBoundary, this->code, this->codeLen);
 }
 
 /*SHARED FUNCTIONS*/
