@@ -140,7 +140,7 @@ void FMDummy1::build(unsigned char* text, unsigned int textLen) {
 	fillArrayC(text, textLen, this->c, verbose);
 
 	if (this->verbose) cout << "Interweaving BWT with ranks ... " << flush;
-	builder(bwtDenseInLong, bwtDenseInLongLen, this->selectedChars, this->bwtWithRanks, this->bwtWithRanksLen, this->alignedBWTWithRanks);
+	this->builder(bwtDenseInLong, bwtDenseInLongLen, this->selectedChars, this->bwtWithRanks, this->bwtWithRanksLen, this->alignedBWTWithRanks);
 	if (this->verbose) cout << "Done" << endl;
 
 	for (vector<unsigned char>::iterator it = selectedChars.begin(); it != selectedChars.end(); ++it) delete[] bwtDenseInLong[*it];
@@ -736,7 +736,7 @@ void FMDummy2::build(unsigned char *text, unsigned int textLen) {
 	if (this->schema == FMDummy2::SCHEMA_CB) this->bInC = this->c[b];
 
 	if (this->verbose) cout << "Interweaving BWT with ranks ... " << flush;
-	builder(bwtDenseInLong, bwtDenseInLongLen, encodedChars, this->bwtWithRanks, this->bwtWithRanksLen, this->alignedBWTWithRanks);
+	this->builder(bwtDenseInLong, bwtDenseInLongLen, encodedChars, this->bwtWithRanks, this->bwtWithRanksLen, this->alignedBWTWithRanks);
 	if (this->verbose) cout << "Done" << endl;
 	if (this->ht != NULL)  {
                 unsigned int diff;

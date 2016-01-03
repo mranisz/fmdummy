@@ -99,7 +99,7 @@ Parameters:
 - loadFactor - hash table load factor (0.0 < loadFactor < 1.0)
 
 Limitations: 
-- pattern length >= k (patterns shorter than k are handled by standard variant of FMDummy1 index)
+- pattern length ≥ k (patterns shorter than k are handled by standard variant of FMDummy1 index)
 
 Constructors:
 ```
@@ -142,7 +142,7 @@ Parameters:
 - loadFactor - hash table load factor (0.0 < loadFactor < 1.0)
 
 Limitations: 
-- pattern length >= k (patterns shorter than k are handled by standard variant of FMDummy2 index)
+- pattern length ≥ k (patterns shorter than k are handled by standard variant of FMDummy2 index)
 
 Constructors:
 ```
@@ -174,7 +174,7 @@ Parameters:
 - loadFactor - hash table load factor (0.0 < loadFactor < 1.0)
 
 Limitations: 
-- pattern length >= k (patterns shorter than k are handled by standard variant of FMDummy3 index)
+- pattern length ≥ k (patterns shorter than k are handled by standard variant of FMDummy3 index)
 
 Constructors:
 ```
@@ -213,7 +213,7 @@ Parameters:
 - loadFactor - hash table load factor (0.0 < loadFactor < 1.0)
 
 Limitations: 
-- pattern length >= k (patterns shorter than k are handled by standard variant of FMDummyWT index)
+- pattern length ≥ k (patterns shorter than k are handled by standard variant of FMDummyWT index)
 
 Constructors:
 ```
