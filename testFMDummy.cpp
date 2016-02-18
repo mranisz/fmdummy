@@ -33,14 +33,14 @@ void fmDummyWTHash(string wtType, string indexType, string k, string loadFactor,
 
 void getUsage(char **argv) {
 	cout << "Select index you want to test:" << endl;
-	cout << "FMDummy1: ./" << argv[0] << " 1 256|512 all|ACGT fileName patternNum patternLen" << endl;
-	cout << "FMDummy1-hash: ./" << argv[0] << " 1 256|512 all|ACGT k loadFactor fileName patternNum patternLen" << endl;
-        cout << "FMDummy2: ./" << argv[0] << " 2 256|512 SCBO|CB 3|4 fileName patternNum patternLen" << endl;
-	cout << "FMDummy2-hash: ./" << argv[0] << " 2 256|512 SCBO|CB 3|4 k loadFactor fileName patternNum patternLen" << endl;
-        cout << "FMDummy3: ./" << argv[0] << " 3 512|1024 fileName patternNum patternLen" << endl;
-	cout << "FMDummy3-hash: ./" << argv[0] << " 3 512|1024 k loadFactor fileName patternNum patternLen" << endl;
-	cout << "FMDummyWT: ./" << argv[0] << " WT 2|4|8 512|1024 fileName patternNum patternLen" << endl;
-	cout << "FMDummyWT-hash: ./" << argv[0] << " WT 2|4|8 512|1024 k loadFactor fileName patternNum patternLen" << endl;
+	cout << "FMDummy1: " << argv[0] << " 1 256|512 all|ACGT fileName patternNum patternLen" << endl;
+	cout << "FMDummy1-hash: " << argv[0] << " 1 256|512 all|ACGT k loadFactor fileName patternNum patternLen" << endl;
+        cout << "FMDummy2: " << argv[0] << " 2 256|512 SCBO|CB 3|4 fileName patternNum patternLen" << endl;
+	cout << "FMDummy2-hash: " << argv[0] << " 2 256|512 SCBO|CB 3|4 k loadFactor fileName patternNum patternLen" << endl;
+        cout << "FMDummy3: " << argv[0] << " 3 512|1024 fileName patternNum patternLen" << endl;
+	cout << "FMDummy3-hash: " << argv[0] << " 3 512|1024 k loadFactor fileName patternNum patternLen" << endl;
+	cout << "FMDummyWT: " << argv[0] << " WT 2|4|8 512|1024 fileName patternNum patternLen" << endl;
+	cout << "FMDummyWT-hash: " << argv[0] << " WT 2|4|8 512|1024 k loadFactor fileName patternNum patternLen" << endl;
 	cout << "where:" << endl;
 	cout << "fileName - name of text file" << endl;
 	cout << "patternNum - number of patterns" << endl;
