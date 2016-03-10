@@ -1514,8 +1514,7 @@ WT *FMDummyWT::createWT2_512_counter40(unsigned char *text, unsigned int textLen
 	if (nodeBitLenTemp % 7 > 0) ++(node->bitsLen);
 	node->bitsLen *= 8;
 	if (textLen % 448 == 0) ++(node->bitsLen);
-	node->bitsLen += 16;
-	node->bits = new unsigned long long[node->bitsLen];
+	node->bits = new unsigned long long[node->bitsLen + 16];
 	node->alignedBits = node->bits;
 	while ((unsigned long long)(node->alignedBits) % 128) ++(node->alignedBits);
 	unsigned long long ranks[4];
@@ -1593,8 +1592,7 @@ WT *FMDummyWT::createWT2_1024_counter32(unsigned char *text, unsigned int textLe
 	if (nodeBitLenTemp % 15 > 0) ++(node->bitsLen);
 	node->bitsLen *= 16;
 	if (textLen % 960 == 0) ++(node->bitsLen);
-	node->bitsLen += 16;
-	node->bits = new unsigned long long[node->bitsLen];
+	node->bits = new unsigned long long[node->bitsLen + 16];
 	node->alignedBits = node->bits;
 	while ((unsigned long long)(node->alignedBits) % 128) ++(node->alignedBits);
 	unsigned long long ranks[6];
@@ -1674,8 +1672,7 @@ WT *FMDummyWT::createWT4(unsigned char *text, unsigned int textLen, unsigned int
 	if (nodeDibitLenTemp % (this->type - 2) > 0) ++(node->bitsLen);
 	node->bitsLen *= this->type;
 	if (textLen % ((this->type - 2) * 32) == 0) node->bitsLen += 2;
-	node->bitsLen += 16;
-	node->bits = new unsigned long long[node->bitsLen];
+	node->bits = new unsigned long long[node->bitsLen + 16];
 	node->alignedBits = node->bits;
 	while ((unsigned long long)(node->alignedBits) % 128) ++(node->alignedBits);
 	unsigned long long packedDibits = 0;
@@ -1743,8 +1740,7 @@ WT *FMDummyWT::createWT8(unsigned char *text, unsigned int textLen, unsigned int
 	if (nodeTripleLenTemp % (this->type - 4) > 0) ++(node->bitsLen);
 	node->bitsLen *= this->type;
 	if (textLen % ((this->type - 4) * 21) == 0) node->bitsLen += 4;
-	node->bitsLen += 16;
-	node->bits = new unsigned long long[node->bitsLen];
+	node->bits = new unsigned long long[node->bitsLen + 16];
 	node->alignedBits = node->bits;
 	while ((unsigned long long)(node->alignedBits) % 128) ++(node->alignedBits);
 	unsigned long long packedTriples = 0;
