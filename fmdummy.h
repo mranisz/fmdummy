@@ -4,6 +4,7 @@
 #include "shared/common.h"
 #include "shared/wt.h"
 #include "shared/hash.h"
+#include "shared/huff.h"
 #include <cstdio>
 #include <vector>
 
@@ -271,10 +272,6 @@ private:
 	void initialize();
 	void setType(int wtType, int indexType);
 	void setFunctions();
-	WT *createWT2_512_counter40(unsigned char *text, unsigned int textLen, unsigned int wtLevel);
-	WT *createWT2_1024_counter32(unsigned char *text, unsigned int textLen, unsigned int wtLevel);
-	WT *createWT4(unsigned char *text, unsigned int textLen, unsigned int wtLevel);
-	WT *createWT8(unsigned char *text, unsigned int textLen, unsigned int wtLevel);
 	unsigned int count_WT2std_512_counter40(unsigned char *pattern, unsigned int patternLen);
 	unsigned int count_WT2hash_512_counter40(unsigned char *pattern, unsigned int patternLen);
 	unsigned int count_WT2std_1024_counter32(unsigned char *pattern, unsigned int patternLen);
@@ -348,13 +345,6 @@ unsigned char *encode125(unsigned char* text, unsigned int textLen, vector<unsig
 void fill125LUT(vector<unsigned char> selectedChars, unsigned int lut[][125]);
 unsigned int count_512_enc125(unsigned char *pattern, unsigned int i, unsigned int *C, unsigned char *bwtWithRanks, unsigned int lut[][125], unsigned int firstVal, unsigned int lastVal);
 unsigned int count_1024_enc125(unsigned char *pattern, unsigned int i, unsigned int *C, unsigned char *bwtWithRanks, unsigned int lut[][125], unsigned int firstVal, unsigned int lastVal);
-unsigned int count_WT2_512_counter40(unsigned char *pattern, unsigned int i, unsigned int *C, WT *wt, unsigned int firstVal, unsigned int lastVal, unsigned long long *code, unsigned int *codeLen);
-unsigned int count_WT2_1024_counter32(unsigned char *pattern, unsigned int i, unsigned int *C, WT *wt, unsigned int firstVal, unsigned int lastVal, unsigned long long *code, unsigned int *codeLen);
-unsigned int count_WT4_512(unsigned char *pattern, unsigned int i, unsigned int *C, WT *wt, unsigned int firstVal, unsigned int lastVal, unsigned long long *code, unsigned int *codeLen);
-unsigned int count_WT4_1024(unsigned char *pattern, unsigned int i, unsigned int *C, WT *wt, unsigned int firstVal, unsigned int lastVal, unsigned long long *code, unsigned int *codeLen);
-unsigned int count_WT8_512(unsigned char *pattern, unsigned int i, unsigned int *C, WT *wt, unsigned int firstVal, unsigned int lastVal, unsigned long long *code, unsigned int *codeLen);
-unsigned int count_WT8_1024(unsigned char *pattern, unsigned int i, unsigned int *C, WT *wt, unsigned int firstVal, unsigned int lastVal, unsigned long long *code, unsigned int *codeLen);
-void encodeHuff(unsigned int d, unsigned char *text, unsigned int textLen, unsigned long long *huffCode, unsigned int *huffCodeLen);
 
 }
 
