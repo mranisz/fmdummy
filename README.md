@@ -185,9 +185,9 @@ FMDummy3(FMDummy3::IndexType indexType, unsigned int k, double loadFactor);
 
 Parameters:
 - wtType:
-      - FMDummyWT::TYPE_WT2 (default) - using wavelet tree for 2-ary Huffman encoded text
-      - FMDummyWT::TYPE_WT4 - using wavelet tree for 4-ary Huffman encoded text
-      - FMDummyWT::TYPE_WT8 - using wavelet tree for 8-ary Huffman encoded text
+      - FMDummyWT::TYPE_WT2 (default) - using binary Huffman-shaped wavelet tree
+      - FMDummyWT::TYPE_WT4 - using 4-ary Huffman-shaped wavelet tree
+      - FMDummyWT::TYPE_WT8 - using 8-ary Huffman-shaped wavelet tree
 - indexType:
       - FMDummyWT::TYPE_512 (default) - using 512b blocks: 64b of rank data and 448b of encoded text data
       - FMDummyWT::TYPE_1024 - using 1024b blocks: 64b of rank data and 960b of encoded text data
@@ -203,9 +203,9 @@ FMDummyWT-hash is FMDummyWT with hashed k-symbol prefixes of suffixes from suffi
 
 Parameters:
 - wtType:
-      - FMDummyWT::TYPE_WT2 - using wavelet tree for 2-ary Huffman encoded text
-      - FMDummyWT::TYPE_WT4 - using wavelet tree for 4-ary Huffman encoded text
-      - FMDummyWT::TYPE_WT8 - using wavelet tree for 8-ary Huffman encoded text
+      - FMDummyWT::TYPE_WT2 - using binary Huffman-shaped wavelet tree
+      - FMDummyWT::TYPE_WT4 - using 4-ary Huffman-shaped wavelet tree
+      - FMDummyWT::TYPE_WT8 - using 8-ary Huffman-shaped wavelet tree
 - indexType:
       - FMDummyWT::TYPE_512 - using 512b blocks: 64b of rank data and 448b of encoded text data
       - FMDummyWT::TYPE_1024 - using 1024b blocks: 64b of rank data and 960b of encoded text data
