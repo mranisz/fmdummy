@@ -73,7 +73,7 @@ public:
                 if (this->ht != NULL) delete this->ht;
 	}
 
-	void build(unsigned char *text, unsigned int textLen);
+	void build(const char *textFileName);
 	void save(const char *fileName);
 	void load(const char *fileName);
 	void free();
@@ -171,7 +171,7 @@ public:
                 if (this->ht != NULL) delete this->ht;
 	}
 
-	void build(unsigned char *text, unsigned int textLen);
+	void build(const char *textFileName);
 	void save(const char *fileName);
 	void load(const char *fileName);
 	void free();
@@ -240,7 +240,7 @@ public:
                 if (this->ht != NULL) delete this->ht;
 	}
 
-	void build(unsigned char *text, unsigned int textLen);
+	void build(const char *textFileName);
 	void save(const char *fileName);
 	void load(const char *fileName);
 	void free();
@@ -321,7 +321,7 @@ public:
                 if (this->ht != NULL) delete this->ht;
 	}
 
-	void build(unsigned char *text, unsigned int textLen);
+	void build(const char *textFileName);
 	void save(const char *fileName);
 	void load(const char *fileName);
 	void free();

@@ -3,10 +3,9 @@
 #include <string>
 #include <stdlib.h>
 #include <map>
-#include "shared/common.h"
-#include "shared/patterns.h"
-#include "shared/timer.h"
-#include "fmdummy.h"
+#include "../shared/patterns.h"
+#include "../shared/timer.h"
+#include "../fmdummy.h"
 
 using namespace std;
 using namespace fmdummy;
@@ -32,7 +31,7 @@ void fmDummyWT(string wtType, string indexType, const char *textFileName, unsign
 void fmDummyWTHash(string wtType, string indexType, string k, string loadFactor, const char *textFileName, unsigned int queriesNum, unsigned int m);
 
 void getUsage(char **argv) {
-	cout << "Select index you want to test:" << endl;
+	cout << "Select index you want to test (count):" << endl;
 	cout << "FMDummy1: " << argv[0] << " 1 256|512 all|ACGT fileName patternNum patternLen" << endl;
 	cout << "FMDummy1-hash: " << argv[0] << " 1 256|512 all|ACGT k loadFactor fileName patternNum patternLen" << endl;
         cout << "FMDummy2: " << argv[0] << " 2 256|512 SCBO|CB 3|4 fileName patternNum patternLen" << endl;
@@ -50,7 +49,7 @@ void getUsage(char **argv) {
 }
 
 int main(int argc, char *argv[]) {
-	if (argc < 6) {
+	if (argc < 5) {
 		getUsage(argv);
 		exit(1);
 	}
@@ -84,9 +83,6 @@ int main(int argc, char *argv[]) {
 }
 
 void fmDummy1(string indexType, string selectedChars, const char *textFileName, unsigned int queriesNum, unsigned int m) {
-
-	unsigned char* text = NULL;
-	unsigned int textLen;
 	FMDummy1 *FMD1;
 	string indexFileNameString = "FMD1-" + (string)textFileName + "-" + indexType + "-" + selectedChars + ".idx";
 	const char *indexFileName = indexFileNameString.c_str();
@@ -97,8 +93,7 @@ void fmDummy1(string indexType, string selectedChars, const char *textFileName, 
 	} else {
 		FMD1 = new FMDummy1(FMDummy1IndexTypesMap[indexType], FMDummy1SelectedCharsMap[selectedChars]);
 		FMD1->setVerbose(true);
-		text = readText(textFileName, textLen, 0);
-		FMD1->build(text, textLen);
+		FMD1->build(textFileName);
 		FMD1->save(indexFileName);
 	}
 
@@ -128,7 +123,6 @@ void fmDummy1(string indexType, string selectedChars, const char *textFileName, 
 	resultFile << endl;
 	resultFile.close();
 
-	if (text != NULL) delete[] text;
 	delete[] indexCounts;
 	delete FMD1;
 	delete P;
@@ -136,9 +130,6 @@ void fmDummy1(string indexType, string selectedChars, const char *textFileName, 
 }
 
 void fmDummy1Hash(string indexType, string selectedChars, string k, string loadFactor, const char *textFileName, unsigned int queriesNum, unsigned int m) {
-
-	unsigned char* text = NULL;
-	unsigned int textLen;
 	FMDummy1 *FMD1;
 	string indexFileNameString = "FMD1-hash-" + (string)textFileName + "-" + indexType + "-" + selectedChars + "-" +  k + "-" + loadFactor + ".idx";
 	char *indexFileName = (char *)indexFileNameString.c_str();
@@ -149,8 +140,7 @@ void fmDummy1Hash(string indexType, string selectedChars, string k, string loadF
 	} else {
 		FMD1 = new FMDummy1(FMDummy1IndexTypesMap[indexType], FMDummy1SelectedCharsMap[selectedChars], atoi(k.c_str()), atof(loadFactor.c_str()));
 		FMD1->setVerbose(true);
-		text = readText(textFileName, textLen, 0);
-		FMD1->build(text, textLen);
+		FMD1->build(textFileName);
 		FMD1->save(indexFileName);
 	}
 
@@ -180,7 +170,6 @@ void fmDummy1Hash(string indexType, string selectedChars, string k, string loadF
 	resultFile << endl;
 	resultFile.close();
 
-	if (text != NULL) delete[] text;
 	delete[] indexCounts;
 	delete FMD1;
 	delete P;
@@ -188,9 +177,6 @@ void fmDummy1Hash(string indexType, string selectedChars, string k, string loadF
 }
 
 void fmDummy2(string indexType, string encodedSchema, string bits, const char *textFileName, unsigned int queriesNum, unsigned int m) {
-
-	unsigned char* text = NULL;
-	unsigned int textLen;
 	FMDummy2 *FMD2;
 	string indexFileNameString = "FMD2-" + (string)textFileName + "-" + indexType + "-" + encodedSchema + "-" + bits + ".idx";
 	char *indexFileName = (char *)indexFileNameString.c_str();
@@ -201,8 +187,7 @@ void fmDummy2(string indexType, string encodedSchema, string bits, const char *t
 	} else {
 		FMD2 = new FMDummy2(FMDummy2IndexTypesMap[indexType], FMDummy2SchemaMap[encodedSchema], FMDummy2BitsPerCharMap[bits]);
 		FMD2->setVerbose(true);
-		text = readText(textFileName, textLen, 0);
-		FMD2->build(text, textLen);
+		FMD2->build(textFileName);
 		FMD2->save(indexFileName);
 	}
 
@@ -232,7 +217,6 @@ void fmDummy2(string indexType, string encodedSchema, string bits, const char *t
 	resultFile << endl;
 	resultFile.close();
 
-	if (text != NULL) delete[] text;
 	delete[] indexCounts;
 	delete FMD2;
 	delete P;
@@ -240,9 +224,6 @@ void fmDummy2(string indexType, string encodedSchema, string bits, const char *t
 }
 
 void fmDummy2Hash(string indexType, string encodedSchema, string bits, string k, string loadFactor, const char *textFileName, unsigned int queriesNum, unsigned int m) {
-
-	unsigned char* text = NULL;
-	unsigned int textLen;
 	FMDummy2 *FMD2;
 	string indexFileNameString = "FMD2-hash-" + (string)textFileName + "-" + indexType + "-" + encodedSchema + "-" + bits + "-" +  k + "-" + loadFactor + ".idx";
 	char *indexFileName = (char *)indexFileNameString.c_str();
@@ -253,8 +234,7 @@ void fmDummy2Hash(string indexType, string encodedSchema, string bits, string k,
 	} else {
 		FMD2 = new FMDummy2(FMDummy2IndexTypesMap[indexType], FMDummy2SchemaMap[encodedSchema], FMDummy2BitsPerCharMap[bits], atoi(k.c_str()), atof(loadFactor.c_str()));
 		FMD2->setVerbose(true);
-		text = readText(textFileName, textLen, 0);
-		FMD2->build(text, textLen);
+		FMD2->build(textFileName);
 		FMD2->save(indexFileName);
 	}
 
@@ -284,7 +264,6 @@ void fmDummy2Hash(string indexType, string encodedSchema, string bits, string k,
 	resultFile << endl;
 	resultFile.close();
 
-	if (text != NULL) delete[] text;
 	delete[] indexCounts;
 	delete FMD2;
 	delete P;
@@ -292,9 +271,6 @@ void fmDummy2Hash(string indexType, string encodedSchema, string bits, string k,
 }
 
 void fmDummy3(string indexType, const char *textFileName, unsigned int queriesNum, unsigned int m) {
-
-	unsigned char* text = NULL;
-	unsigned int textLen;
 	FMDummy3 *FMD3;
 	string indexFileNameString = "FMD3-" + (string)textFileName + "-" + indexType + ".idx";
 	char *indexFileName = (char *)indexFileNameString.c_str();
@@ -305,8 +281,7 @@ void fmDummy3(string indexType, const char *textFileName, unsigned int queriesNu
 	} else {
 		FMD3 = new FMDummy3(FMDummy3IndexTypesMap[indexType]);
 		FMD3->setVerbose(true);
-		text = readText(textFileName, textLen, 0);
-		FMD3->build(text, textLen);
+		FMD3->build(textFileName);
 		FMD3->save(indexFileName);
 	}
 
@@ -337,7 +312,6 @@ void fmDummy3(string indexType, const char *textFileName, unsigned int queriesNu
 	resultFile << endl;
 	resultFile.close();
 
-	if (text != NULL) delete[] text;
 	delete[] indexCounts;
 	delete FMD3;
 	delete P;
@@ -345,9 +319,6 @@ void fmDummy3(string indexType, const char *textFileName, unsigned int queriesNu
 }
 
 void fmDummy3Hash(string indexType, string k, string loadFactor, const char *textFileName, unsigned int queriesNum, unsigned int m) {
-
-	unsigned char* text = NULL;
-	unsigned int textLen;
 	FMDummy3 *FMD3;
 	string indexFileNameString = "FMD3-hash-" + (string)textFileName + "-" + indexType + "-" +  k + "-" + loadFactor + ".idx";
 	char *indexFileName = (char *)indexFileNameString.c_str();
@@ -358,8 +329,7 @@ void fmDummy3Hash(string indexType, string k, string loadFactor, const char *tex
 	} else {
 		FMD3 = new FMDummy3(FMDummy3IndexTypesMap[indexType], atoi(k.c_str()), atof(loadFactor.c_str()));
 		FMD3->setVerbose(true);
-		text = readText(textFileName, textLen, 0);
-		FMD3->build(text, textLen);
+		FMD3->build(textFileName);
 		FMD3->save(indexFileName);
 	}
 
@@ -390,7 +360,6 @@ void fmDummy3Hash(string indexType, string k, string loadFactor, const char *tex
 	resultFile << endl;
 	resultFile.close();
 
-	if (text != NULL) delete[] text;
 	delete[] indexCounts;
 	delete FMD3;
 	delete P;
@@ -398,9 +367,6 @@ void fmDummy3Hash(string indexType, string k, string loadFactor, const char *tex
 }
 
 void fmDummyWT(string wtType, string indexType, const char *textFileName, unsigned int queriesNum, unsigned int m) {
-
-	unsigned char* text = NULL;
-	unsigned int textLen;
 	FMDummyWT *FMDWT;
 	string indexFileNameString = "FMDWT-" + (string)textFileName + "-" + wtType + "-" + indexType + ".idx";
 	char *indexFileName = (char *)indexFileNameString.c_str();
@@ -411,8 +377,7 @@ void fmDummyWT(string wtType, string indexType, const char *textFileName, unsign
 	} else {
 		FMDWT = new FMDummyWT(FMDummyWTWTTypeMap[wtType], FMDummyWTIndexTypesMap[indexType]);
 		FMDWT->setVerbose(true);
-		text = readText(textFileName, textLen, 0);
-		FMDWT->build(text, textLen);
+		FMDWT->build(textFileName);
 		FMDWT->save(indexFileName);
 	}
 
@@ -442,7 +407,6 @@ void fmDummyWT(string wtType, string indexType, const char *textFileName, unsign
 	resultFile << endl;
 	resultFile.close();
 
-	if (text != NULL) delete[] text;
 	delete[] indexCounts;
 	delete FMDWT;
 	delete P;
@@ -450,9 +414,6 @@ void fmDummyWT(string wtType, string indexType, const char *textFileName, unsign
 }
 
 void fmDummyWTHash(string wtType, string indexType, string k, string loadFactor, const char *textFileName, unsigned int queriesNum, unsigned int m) {
-
-	unsigned char* text = NULL;
-	unsigned int textLen;
 	FMDummyWT *FMDWT;
 	string indexFileNameString = "FMDWT-hash-" + (string)textFileName + "-" + wtType + "-" + indexType + "-" +  k + "-" + loadFactor + ".idx";
 	char *indexFileName = (char *)indexFileNameString.c_str();
@@ -463,8 +424,7 @@ void fmDummyWTHash(string wtType, string indexType, string k, string loadFactor,
 	} else {
 		FMDWT = new FMDummyWT(FMDummyWTWTTypeMap[wtType], FMDummyWTIndexTypesMap[indexType], atoi(k.c_str()), atof(loadFactor.c_str()));
 		FMDWT->setVerbose(true);
-		text = readText(textFileName, textLen, 0);
-		FMDWT->build(text, textLen);
+		FMDWT->build(textFileName);
 		FMDWT->save(indexFileName);
 	}
 
@@ -494,7 +454,6 @@ void fmDummyWTHash(string wtType, string indexType, string k, string loadFactor,
 	resultFile << endl;
 	resultFile.close();
 
-	if (text != NULL) delete[] text;
 	delete[] indexCounts;
 	delete FMDWT;
 	delete P;

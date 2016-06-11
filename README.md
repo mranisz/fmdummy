@@ -35,9 +35,9 @@ To use the FMDummy library:
 
 ##API
 There are several functions you can call on each of the FMDummy text index:
-- **build** the index using the text:
+- **build** the index using text file called textFileName:
 ```
-void build(unsigned char* text, unsigned int textLen);
+void build(const char *textFileName);
 ```
 - **save** the index to file called fileName:
 ```
@@ -224,7 +224,6 @@ FMDummyWT(FMDummyWT::WTType wtType, FMDummyWT::IndexType indexType, unsigned int
 ```
 #include <iostream>
 #include <stdlib.h>
-#include "fmdummy/shared/common.h"
 #include "fmdummy/shared/patterns.h"
 #include "fmdummy/fmdummy.h"
 
@@ -235,8 +234,6 @@ int main(int argc, char *argv[]) {
 
 	unsigned int queriesNum = 1000000;
 	unsigned int patternLen = 20;
-	unsigned char* text = NULL;
-	unsigned int textLen;
 	FMDummy1 *FMD1;
 	const char *textFileName = "dna";
 	const char *indexFileName = "dna-fm1.idx";
@@ -248,8 +245,7 @@ int main(int argc, char *argv[]) {
 	} else {
 		FMD1 = new FMDummy1(FMDummy1::TYPE_256, selectedChars);
 		FMD1->setVerbose(true);
-		text = readText(textFileName, textLen, 0);
-		FMD1->build(text, textLen);
+		FMD1->build(textFileName);
 		FMD1->save(indexFileName);
 	}
 
@@ -263,7 +259,6 @@ int main(int argc, char *argv[]) {
 		cout << "Pattern |" << patterns[i] << "| occurs " << FMD1->count(patterns[i], patternLen) << " times." << endl;
 	}
 
-	if (text != NULL) delete[] text;
 	delete FMD1;
 	delete P;
 }

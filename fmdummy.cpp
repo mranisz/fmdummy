@@ -80,16 +80,16 @@ void FMDummy1::freeMemory() {
 	if (this->ht != NULL) this->ht->free();
 }
 
-void FMDummy1::build(unsigned char* text, unsigned int textLen) {
-	checkNullChar(text, textLen);
-	this->free();
-	this->textLen = textLen;
+void FMDummy1::build(const char *textFileName) {
+        this->free();
+        unsigned char *text = readText(textFileName, this->textLen, 0);
+	checkNullChar(text, this->textLen);
 	if (this->allChars) {
 		if (this->verbose) cout << "Counting char frequencies ... " << flush;
 		unsigned int charsFreq[256];
 		for (unsigned int i = 0; i < 256; ++i) charsFreq[i] = 0;
 		unsigned int selectedCharsLen = 0;
-		for (unsigned int i = 0; i < textLen; ++i) {
+		for (unsigned int i = 0; i < this->textLen; ++i) {
 			if (charsFreq[(unsigned int)text[i]] == 0) ++selectedCharsLen;
 			++charsFreq[(unsigned int)text[i]];
 		}
@@ -105,14 +105,14 @@ void FMDummy1::build(unsigned char* text, unsigned int textLen) {
 	unsigned char *bwt = NULL;
 	if (this->ht != NULL) {
 		unsigned int saLen;
-		unsigned int *sa = getSA(text, textLen, saLen, 0, this->verbose);
+		unsigned int *sa = getSA(textFileName, text, this->textLen, saLen, 0, this->verbose);
 		if (this->verbose) cout << "Building hash table ... " << flush;
-		if (this->allChars) this->ht->build(text, textLen, sa, saLen);
-		else this->ht->build(text, textLen, sa, saLen, this->selectedChars);
+		if (this->allChars) this->ht->build(text, this->textLen, sa, saLen);
+		else this->ht->build(text, this->textLen, sa, saLen, this->selectedChars);
 		if (this->verbose) cout << "Done" << endl;
-		bwt = getBWT(text, textLen, sa, saLen, bwtLen, 0, this->verbose);
+		bwt = getBWT(text, this->textLen, sa, saLen, bwtLen, 0, this->verbose);
 		delete[] sa;
-	} else bwt = getBWT(text, textLen, bwtLen, 0, this->verbose);
+	} else bwt = getBWT(textFileName, text, this->textLen, bwtLen, 0, this->verbose);
 	if (this->verbose) cout << "Compacting BWT for selected chars ... " << flush;
 	++bwtLen;
 	unsigned int bwtDenseLen = (bwtLen / 8);
@@ -135,7 +135,9 @@ void FMDummy1::build(unsigned char* text, unsigned int textLen) {
 	delete[] bwt;
 	if (this->verbose) cout << "Done" << endl;
 
-	fillArrayC(text, textLen, this->c, verbose);
+	fillArrayC(text, this->textLen, this->c, verbose);
+        
+        delete[] text;
 
 	if (this->verbose) cout << "Interweaving BWT with ranks ... " << flush;
 	this->builder(bwtDenseInLong, bwtDenseInLongLen, this->selectedChars, this->bwtWithRanks, this->bwtWithRanksLen, this->alignedBWTWithRanks);
@@ -669,19 +671,19 @@ unsigned char *FMDummy2::getEncodedInCB(unsigned char *text, unsigned int textLe
 	return encodedText;
 }
 
-void FMDummy2::build(unsigned char *text, unsigned int textLen) {
-	checkNullChar(text, textLen);
+void FMDummy2::build(const char *textFileName) {
 	this->free();
-	this->textLen = textLen;
+        unsigned char *text = readText(textFileName, this->textLen, 0);
+	checkNullChar(text, this->textLen);
         unsigned char *cutOutEntries = NULL;
 	if (this->ht != NULL) {
 		unsigned int saLen;
-		unsigned int *sa = getSA(text, textLen, saLen, 0, this->verbose);
+		unsigned int *sa = getSA(textFileName, text, this->textLen, saLen, 0, this->verbose);
 		if (this->verbose) cout << "Building hash table ... " << flush;
-                unsigned int uniqueSuffixNum = getUniqueSuffixNum(this->ht->k, text, textLen, sa, saLen);
+                unsigned int uniqueSuffixNum = getUniqueSuffixNum(this->ht->k, text, this->textLen, sa, saLen);
                 unsigned long long bucketsNum = (double)uniqueSuffixNum * (1.0 / this->ht->loadFactor);
                 cutOutEntries = new unsigned char[bucketsNum * 2];
-		this->ht->build(text, textLen, sa, saLen, {}, cutOutEntries);
+		this->ht->build(text, this->textLen, sa, saLen, {}, cutOutEntries);
 		if (this->verbose) cout << "Done" << endl;
 		delete[] sa;
 	}
@@ -691,17 +693,18 @@ void FMDummy2::build(unsigned char *text, unsigned int textLen) {
 	switch (this->schema) {
 	case FMDummy2::SCHEMA_SCBO:
 		if (this->verbose) cout << "SCBO text encoding ... " << flush;
-		encodedText = this->getEncodedInSCBO(text, textLen, encodedTextLen);
+		encodedText = this->getEncodedInSCBO(text, this->textLen, encodedTextLen);
 		if (this->verbose) cout << "Done" << endl;
 		break;
 	case FMDummy2::SCHEMA_CB:
 		if (this->verbose) cout << "CB text encoding ... " << flush;
-		encodedText = this->getEncodedInCB(text, textLen, encodedTextLen, b);
+		encodedText = this->getEncodedInCB(text, this->textLen, encodedTextLen, b);
 		if (this->verbose) cout << "Done" << endl;
 		break;
 	}
 	this->setMaxEncodedCharsLen();
-	unsigned int bwtLen;
+	delete[] text;
+        unsigned int bwtLen;
 	unsigned int encodedSALen;
 	unsigned int *encodedSA = getSA(encodedText, encodedTextLen, encodedSALen, 0, this->verbose);
 	unsigned char *bwt = getBWT(encodedText, encodedTextLen, encodedSA, encodedSALen, bwtLen, 0, this->verbose);
@@ -1166,13 +1169,13 @@ void FMDummy3::buildRank_1024_enc125(unsigned char *bwtEnc125, unsigned int bwtL
 	for (int i = 0; i < 4; ++i) delete[] resRank[i];
 }
 
-void FMDummy3::build(unsigned char *text, unsigned int textLen) {
-	checkNullChar(text, textLen);
+void FMDummy3::build(const char *textFileName) {
 	this->free();
-	this->textLen = textLen;
+        unsigned char *text = readText(textFileName, this->textLen, 0);
+	checkNullChar(text, this->textLen);
 	if (this->verbose) cout << "Converting text ... " << flush;
-	unsigned char *convertedText = new unsigned char[textLen];
-	for (unsigned int i = 0; i < textLen; ++i) {
+	unsigned char *convertedText = new unsigned char[this->textLen];
+	for (unsigned int i = 0; i < this->textLen; ++i) {
 		switch (text[i]) {
 		case 'A': case 'C': case 'G': case 'T':
 			convertedText[i] = text[i];
@@ -1181,20 +1184,22 @@ void FMDummy3::build(unsigned char *text, unsigned int textLen) {
 			convertedText[i] = 'N';
 		}
 	}
+        delete[] text;
 	if (this->verbose) cout << "Done" << endl;
+        
 	unsigned int bwtLen;
 	unsigned char *bwt = NULL;
 	vector<unsigned char> selectedChars = { 'A', 'C', 'G', 'T' };
 	if (this->ht != NULL) {
 		unsigned int saLen;
-		unsigned int *sa = getSA(convertedText, textLen, saLen, 0, this->verbose);
+		unsigned int *sa = getSA(convertedText, this->textLen, saLen, 0, this->verbose);
 		if (this->verbose) cout << "Building hash table ... " << flush;
 
-		this->ht->build(convertedText, textLen, sa, saLen, selectedChars);
+		this->ht->build(convertedText, this->textLen, sa, saLen, selectedChars);
 		if (this->verbose) cout << "Done" << endl;
-		bwt = getBWT(convertedText, textLen, sa, saLen, bwtLen, 0, this->verbose);
+		bwt = getBWT(convertedText, this->textLen, sa, saLen, bwtLen, 0, this->verbose);
 		delete[] sa;
-	} else bwt = getBWT(convertedText, textLen, bwtLen, 0, this->verbose);
+	} else bwt = getBWT(convertedText, this->textLen, bwtLen, 0, this->verbose);
 	if (this->verbose) cout << "Encoding BWT ... " << flush;
 	++bwtLen;
 	unsigned int bwtEnc125Len;
@@ -1202,7 +1207,7 @@ void FMDummy3::build(unsigned char *text, unsigned int textLen) {
 	delete[] bwt;
 	if (this->verbose) cout << "Done" << endl;
 	fill125LUT(selectedChars, this->lut);
-	fillArrayC(convertedText, textLen, this->c, verbose);
+	fillArrayC(convertedText, this->textLen, this->c, verbose);
 	delete[] convertedText;
 	if (this->verbose) cout << "Interweaving BWT with ranks ... " << flush;
 	switch (this->type) {
@@ -1478,21 +1483,21 @@ void FMDummyWT::freeMemory() {
 	if (this->ht != NULL) this->ht->free();
 }
 
-void FMDummyWT::build(unsigned char *text, unsigned int textLen) {
-	checkNullChar(text, textLen);
+void FMDummyWT::build(const char *textFileName) {
 	this->free();
-	this->textLen = textLen;
+        unsigned char *text = readText(textFileName, this->textLen, 0);
+	checkNullChar(text, this->textLen);
 	unsigned int bwtLen;
 	unsigned char *bwt = NULL;
 	if (this->ht != NULL) {
 		unsigned int saLen;
-		unsigned int *sa = getSA(text, textLen, saLen, 0, this->verbose);
+		unsigned int *sa = getSA(textFileName, text, this->textLen, saLen, 0, this->verbose);
 		if (this->verbose) cout << "Building hash table ... " << flush;
-		this->ht->build(text, textLen, sa, saLen);
+		this->ht->build(text, this->textLen, sa, saLen);
 		if (this->verbose) cout << "Done" << endl;
-		bwt = getBWT(text, textLen, sa, saLen, bwtLen, 0, this->verbose);
+		bwt = getBWT(text, this->textLen, sa, saLen, bwtLen, 0, this->verbose);
 		delete[] sa;
-	} else bwt = getBWT(text, textLen, bwtLen, 0, this->verbose);
+	} else bwt = getBWT(textFileName, text, this->textLen, bwtLen, 0, this->verbose);
 	if (this->verbose) cout << "Huffman encoding ... " << flush;
 	encodeHuff(this->wtType, bwt, bwtLen, this->code, this->codeLen);
 	if (this->verbose) cout << "Done" << endl;
@@ -1517,7 +1522,8 @@ void FMDummyWT::build(unsigned char *text, unsigned int textLen) {
 	}
 	delete[] bwt;
 	if (this->verbose) cout << "Done" << endl;
-	fillArrayC(text, textLen, this->c, verbose);
+	fillArrayC(text, this->textLen, this->c, verbose);
+        delete[] text;
 	if (this->verbose) cout << "Index successfully built" << endl;
 }
 
