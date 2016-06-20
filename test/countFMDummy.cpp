@@ -99,6 +99,9 @@ void fmDummy1(string indexType, string selectedChars, const char *textFileName, 
 
 	Patterns *P = new Patterns(textFileName, queriesNum, m, FMDummy1SelectedCharsMap[selectedChars]);
         //NegativePatterns *P = new NegativePatterns(textFileName, queriesNum, m);
+        /*SpecialPatterns *P = new SpecialPatterns(textFileName, m);
+        queriesNum = P->getQueriesNum();
+        if (queriesNum == 0) exit(1);*/
 	unsigned char **patterns = P->getPatterns();
 	unsigned int *indexCounts = new unsigned int[queriesNum];
 
@@ -147,6 +150,9 @@ void fmDummy1Hash(string indexType, string selectedChars, string k, string loadF
 
 	Patterns *P = new Patterns(textFileName, queriesNum, m, FMDummy1SelectedCharsMap[selectedChars]);
         //NegativePatterns *P = new NegativePatterns(textFileName, queriesNum, m);
+        /*SpecialPatterns *P = new SpecialPatterns(textFileName, m);
+        queriesNum = P->getQueriesNum();
+        if (queriesNum == 0) exit(1);*/
 	unsigned char **patterns = P->getPatterns();
 	unsigned int *indexCounts = new unsigned int[queriesNum];
 
@@ -195,6 +201,9 @@ void fmDummy2(string indexType, string encodedSchema, string bits, const char *t
 
 	Patterns *P = new Patterns(textFileName, queriesNum, m);
         //NegativePatterns *P = new NegativePatterns(textFileName, queriesNum, m);
+        /*SpecialPatterns *P = new SpecialPatterns(textFileName, m);
+        queriesNum = P->getQueriesNum();
+        if (queriesNum == 0) exit(1);*/
 	unsigned char **patterns = P->getPatterns();
 	unsigned int *indexCounts = new unsigned int[queriesNum];
 
@@ -243,6 +252,9 @@ void fmDummy2Hash(string indexType, string encodedSchema, string bits, string k,
 
 	Patterns *P = new Patterns(textFileName, queriesNum, m);
         //NegativePatterns *P = new NegativePatterns(textFileName, queriesNum, m);
+        /*SpecialPatterns *P = new SpecialPatterns(textFileName, m);
+        queriesNum = P->getQueriesNum();
+        if (queriesNum == 0) exit(1);*/
 	unsigned char **patterns = P->getPatterns();
 	unsigned int *indexCounts = new unsigned int[queriesNum];
 
@@ -292,6 +304,9 @@ void fmDummy3(string indexType, const char *textFileName, unsigned int queriesNu
 	vector<unsigned char> selectedChars = {'A', 'C', 'G', 'T'};
 	Patterns *P = new Patterns(textFileName, queriesNum, m, selectedChars);
         //NegativePatterns *P = new NegativePatterns(textFileName, queriesNum, m);
+        /*SpecialPatterns *P = new SpecialPatterns(textFileName, m);
+        queriesNum = P->getQueriesNum();
+        if (queriesNum == 0) exit(1);*/
 	unsigned char **patterns = P->getPatterns();
 	unsigned int *indexCounts = new unsigned int[queriesNum];
 
@@ -341,6 +356,9 @@ void fmDummy3Hash(string indexType, string k, string loadFactor, const char *tex
 	vector<unsigned char> selectedChars = {'A', 'C', 'G', 'T'};
 	Patterns *P = new Patterns(textFileName, queriesNum, m, selectedChars);
         //NegativePatterns *P = new NegativePatterns(textFileName, queriesNum, m);
+        /*SpecialPatterns *P = new SpecialPatterns(textFileName, m);
+        queriesNum = P->getQueriesNum();
+        if (queriesNum == 0) exit(1);*/
 	unsigned char **patterns = P->getPatterns();
 	unsigned int *indexCounts = new unsigned int[queriesNum];
 
@@ -389,6 +407,9 @@ void fmDummyWT(string wtType, string indexType, const char *textFileName, unsign
 
 	Patterns *P = new Patterns(textFileName, queriesNum, m);
         //NegativePatterns *P = new NegativePatterns(textFileName, queriesNum, m);
+        /*SpecialPatterns *P = new SpecialPatterns(textFileName, m);
+        queriesNum = P->getQueriesNum();
+        if (queriesNum == 0) exit(1);*/
 	unsigned char **patterns = P->getPatterns();
 	unsigned int *indexCounts = new unsigned int[queriesNum];
 
@@ -437,6 +458,9 @@ void fmDummyWTHash(string wtType, string indexType, string k, string loadFactor,
 
 	Patterns *P = new Patterns(textFileName, queriesNum, m);
         //NegativePatterns *P = new NegativePatterns(textFileName, queriesNum, m);
+        /*SpecialPatterns *P = new SpecialPatterns(textFileName, m);
+        queriesNum = P->getQueriesNum();
+        if (queriesNum == 0) exit(1);*/
 	unsigned char **patterns = P->getPatterns();
 	unsigned int *indexCounts = new unsigned int[queriesNum];
 
