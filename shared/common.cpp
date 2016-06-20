@@ -319,13 +319,24 @@ void binarySearchStrncmp(unsigned int *sa, unsigned char *text, unsigned int lSt
 	end = r;
 }
 
+unsigned int getSACount(unsigned int *sa, unsigned char *text, unsigned int saLen, unsigned char *pattern, int patternLength) {
+	unsigned int beg = 0, end = 0;
+	binarySearch(sa, text, 0, saLen, pattern, patternLength, beg, end);
+	return end - beg;
+}
+
+void getSALocate(unsigned int *sa, unsigned char *text, unsigned int saLen, unsigned char *pattern, int patternLength, vector<unsigned int>& res) {
+	unsigned int beg = 0, end = 0;
+	binarySearch(sa, text, 0, saLen, pattern, patternLength, beg, end);
+        res.insert(res.end(), sa + beg, sa + end); 
+}
+
 void fillLUT1(unsigned int lut1[256][2], unsigned char *text, unsigned int *sa, unsigned int saLen) {
 	unsigned char lutPattern[2];
 	lutPattern[1] = '\0';
 	for (int i = 0; i < 256; ++i) {
 		lutPattern[0] = (unsigned char)i;
 		binarySearch(sa, text, 0, saLen, lutPattern, 1, lut1[i][0], lut1[i][1]);
-		++lut1[i][1];
 	}
 }
 
@@ -337,7 +348,6 @@ void fillLUT2(unsigned int lut2[256][256][2], unsigned char *text, unsigned int 
 		for (int j = 0; j < 256; ++j) {
 			lutPattern[1] = (unsigned char)j;
 			binarySearch(sa, text, 0, saLen, lutPattern, 2, lut2[i][j][0], lut2[i][j][1]);
-			++lut2[i][j][1];
 		}
 	}
 }
