@@ -1499,7 +1499,7 @@ void FMDummyWT::build(const char *textFileName) {
 		delete[] sa;
 	} else bwt = getBWT(textFileName, text, this->textLen, bwtLen, 0, this->verbose);
 	if (this->verbose) cout << "Huffman encoding ... " << flush;
-	encodeHuff(this->wtType, bwt, bwtLen, this->code, this->codeLen);
+	encodeHuffFromText(this->wtType, bwt, bwtLen, this->code, this->codeLen);
 	if (this->verbose) cout << "Done" << endl;
 	if (this->verbose) cout << "Building WT ... " << flush;
 	switch (this->wtType) {
