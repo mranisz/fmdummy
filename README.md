@@ -31,7 +31,7 @@ To use the FMDummy library:
 - compile it with "-std=c++11 -O3 -mpopcnt" options and link it with libraries:
   - fmdummy/libfmdummy.a
   - fmdummy/libs/libaelf64.a (linux) or fmdummy/libs/libacof64.lib (windows)
-- use "fmdummy" namespace
+- use "fmdummy" and "shared" namespaces
 
 ##API
 There are several functions you can call on each of the FMDummy text index:
@@ -228,6 +228,7 @@ FMDummyWT(FMDummyWT::WTType wtType, FMDummyWT::IndexType indexType, unsigned int
 #include "fmdummy/fmdummy.h"
 
 using namespace std;
+using namespace shared;
 using namespace fmdummy;
 
 int main(int argc, char *argv[]) {

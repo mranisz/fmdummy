@@ -9,7 +9,7 @@
 
 using namespace std;
 
-namespace fmdummy {
+namespace shared {
     
 /*HTBASE*/
 
