@@ -5,7 +5,7 @@
 #include <map>
 #include "../shared/patterns.h"
 #include "../shared/timer.h"
-#include "../fmdummy.h"
+#include "../fmdummy.hpp"
 
 using namespace std;
 using namespace shared;
@@ -13,34 +13,83 @@ using namespace fmdummy;
 
 ChronoStopWatch timer;
 
-map<string, FMDummy1::IndexType> FMDummy1IndexTypesMap = {{"256", FMDummy1::TYPE_256}, {"512", FMDummy1::TYPE_512}};
 map<string, vector<unsigned char>> FMDummy1SelectedCharsMap = {{"ACGT", {65, 67, 71, 84}}, {"all", {}}};
-map<string, FMDummy2::IndexType> FMDummy2IndexTypesMap = {{"256", FMDummy2::TYPE_256}, {"512", FMDummy2::TYPE_512}};
-map<string, FMDummy2::Schema> FMDummy2SchemaMap = {{"SCBO", FMDummy2::SCHEMA_SCBO}, {"CB", FMDummy2::SCHEMA_CB}};
-map<string, FMDummy2::BitsPerChar> FMDummy2BitsPerCharMap = {{"3", FMDummy2::BITS_3}, {"4", FMDummy2::BITS_4}};
-map<string, FMDummy3::IndexType> FMDummy3IndexTypesMap = {{"512", FMDummy3::TYPE_512}, {"1024", FMDummy3::TYPE_1024}};
-map<string, FMDummyWT::WTType> FMDummyWTWTTypeMap = {{"2", FMDummyWT::TYPE_WT2}, {"4", FMDummyWT::TYPE_WT4}, {"8", FMDummyWT::TYPE_WT8}};
-map<string, FMDummyWT::IndexType> FMDummyWTIndexTypesMap = {{"512", FMDummyWT::TYPE_512}, {"1024", FMDummyWT::TYPE_1024}};
 
-void fmDummy1(string indexType, string selectedChars, const char *textFileName, unsigned int queriesNum, unsigned int m);
-void fmDummy1Hash(string indexType, string selectedChars, string k, string loadFactor, const char *textFileName, unsigned int queriesNum, unsigned int m);
-void fmDummy2(string indexType, string encodedSchema, string bits, const char *textFileName, unsigned int queriesNum, unsigned int m);
-void fmDummy2Hash(string indexType, string encodedSchema, string bits, string k, string loadFactor, const char *textFileName, unsigned int queriesNum, unsigned int m);
-void fmDummy3(string indexType, const char *textFileName, unsigned int queriesNum, unsigned int m);
-void fmDummy3Hash(string indexType, string k, string loadFactor, const char *textFileName, unsigned int queriesNum, unsigned int m);
-void fmDummyWT(string wtType, string indexType, const char *textFileName, unsigned int queriesNum, unsigned int m);
-void fmDummyWTHash(string wtType, string indexType, string k, string loadFactor, const char *textFileName, unsigned int queriesNum, unsigned int m);
+void fmDummy1_256(string selectedChars, const char *textFileName, unsigned int queriesNum, unsigned int m);
+void fmDummy1_512(string selectedChars, const char *textFileName, unsigned int queriesNum, unsigned int m);
+void fmDummy1Hash_256(string selectedChars, string k, string loadFactor, const char *textFileName, unsigned int queriesNum, unsigned int m);
+void fmDummy1Hash_512(string selectedChars, string k, string loadFactor, const char *textFileName, unsigned int queriesNum, unsigned int m);
+void fmDummy2_256_SCBO_3(const char *textFileName, unsigned int queriesNum, unsigned int m);
+void fmDummy2_256_CB_3(const char *textFileName, unsigned int queriesNum, unsigned int m);
+void fmDummy2_256_SCBO_4(const char *textFileName, unsigned int queriesNum, unsigned int m);
+void fmDummy2_256_CB_4(const char *textFileName, unsigned int queriesNum, unsigned int m);
+void fmDummy2_512_SCBO_3(const char *textFileName, unsigned int queriesNum, unsigned int m);
+void fmDummy2_512_CB_3(const char *textFileName, unsigned int queriesNum, unsigned int m);
+void fmDummy2_512_SCBO_4(const char *textFileName, unsigned int queriesNum, unsigned int m);
+void fmDummy2_512_CB_4(const char *textFileName, unsigned int queriesNum, unsigned int m);
+void fmDummy2Hash_256_SCBO_3(string k, string loadFactor, const char *textFileName, unsigned int queriesNum, unsigned int m);
+void fmDummy2Hash_256_CB_3(string k, string loadFactor, const char *textFileName, unsigned int queriesNum, unsigned int m);
+void fmDummy2Hash_256_SCBO_4(string k, string loadFactor, const char *textFileName, unsigned int queriesNum, unsigned int m);
+void fmDummy2Hash_256_CB_4(string k, string loadFactor, const char *textFileName, unsigned int queriesNum, unsigned int m);
+void fmDummy2Hash_512_SCBO_3(string k, string loadFactor, const char *textFileName, unsigned int queriesNum, unsigned int m);
+void fmDummy2Hash_512_CB_3(string k, string loadFactor, const char *textFileName, unsigned int queriesNum, unsigned int m);
+void fmDummy2Hash_512_SCBO_4(string k, string loadFactor, const char *textFileName, unsigned int queriesNum, unsigned int m);
+void fmDummy2Hash_512_CB_4(string k, string loadFactor, const char *textFileName, unsigned int queriesNum, unsigned int m);
+void fmDummy3_512(const char *textFileName, unsigned int queriesNum, unsigned int m);
+void fmDummy3_1024(const char *textFileName, unsigned int queriesNum, unsigned int m);
+void fmDummy3Hash_512(string k, string loadFactor, const char *textFileName, unsigned int queriesNum, unsigned int m);
+void fmDummy3Hash_1024(string k, string loadFactor, const char *textFileName, unsigned int queriesNum, unsigned int m);
+void fmDummyHWT2_512(const char *textFileName, unsigned int queriesNum, unsigned int m);
+void fmDummyHWT2_1024(const char *textFileName, unsigned int queriesNum, unsigned int m);
+void fmDummyHWT4_512(const char *textFileName, unsigned int queriesNum, unsigned int m);
+void fmDummyHWT4_1024(const char *textFileName, unsigned int queriesNum, unsigned int m);
+void fmDummyHWT8_512(const char *textFileName, unsigned int queriesNum, unsigned int m);
+void fmDummyHWT8_1024(const char *textFileName, unsigned int queriesNum, unsigned int m);
+void fmDummyHWT2Hash_512(string k, string loadFactor, const char *textFileName, unsigned int queriesNum, unsigned int m);
+void fmDummyHWT2Hash_1024(string k, string loadFactor, const char *textFileName, unsigned int queriesNum, unsigned int m);
+void fmDummyHWT4Hash_512(string k, string loadFactor, const char *textFileName, unsigned int queriesNum, unsigned int m);
+void fmDummyHWT4Hash_1024(string k, string loadFactor, const char *textFileName, unsigned int queriesNum, unsigned int m);
+void fmDummyHWT8Hash_512(string k, string loadFactor, const char *textFileName, unsigned int queriesNum, unsigned int m);
+void fmDummyHWT8Hash_1024(string k, string loadFactor, const char *textFileName, unsigned int queriesNum, unsigned int m);
 
 void getUsage(char **argv) {
 	cout << "Select index you want to test (count):" << endl;
-	cout << "FMDummy1: " << argv[0] << " 1 256|512 all|ACGT fileName patternNum patternLen" << endl;
-	cout << "FMDummy1-hash: " << argv[0] << " 1 256|512 all|ACGT k loadFactor fileName patternNum patternLen" << endl;
-        cout << "FMDummy2: " << argv[0] << " 2 256|512 SCBO|CB 3|4 fileName patternNum patternLen" << endl;
-	cout << "FMDummy2-hash: " << argv[0] << " 2 256|512 SCBO|CB 3|4 k loadFactor fileName patternNum patternLen" << endl;
-        cout << "FMDummy3: " << argv[0] << " 3 512|1024 fileName patternNum patternLen" << endl;
-	cout << "FMDummy3-hash: " << argv[0] << " 3 512|1024 k loadFactor fileName patternNum patternLen" << endl;
-	cout << "FMDummyWT: " << argv[0] << " WT 2|4|8 512|1024 fileName patternNum patternLen" << endl;
-	cout << "FMDummyWT-hash: " << argv[0] << " WT 2|4|8 512|1024 k loadFactor fileName patternNum patternLen" << endl;
+	cout << "FMDummy1-256: " << argv[0] << " 1-256 all|ACGT fileName patternNum patternLen" << endl;
+	cout << "FMDummy1-512: " << argv[0] << " 1-512 all|ACGT fileName patternNum patternLen" << endl;
+	cout << "FMDummy2-256-SCBO-3: " << argv[0] << " 2-256-SCBO-3 fileName patternNum patternLen" << endl;
+	cout << "FMDummy2-512-SCBO-3: " << argv[0] << " 2-512-SCBO-3 fileName patternNum patternLen" << endl;
+	cout << "FMDummy2-256-CB-3: " << argv[0] << " 2-256-CB-3 fileName patternNum patternLen" << endl;
+	cout << "FMDummy2-512-CB-3: " << argv[0] << " 2-512-CB-3 fileName patternNum patternLen" << endl;
+	cout << "FMDummy2-256-SCBO-4: " << argv[0] << " 2-256-SCBO-4 fileName patternNum patternLen" << endl;
+	cout << "FMDummy2-512-SCBO-4: " << argv[0] << " 2-512-SCBO-4 fileName patternNum patternLen" << endl;
+	cout << "FMDummy2-256-CB-4: " << argv[0] << " 2-256-CB-4 fileName patternNum patternLen" << endl;
+	cout << "FMDummy2-512-CB-4: " << argv[0] << " 2-512-CB-4 fileName patternNum patternLen" << endl;
+	cout << "FMDummy3-512: " << argv[0] << " 3-512 fileName patternNum patternLen" << endl;
+	cout << "FMDummy3-1024: " << argv[0] << " 3-1024 fileName patternNum patternLen" << endl;
+	cout << "FMDummyHWT2-512: " << argv[0] << " HWT2-512 fileName patternNum patternLen" << endl;
+	cout << "FMDummyHWT2-1024: " << argv[0] << " HWT2-1024 fileName patternNum patternLen" << endl;
+	cout << "FMDummyHWT4-512: " << argv[0] << " HWT4-512 fileName patternNum patternLen" << endl;
+	cout << "FMDummyHWT4-1024: " << argv[0] << " HWT4-1024 fileName patternNum patternLen" << endl;
+	cout << "FMDummyHWT8-512: " << argv[0] << " HWT8-512 fileName patternNum patternLen" << endl;
+	cout << "FMDummyHWT8-1024: " << argv[0] << " HWT8-1024 fileName patternNum patternLen" << endl;
+	cout << "FMDummy1-hash-256: " << argv[0] << " 1-hash-256 all|ACGT k loadFactor fileName patternNum patternLen" << endl;
+	cout << "FMDummy1-hash-512: " << argv[0] << " 1-hash-512 all|ACGT k loadFactor fileName patternNum patternLen" << endl;
+	cout << "FMDummy2-hash-256-SCBO-3: " << argv[0] << " 2-hash-256-SCBO-3 k loadFactor fileName patternNum patternLen" << endl;
+	cout << "FMDummy2-hash-512-SCBO-3: " << argv[0] << " 2-hash-512-SCBO-3 k loadFactor fileName patternNum patternLen" << endl;
+	cout << "FMDummy2-hash-256-CB-3: " << argv[0] << " 2-hash-256-CB-3 k loadFactor fileName patternNum patternLen" << endl;
+	cout << "FMDummy2-hash-512-CB-3: " << argv[0] << " 2-hash-512-CB-3 k loadFactor fileName patternNum patternLen" << endl;
+	cout << "FMDummy2-hash-256-SCBO-4: " << argv[0] << " 2-hash-256-SCBO-4 k loadFactor fileName patternNum patternLen" << endl;
+	cout << "FMDummy2-hash-512-SCBO-4: " << argv[0] << " 2-hash-512-SCBO-4 k loadFactor fileName patternNum patternLen" << endl;
+	cout << "FMDummy2-hash-256-CB-4: " << argv[0] << " 2-hash-256-CB-4 k loadFactor fileName patternNum patternLen" << endl;
+	cout << "FMDummy2-hash-512-CB-4: " << argv[0] << " 2-hash-512-CB-4 k loadFactor fileName patternNum patternLen" << endl;
+	cout << "FMDummy3-hash-512: " << argv[0] << " 3-hash-512 k loadFactor fileName patternNum patternLen" << endl;
+	cout << "FMDummy3-hash-1024: " << argv[0] << " 3-hash-1024 k loadFactor fileName patternNum patternLen" << endl;
+	cout << "FMDummyHWT2-hash-512: " << argv[0] << " HWT2-hash-512 k loadFactor fileName patternNum patternLen" << endl;
+	cout << "FMDummyHWT2-hash-1024: " << argv[0] << " HWT2-hash-1024 k loadFactor fileName patternNum patternLen" << endl;
+	cout << "FMDummyHWT4-hash-512: " << argv[0] << " HWT4-hash-512 k loadFactor fileName patternNum patternLen" << endl;
+	cout << "FMDummyHWT4-hash-1024: " << argv[0] << " HWT4-hash-1024 k loadFactor fileName patternNum patternLen" << endl;
+	cout << "FMDummyHWT8-hash-512: " << argv[0] << " HWT8-hash-512 k loadFactor fileName patternNum patternLen" << endl;
+	cout << "FMDummyHWT8-hash-1024: " << argv[0] << " HWT8-hash-1024 k loadFactor fileName patternNum patternLen" << endl;
 	cout << "where:" << endl;
 	cout << "fileName - name of text file" << endl;
 	cout << "patternNum - number of patterns" << endl;
@@ -54,55 +103,64 @@ int main(int argc, char *argv[]) {
 		getUsage(argv);
 		exit(1);
 	}
-
-	if ((string)argv[1] == "1") {
-                if (FMDummy1IndexTypesMap.find(string(argv[2])) != FMDummy1IndexTypesMap.end() && FMDummy1SelectedCharsMap.find(string(argv[3])) != FMDummy1SelectedCharsMap.end()) {
-                    if (argc == 7) fmDummy1(string(argv[2]), string(argv[3]), argv[4], atoi(argv[5]), atoi(argv[6]));    
-                    else if (argc == 9) fmDummy1Hash(string(argv[2]), string(argv[3]), string(argv[4]), string(argv[5]), argv[6], atoi(argv[7]), atoi(argv[8]));
-		}
-        }
-	else if ((string)argv[1] == "2") {
-		if (FMDummy2IndexTypesMap.find(string(argv[2])) != FMDummy2IndexTypesMap.end() && FMDummy2SchemaMap.find(string(argv[3])) != FMDummy2SchemaMap.end() && FMDummy2BitsPerCharMap.find(string(argv[4])) != FMDummy2BitsPerCharMap.end()) {
-                        if (argc == 8) fmDummy2(string(argv[2]), string(argv[3]), string(argv[4]), argv[5], atoi(argv[6]), atoi(argv[7]));
-                        else if (argc == 10) fmDummy2Hash(string(argv[2]), string(argv[3]), string(argv[4]), string(argv[5]), string(argv[6]), argv[7], atoi(argv[8]), atoi(argv[9]));
-		}
-	}
-	else if ((string)argv[1] == "3") {
-		if (FMDummy3IndexTypesMap.find(string(argv[2])) != FMDummy3IndexTypesMap.end()) {
-                        if (argc == 6) fmDummy3(string(argv[2]), argv[3], atoi(argv[4]), atoi(argv[5]));
-                        else if (argc == 8) fmDummy3Hash(string(argv[2]), string(argv[3]), string(argv[4]), argv[5], atoi(argv[6]), atoi(argv[7]));
-		}
-	}
-	else if ((string)argv[1] == "WT") {
-		if (FMDummyWTWTTypeMap.find(string(argv[2])) != FMDummyWTWTTypeMap.end() && FMDummyWTIndexTypesMap.find(string(argv[3])) != FMDummyWTIndexTypesMap.end()) {
-                        if (argc == 7) fmDummyWT(string(argv[2]), string(argv[3]), argv[4], atoi(argv[5]), atoi(argv[6]));
-                        else if (argc == 9) fmDummyWTHash(string(argv[2]), string(argv[3]), string(argv[4]), string(argv[5]), argv[6], atoi(argv[7]), atoi(argv[8]));
-		}
-	}
-        getUsage(argv);
-        exit(1);
+	if (string(argv[1]) == "1-256") fmDummy1_256(string(argv[2]), argv[3], atoi(argv[4]), atoi(argv[5]));
+	if (string(argv[1]) == "1-512") fmDummy1_512(string(argv[2]), argv[3], atoi(argv[4]), atoi(argv[5]));
+	if (string(argv[1]) == "2-256-SCBO-3") fmDummy2_256_SCBO_3(argv[2], atoi(argv[3]), atoi(argv[4]));
+	if (string(argv[1]) == "2-512-SCBO-3") fmDummy2_512_SCBO_3(argv[2], atoi(argv[3]), atoi(argv[4]));
+	if (string(argv[1]) == "2-256-CB-3") fmDummy2_256_CB_3(argv[2], atoi(argv[3]), atoi(argv[4]));
+	if (string(argv[1]) == "2-512-CB-3") fmDummy2_512_CB_3(argv[2], atoi(argv[3]), atoi(argv[4]));
+	if (string(argv[1]) == "2-256-SCBO-4") fmDummy2_256_SCBO_4(argv[2], atoi(argv[3]), atoi(argv[4]));
+	if (string(argv[1]) == "2-512-SCBO-4") fmDummy2_512_SCBO_4(argv[2], atoi(argv[3]), atoi(argv[4]));
+	if (string(argv[1]) == "2-256-CB-4") fmDummy2_256_CB_4(argv[2], atoi(argv[3]), atoi(argv[4]));
+	if (string(argv[1]) == "2-512-CB-4") fmDummy2_512_CB_4(argv[2], atoi(argv[3]), atoi(argv[4]));
+	if (string(argv[1]) == "3-512") fmDummy3_512(argv[2], atoi(argv[3]), atoi(argv[4]));
+	if (string(argv[1]) == "3-1024") fmDummy3_1024(argv[2], atoi(argv[3]), atoi(argv[4]));
+	if (string(argv[1]) == "HWT2-512") fmDummyHWT2_512(argv[2], atoi(argv[3]), atoi(argv[4]));
+	if (string(argv[1]) == "HWT2-1024") fmDummyHWT2_1024(argv[2], atoi(argv[3]), atoi(argv[4]));
+	if (string(argv[1]) == "HWT4-512") fmDummyHWT4_512(argv[2], atoi(argv[3]), atoi(argv[4]));
+	if (string(argv[1]) == "HWT4-1024") fmDummyHWT4_1024(argv[2], atoi(argv[3]), atoi(argv[4]));
+	if (string(argv[1]) == "HWT8-512") fmDummyHWT8_512(argv[2], atoi(argv[3]), atoi(argv[4]));
+	if (string(argv[1]) == "HWT8-1024") fmDummyHWT8_1024(argv[2], atoi(argv[3]), atoi(argv[4]));
+	if (string(argv[1]) == "1-hash-256") fmDummy1Hash_256(string(argv[2]), string(argv[3]), string(argv[4]), argv[5], atoi(argv[6]), atoi(argv[7]));
+	if (string(argv[1]) == "1-hash-512") fmDummy1Hash_512(string(argv[2]), string(argv[3]), string(argv[4]), argv[5], atoi(argv[6]), atoi(argv[7]));
+	if (string(argv[1]) == "2-hash-256-SCBO-3") fmDummy2Hash_256_SCBO_3(string(argv[2]), string(argv[3]), argv[4], atoi(argv[5]), atoi(argv[6]));
+	if (string(argv[1]) == "2-hash-512-SCBO-3") fmDummy2Hash_512_SCBO_3(string(argv[2]), string(argv[3]), argv[4], atoi(argv[5]), atoi(argv[6]));
+	if (string(argv[1]) == "2-hash-256-CB-3") fmDummy2Hash_256_CB_3(string(argv[2]), string(argv[3]), argv[4], atoi(argv[5]), atoi(argv[6]));
+	if (string(argv[1]) == "2-hash-512-CB-3") fmDummy2Hash_512_CB_3(string(argv[2]), string(argv[3]), argv[4], atoi(argv[5]), atoi(argv[6]));
+	if (string(argv[1]) == "2-hash-256-SCBO-4") fmDummy2Hash_256_SCBO_4(string(argv[2]), string(argv[3]), argv[4], atoi(argv[5]), atoi(argv[6]));
+	if (string(argv[1]) == "2-hash-512-SCBO-4") fmDummy2Hash_512_SCBO_4(string(argv[2]), string(argv[3]), argv[4], atoi(argv[5]), atoi(argv[6]));
+	if (string(argv[1]) == "2-hash-256-CB-4") fmDummy2Hash_256_CB_4(string(argv[2]), string(argv[3]), argv[4], atoi(argv[5]), atoi(argv[6]));
+	if (string(argv[1]) == "2-hash-512-CB-4") fmDummy2Hash_512_CB_4(string(argv[2]), string(argv[3]), argv[4], atoi(argv[5]), atoi(argv[6]));
+	if (string(argv[1]) == "3-hash-512") fmDummy3Hash_512(string(argv[2]), string(argv[3]), argv[4], atoi(argv[5]), atoi(argv[6]));
+	if (string(argv[1]) == "3-hash-1024") fmDummy3Hash_1024(string(argv[2]), string(argv[3]), argv[4], atoi(argv[5]), atoi(argv[6]));
+	if (string(argv[1]) == "HWT2-hash-512") fmDummyHWT2Hash_512(string(argv[2]), string(argv[3]), argv[4], atoi(argv[5]), atoi(argv[6]));
+	if (string(argv[1]) == "HWT2-hash-1024") fmDummyHWT2Hash_1024(string(argv[2]), string(argv[3]), argv[4], atoi(argv[5]), atoi(argv[6]));
+	if (string(argv[1]) == "HWT4-hash-512") fmDummyHWT4Hash_512(string(argv[2]), string(argv[3]), argv[4], atoi(argv[5]), atoi(argv[6]));
+	if (string(argv[1]) == "HWT4-hash-1024") fmDummyHWT4Hash_1024(string(argv[2]), string(argv[3]), argv[4], atoi(argv[5]), atoi(argv[6]));
+	if (string(argv[1]) == "HWT8-hash-512") fmDummyHWT8Hash_512(string(argv[2]), string(argv[3]), argv[4], atoi(argv[5]), atoi(argv[6]));
+	if (string(argv[1]) == "HWT8-hash-1024") fmDummyHWT8Hash_1024(string(argv[2]), string(argv[3]), argv[4], atoi(argv[5]), atoi(argv[6]));
+	getUsage(argv);
+	exit(1);
 }
 
-void fmDummy1(string indexType, string selectedChars, const char *textFileName, unsigned int queriesNum, unsigned int m) {
-	FMDummy1 *FMD1;
-	string indexFileNameString = "FMD1-" + (string)textFileName + "-" + indexType + "-" + selectedChars + ".idx";
+void fmDummy1_256(string selectedChars, const char *textFileName, unsigned int queriesNum, unsigned int m) {
+	FMDummy1<FMDummy1Type::FMD1_256> *FMD1 = new FMDummy1<FMDummy1Type::FMD1_256>(FMDummy1SelectedCharsMap[selectedChars]);
+	string indexFileNameString = "FMD1-" + (string)textFileName + "-256-" + selectedChars + ".idx";
 	const char *indexFileName = indexFileNameString.c_str();
 
 	if (fileExists(indexFileName)) {
-		FMD1 = new FMDummy1();
 		FMD1->load(indexFileName);
 	} else {
-		FMD1 = new FMDummy1(FMDummy1IndexTypesMap[indexType], FMDummy1SelectedCharsMap[selectedChars]);
 		FMD1->setVerbose(true);
 		FMD1->build(textFileName);
 		FMD1->save(indexFileName);
 	}
 
 	Patterns *P = new Patterns(textFileName, queriesNum, m, FMDummy1SelectedCharsMap[selectedChars]);
-        //NegativePatterns *P = new NegativePatterns(textFileName, queriesNum, m);
-        /*MaliciousPatterns *P = new MaliciousPatterns(textFileName, m, FMDummy1SelectedCharsMap[selectedChars]);
-        queriesNum = P->getQueriesNum();
-        if (queriesNum == 0) exit(1);*/
+	//NegativePatterns *P = new NegativePatterns(textFileName, queriesNum, m);
+	/*MaliciousPatterns *P = new MaliciousPatterns(textFileName, m, FMDummy1SelectedCharsMap[selectedChars]);
+	queriesNum = P->getQueriesNum();
+	if (queriesNum == 0) exit(1);*/
 	unsigned char **patterns = P->getPatterns();
 	unsigned int *indexCounts = new unsigned int[queriesNum];
 
@@ -115,8 +173,8 @@ void fmDummy1(string indexType, string selectedChars, const char *textFileName, 
 	string resultFileName = "results/fmdummy/" + string(textFileName) + "_count_FMDummy1.txt";
 	fstream resultFile(resultFileName.c_str(), ios::out | ios::binary | ios::app);
 	double size = (double)FMD1->getIndexSize() / (double)FMD1->getTextSize();
-	cout << "count FMDummy1-" << indexType << "-" << selectedChars << " " << textFileName << " m=" << m << " queries=" << queriesNum << " size=" << size << "n time=" << timer.getElapsedTime() << endl;
-	resultFile << m << " " << queriesNum << " " << indexType << " " << selectedChars << " " << size << " " << timer.getElapsedTime();
+	cout << "count FMDummy1-256-" << selectedChars << " " << textFileName << " m=" << m << " queries=" << queriesNum << " size=" << size << "n time=" << timer.getElapsedTime() << endl;
+	resultFile << m << " " << queriesNum << " 256 " << selectedChars << " " << size << " " << timer.getElapsedTime();
 
 	unsigned int differences = P->getErrorCountsNumber(indexCounts);
 	if (differences > 0) {
@@ -131,29 +189,76 @@ void fmDummy1(string indexType, string selectedChars, const char *textFileName, 
 	delete[] indexCounts;
 	delete FMD1;
 	delete P;
-        exit(0);
+	exit(0);
 }
 
-void fmDummy1Hash(string indexType, string selectedChars, string k, string loadFactor, const char *textFileName, unsigned int queriesNum, unsigned int m) {
-	FMDummy1 *FMD1;
-	string indexFileNameString = "FMD1-hash-" + (string)textFileName + "-" + indexType + "-" + selectedChars + "-" +  k + "-" + loadFactor + ".idx";
-	char *indexFileName = (char *)indexFileNameString.c_str();
+void fmDummy1_512(string selectedChars, const char *textFileName, unsigned int queriesNum, unsigned int m) {
+	FMDummy1<FMDummy1Type::FMD1_512> *FMD1 = new FMDummy1<FMDummy1Type::FMD1_512>(FMDummy1SelectedCharsMap[selectedChars]);
+	string indexFileNameString = "FMD1-" + (string)textFileName + "-512-" + selectedChars + ".idx";
+	const char *indexFileName = indexFileNameString.c_str();
 
 	if (fileExists(indexFileName)) {
-		FMD1 = new FMDummy1();
 		FMD1->load(indexFileName);
 	} else {
-		FMD1 = new FMDummy1(FMDummy1IndexTypesMap[indexType], FMDummy1SelectedCharsMap[selectedChars], atoi(k.c_str()), atof(loadFactor.c_str()));
 		FMD1->setVerbose(true);
 		FMD1->build(textFileName);
 		FMD1->save(indexFileName);
 	}
 
 	Patterns *P = new Patterns(textFileName, queriesNum, m, FMDummy1SelectedCharsMap[selectedChars]);
-        //NegativePatterns *P = new NegativePatterns(textFileName, queriesNum, m);
-        /*MaliciousPatterns *P = new MaliciousPatterns(textFileName, m, FMDummy1SelectedCharsMap[selectedChars]);
-        queriesNum = P->getQueriesNum();
-        if (queriesNum == 0) exit(1);*/
+	//NegativePatterns *P = new NegativePatterns(textFileName, queriesNum, m);
+	/*MaliciousPatterns *P = new MaliciousPatterns(textFileName, m, FMDummy1SelectedCharsMap[selectedChars]);
+	queriesNum = P->getQueriesNum();
+	if (queriesNum == 0) exit(1);*/
+	unsigned char **patterns = P->getPatterns();
+	unsigned int *indexCounts = new unsigned int[queriesNum];
+
+	timer.startTimer();
+	for (unsigned int i = 0; i < queriesNum; ++i) {
+		indexCounts[i] = FMD1->count(patterns[i], m);
+	}
+	timer.stopTimer();
+
+	string resultFileName = "results/fmdummy/" + string(textFileName) + "_count_FMDummy1.txt";
+	fstream resultFile(resultFileName.c_str(), ios::out | ios::binary | ios::app);
+	double size = (double)FMD1->getIndexSize() / (double)FMD1->getTextSize();
+	cout << "count FMDummy1-512-" << selectedChars << " " << textFileName << " m=" << m << " queries=" << queriesNum << " size=" << size << "n time=" << timer.getElapsedTime() << endl;
+	resultFile << m << " " << queriesNum << " 512 " << selectedChars << " " << size << " " << timer.getElapsedTime();
+
+	unsigned int differences = P->getErrorCountsNumber(indexCounts);
+	if (differences > 0) {
+		cout << "DIFFERENCES: " << differences << endl;
+		resultFile << " DIFFERENCES: " << differences;
+	} else {
+		cout << "Differences: " << differences << endl;
+	}
+	resultFile << endl;
+	resultFile.close();
+
+	delete[] indexCounts;
+	delete FMD1;
+	delete P;
+	exit(0);
+}
+
+void fmDummy1Hash_256(string selectedChars, string k, string loadFactor, const char *textFileName, unsigned int queriesNum, unsigned int m) {
+	FMDummy1Hash<FMDummy1Type::FMD1_256> *FMD1 = new FMDummy1Hash<FMDummy1Type::FMD1_256>(FMDummy1SelectedCharsMap[selectedChars], atoi(k.c_str()), atof(loadFactor.c_str()));
+	string indexFileNameString = "FMD1-hash-" + (string)textFileName + "-256-" + selectedChars + "-" +  k + "-" + loadFactor + ".idx";
+	char *indexFileName = (char *)indexFileNameString.c_str();
+
+	if (fileExists(indexFileName)) {
+		FMD1->load(indexFileName);
+	} else {
+		FMD1->setVerbose(true);
+		FMD1->build(textFileName);
+		FMD1->save(indexFileName);
+	}
+
+	Patterns *P = new Patterns(textFileName, queriesNum, m, FMDummy1SelectedCharsMap[selectedChars]);
+	//NegativePatterns *P = new NegativePatterns(textFileName, queriesNum, m);
+	/*MaliciousPatterns *P = new MaliciousPatterns(textFileName, m, FMDummy1SelectedCharsMap[selectedChars]);
+	queriesNum = P->getQueriesNum();
+	if (queriesNum == 0) exit(1);*/
 	unsigned char **patterns = P->getPatterns();
 	unsigned int *indexCounts = new unsigned int[queriesNum];
 
@@ -166,8 +271,8 @@ void fmDummy1Hash(string indexType, string selectedChars, string k, string loadF
 	string resultFileName = "results/fmdummy/" + string(textFileName) + "_count_FMDummy1-hash.txt";
 	fstream resultFile(resultFileName.c_str(), ios::out | ios::binary | ios::app);
 	double size = (double)FMD1->getIndexSize() / (double)FMD1->getTextSize();
-	cout << "count FMDummy1-hash-" << indexType << "-" << selectedChars << "-" << k << "-" << loadFactor << " " << textFileName << " m=" << m << " queries=" << queriesNum << " size=" << size << "n time=" << timer.getElapsedTime() << endl;
-	resultFile << m << " " << queriesNum << " " << indexType << " " << selectedChars << " " << k << " " << loadFactor << " " << size << " " << timer.getElapsedTime();
+	cout << "count FMDummy1-hash-256-" << selectedChars << "-" << k << "-" << loadFactor << " " << textFileName << " m=" << m << " queries=" << queriesNum << " size=" << size << "n time=" << timer.getElapsedTime() << endl;
+	resultFile << m << " " << queriesNum << " 256 " << selectedChars << " " << k << " " << loadFactor << " " << size << " " << timer.getElapsedTime();
 
 	unsigned int differences = P->getErrorCountsNumber(indexCounts);
 	if (differences > 0) {
@@ -182,29 +287,76 @@ void fmDummy1Hash(string indexType, string selectedChars, string k, string loadF
 	delete[] indexCounts;
 	delete FMD1;
 	delete P;
-        exit(0);
+    exit(0);
 }
 
-void fmDummy2(string indexType, string encodedSchema, string bits, const char *textFileName, unsigned int queriesNum, unsigned int m) {
-	FMDummy2 *FMD2;
-	string indexFileNameString = "FMD2-" + (string)textFileName + "-" + indexType + "-" + encodedSchema + "-" + bits + ".idx";
+void fmDummy1Hash_512(string selectedChars, string k, string loadFactor, const char *textFileName, unsigned int queriesNum, unsigned int m) {
+	FMDummy1Hash<FMDummy1Type::FMD1_512> *FMD1 = new FMDummy1Hash<FMDummy1Type::FMD1_512>(FMDummy1SelectedCharsMap[selectedChars], atoi(k.c_str()), atof(loadFactor.c_str()));
+	string indexFileNameString = "FMD1-hash-" + (string)textFileName + "-512-" + selectedChars + "-" +  k + "-" + loadFactor + ".idx";
 	char *indexFileName = (char *)indexFileNameString.c_str();
 
 	if (fileExists(indexFileName)) {
-		FMD2 = new FMDummy2();
+		FMD1->load(indexFileName);
+	} else {
+		FMD1->setVerbose(true);
+		FMD1->build(textFileName);
+		FMD1->save(indexFileName);
+	}
+
+	Patterns *P = new Patterns(textFileName, queriesNum, m, FMDummy1SelectedCharsMap[selectedChars]);
+	//NegativePatterns *P = new NegativePatterns(textFileName, queriesNum, m);
+	/*MaliciousPatterns *P = new MaliciousPatterns(textFileName, m, FMDummy1SelectedCharsMap[selectedChars]);
+	queriesNum = P->getQueriesNum();
+	if (queriesNum == 0) exit(1);*/
+	unsigned char **patterns = P->getPatterns();
+	unsigned int *indexCounts = new unsigned int[queriesNum];
+
+	timer.startTimer();
+	for (unsigned int i = 0; i < queriesNum; ++i) {
+		indexCounts[i] = FMD1->count(patterns[i], m);
+	}
+	timer.stopTimer();
+
+	string resultFileName = "results/fmdummy/" + string(textFileName) + "_count_FMDummy1-hash.txt";
+	fstream resultFile(resultFileName.c_str(), ios::out | ios::binary | ios::app);
+	double size = (double)FMD1->getIndexSize() / (double)FMD1->getTextSize();
+	cout << "count FMDummy1-hash-512-" << selectedChars << "-" << k << "-" << loadFactor << " " << textFileName << " m=" << m << " queries=" << queriesNum << " size=" << size << "n time=" << timer.getElapsedTime() << endl;
+	resultFile << m << " " << queriesNum << " 512 " << selectedChars << " " << k << " " << loadFactor << " " << size << " " << timer.getElapsedTime();
+
+	unsigned int differences = P->getErrorCountsNumber(indexCounts);
+	if (differences > 0) {
+		cout << "DIFFERENCES: " << differences << endl;
+		resultFile << " DIFFERENCES: " << differences;
+	} else {
+		cout << "Differences: " << differences << endl;
+	}
+	resultFile << endl;
+	resultFile.close();
+
+	delete[] indexCounts;
+	delete FMD1;
+	delete P;
+    exit(0);
+}
+
+void fmDummy2_256_SCBO_3(const char *textFileName, unsigned int queriesNum, unsigned int m) {
+	FMDummy2<FMDummy2Type::FMD2_256, FMDummy2Schema::SCHEMA_SCBO, FMDummy2BPC::BITS_3> *FMD2 = new FMDummy2<FMDummy2Type::FMD2_256, FMDummy2Schema::SCHEMA_SCBO, FMDummy2BPC::BITS_3>();
+	string indexFileNameString = "FMD2-" + (string)textFileName + "-256-SCBO-3.idx";
+	char *indexFileName = (char *)indexFileNameString.c_str();
+
+	if (fileExists(indexFileName)) {
 		FMD2->load(indexFileName);
 	} else {
-		FMD2 = new FMDummy2(FMDummy2IndexTypesMap[indexType], FMDummy2SchemaMap[encodedSchema], FMDummy2BitsPerCharMap[bits]);
 		FMD2->setVerbose(true);
 		FMD2->build(textFileName);
 		FMD2->save(indexFileName);
 	}
 
 	Patterns *P = new Patterns(textFileName, queriesNum, m);
-        //NegativePatterns *P = new NegativePatterns(textFileName, queriesNum, m);
-        /*MaliciousPatterns *P = new MaliciousPatterns(textFileName, m);
-        queriesNum = P->getQueriesNum();
-        if (queriesNum == 0) exit(1);*/
+	//NegativePatterns *P = new NegativePatterns(textFileName, queriesNum, m);
+	/*MaliciousPatterns *P = new MaliciousPatterns(textFileName, m);
+	queriesNum = P->getQueriesNum();
+	if (queriesNum == 0) exit(1);*/
 	unsigned char **patterns = P->getPatterns();
 	unsigned int *indexCounts = new unsigned int[queriesNum];
 
@@ -217,8 +369,8 @@ void fmDummy2(string indexType, string encodedSchema, string bits, const char *t
 	string resultFileName = "results/fmdummy/" + string(textFileName) + "_count_FMDummy2.txt";
 	fstream resultFile(resultFileName.c_str(), ios::out | ios::binary | ios::app);
 	double size = (double)FMD2->getIndexSize() / (double)FMD2->getTextSize();
-	cout << "count FMDummy2-" << indexType << "-" << encodedSchema << "-" << bits << " " << textFileName << " m=" << m << " queries=" << queriesNum << " size=" << size << "n time=" << timer.getElapsedTime() << endl;
-	resultFile << m << " " << queriesNum << " " << indexType << " " << encodedSchema << " " << bits << " " << size << " " << timer.getElapsedTime();
+	cout << "count FMDummy2-256-SCBO-3 " << textFileName << " m=" << m << " queries=" << queriesNum << " size=" << size << "n time=" << timer.getElapsedTime() << endl;
+	resultFile << m << " " << queriesNum << " 256 SCBO 3 " << size << " " << timer.getElapsedTime();
 
 	unsigned int differences = P->getErrorCountsNumber(indexCounts);
 	if (differences > 0) {
@@ -233,29 +385,370 @@ void fmDummy2(string indexType, string encodedSchema, string bits, const char *t
 	delete[] indexCounts;
 	delete FMD2;
 	delete P;
-        exit(0);
+    exit(0);
 }
 
-void fmDummy2Hash(string indexType, string encodedSchema, string bits, string k, string loadFactor, const char *textFileName, unsigned int queriesNum, unsigned int m) {
-	FMDummy2 *FMD2;
-	string indexFileNameString = "FMD2-hash-" + (string)textFileName + "-" + indexType + "-" + encodedSchema + "-" + bits + "-" +  k + "-" + loadFactor + ".idx";
+void fmDummy2_512_SCBO_3(const char *textFileName, unsigned int queriesNum, unsigned int m) {
+	FMDummy2<FMDummy2Type::FMD2_512, FMDummy2Schema::SCHEMA_SCBO, FMDummy2BPC::BITS_3> *FMD2 = new FMDummy2<FMDummy2Type::FMD2_512, FMDummy2Schema::SCHEMA_SCBO, FMDummy2BPC::BITS_3>();
+	string indexFileNameString = "FMD2-" + (string)textFileName + "-512-SCBO-3.idx";
 	char *indexFileName = (char *)indexFileNameString.c_str();
 
 	if (fileExists(indexFileName)) {
-		FMD2 = new FMDummy2();
 		FMD2->load(indexFileName);
 	} else {
-		FMD2 = new FMDummy2(FMDummy2IndexTypesMap[indexType], FMDummy2SchemaMap[encodedSchema], FMDummy2BitsPerCharMap[bits], atoi(k.c_str()), atof(loadFactor.c_str()));
 		FMD2->setVerbose(true);
 		FMD2->build(textFileName);
 		FMD2->save(indexFileName);
 	}
 
 	Patterns *P = new Patterns(textFileName, queriesNum, m);
-        //NegativePatterns *P = new NegativePatterns(textFileName, queriesNum, m);
-        /*MaliciousPatterns *P = new MaliciousPatterns(textFileName, m);
-        queriesNum = P->getQueriesNum();
-        if (queriesNum == 0) exit(1);*/
+	//NegativePatterns *P = new NegativePatterns(textFileName, queriesNum, m);
+	/*MaliciousPatterns *P = new MaliciousPatterns(textFileName, m);
+	queriesNum = P->getQueriesNum();
+	if (queriesNum == 0) exit(1);*/
+	unsigned char **patterns = P->getPatterns();
+	unsigned int *indexCounts = new unsigned int[queriesNum];
+
+	timer.startTimer();
+	for (unsigned int i = 0; i < queriesNum; ++i) {
+		indexCounts[i] = FMD2->count(patterns[i], m);
+	}
+	timer.stopTimer();
+
+	string resultFileName = "results/fmdummy/" + string(textFileName) + "_count_FMDummy2.txt";
+	fstream resultFile(resultFileName.c_str(), ios::out | ios::binary | ios::app);
+	double size = (double)FMD2->getIndexSize() / (double)FMD2->getTextSize();
+	cout << "count FMDummy2-512-SCBO-3 " << textFileName << " m=" << m << " queries=" << queriesNum << " size=" << size << "n time=" << timer.getElapsedTime() << endl;
+	resultFile << m << " " << queriesNum << " 512 SCBO 3 " << size << " " << timer.getElapsedTime();
+
+	unsigned int differences = P->getErrorCountsNumber(indexCounts);
+	if (differences > 0) {
+		cout << "DIFFERENCES: " << differences << endl;
+		resultFile << " DIFFERENCES: " << differences;
+	} else {
+		cout << "Differences: " << differences << endl;
+	}
+	resultFile << endl;
+	resultFile.close();
+
+	delete[] indexCounts;
+	delete FMD2;
+	delete P;
+    exit(0);
+}
+
+void fmDummy2_256_CB_3(const char *textFileName, unsigned int queriesNum, unsigned int m) {
+	FMDummy2<FMDummy2Type::FMD2_256, FMDummy2Schema::SCHEMA_CB, FMDummy2BPC::BITS_3> *FMD2 = new FMDummy2<FMDummy2Type::FMD2_256, FMDummy2Schema::SCHEMA_CB, FMDummy2BPC::BITS_3>();
+	string indexFileNameString = "FMD2-" + (string)textFileName + "-256-CB-3.idx";
+	char *indexFileName = (char *)indexFileNameString.c_str();
+
+	if (fileExists(indexFileName)) {
+		FMD2->load(indexFileName);
+	} else {
+		FMD2->setVerbose(true);
+		FMD2->build(textFileName);
+		FMD2->save(indexFileName);
+	}
+
+	Patterns *P = new Patterns(textFileName, queriesNum, m);
+	//NegativePatterns *P = new NegativePatterns(textFileName, queriesNum, m);
+	/*MaliciousPatterns *P = new MaliciousPatterns(textFileName, m);
+	queriesNum = P->getQueriesNum();
+	if (queriesNum == 0) exit(1);*/
+	unsigned char **patterns = P->getPatterns();
+	unsigned int *indexCounts = new unsigned int[queriesNum];
+
+	timer.startTimer();
+	for (unsigned int i = 0; i < queriesNum; ++i) {
+		indexCounts[i] = FMD2->count(patterns[i], m);
+	}
+	timer.stopTimer();
+
+	string resultFileName = "results/fmdummy/" + string(textFileName) + "_count_FMDummy2.txt";
+	fstream resultFile(resultFileName.c_str(), ios::out | ios::binary | ios::app);
+	double size = (double)FMD2->getIndexSize() / (double)FMD2->getTextSize();
+	cout << "count FMDummy2-256-CB-3 " << textFileName << " m=" << m << " queries=" << queriesNum << " size=" << size << "n time=" << timer.getElapsedTime() << endl;
+	resultFile << m << " " << queriesNum << " 256 CB 3 " << size << " " << timer.getElapsedTime();
+
+	unsigned int differences = P->getErrorCountsNumber(indexCounts);
+	if (differences > 0) {
+		cout << "DIFFERENCES: " << differences << endl;
+		resultFile << " DIFFERENCES: " << differences;
+	} else {
+		cout << "Differences: " << differences << endl;
+	}
+	resultFile << endl;
+	resultFile.close();
+
+	delete[] indexCounts;
+	delete FMD2;
+	delete P;
+    exit(0);
+}
+
+void fmDummy2_512_CB_3(const char *textFileName, unsigned int queriesNum, unsigned int m) {
+	FMDummy2<FMDummy2Type::FMD2_512, FMDummy2Schema::SCHEMA_CB, FMDummy2BPC::BITS_3> *FMD2 = new FMDummy2<FMDummy2Type::FMD2_512, FMDummy2Schema::SCHEMA_CB, FMDummy2BPC::BITS_3>();
+	string indexFileNameString = "FMD2-" + (string)textFileName + "-512-CB-3.idx";
+	char *indexFileName = (char *)indexFileNameString.c_str();
+
+	if (fileExists(indexFileName)) {
+		FMD2->load(indexFileName);
+	} else {
+		FMD2->setVerbose(true);
+		FMD2->build(textFileName);
+		FMD2->save(indexFileName);
+	}
+
+	Patterns *P = new Patterns(textFileName, queriesNum, m);
+	//NegativePatterns *P = new NegativePatterns(textFileName, queriesNum, m);
+	/*MaliciousPatterns *P = new MaliciousPatterns(textFileName, m);
+	queriesNum = P->getQueriesNum();
+	if (queriesNum == 0) exit(1);*/
+	unsigned char **patterns = P->getPatterns();
+	unsigned int *indexCounts = new unsigned int[queriesNum];
+
+	timer.startTimer();
+	for (unsigned int i = 0; i < queriesNum; ++i) {
+		indexCounts[i] = FMD2->count(patterns[i], m);
+	}
+	timer.stopTimer();
+
+	string resultFileName = "results/fmdummy/" + string(textFileName) + "_count_FMDummy2.txt";
+	fstream resultFile(resultFileName.c_str(), ios::out | ios::binary | ios::app);
+	double size = (double)FMD2->getIndexSize() / (double)FMD2->getTextSize();
+	cout << "count FMDummy2-512-CB-3 " << textFileName << " m=" << m << " queries=" << queriesNum << " size=" << size << "n time=" << timer.getElapsedTime() << endl;
+	resultFile << m << " " << queriesNum << " 512 CB 3 " << size << " " << timer.getElapsedTime();
+
+	unsigned int differences = P->getErrorCountsNumber(indexCounts);
+	if (differences > 0) {
+		cout << "DIFFERENCES: " << differences << endl;
+		resultFile << " DIFFERENCES: " << differences;
+	} else {
+		cout << "Differences: " << differences << endl;
+	}
+	resultFile << endl;
+	resultFile.close();
+
+	delete[] indexCounts;
+	delete FMD2;
+	delete P;
+    exit(0);
+}
+
+void fmDummy2_256_SCBO_4(const char *textFileName, unsigned int queriesNum, unsigned int m) {
+	FMDummy2<FMDummy2Type::FMD2_256, FMDummy2Schema::SCHEMA_SCBO, FMDummy2BPC::BITS_4> *FMD2 = new FMDummy2<FMDummy2Type::FMD2_256, FMDummy2Schema::SCHEMA_SCBO, FMDummy2BPC::BITS_4>();
+	string indexFileNameString = "FMD2-" + (string)textFileName + "-256-SCBO-4.idx";
+	char *indexFileName = (char *)indexFileNameString.c_str();
+
+	if (fileExists(indexFileName)) {
+		FMD2->load(indexFileName);
+	} else {
+		FMD2->setVerbose(true);
+		FMD2->build(textFileName);
+		FMD2->save(indexFileName);
+	}
+
+	Patterns *P = new Patterns(textFileName, queriesNum, m);
+	//NegativePatterns *P = new NegativePatterns(textFileName, queriesNum, m);
+	/*MaliciousPatterns *P = new MaliciousPatterns(textFileName, m);
+	queriesNum = P->getQueriesNum();
+	if (queriesNum == 0) exit(1);*/
+	unsigned char **patterns = P->getPatterns();
+	unsigned int *indexCounts = new unsigned int[queriesNum];
+
+	timer.startTimer();
+	for (unsigned int i = 0; i < queriesNum; ++i) {
+		indexCounts[i] = FMD2->count(patterns[i], m);
+	}
+	timer.stopTimer();
+
+	string resultFileName = "results/fmdummy/" + string(textFileName) + "_count_FMDummy2.txt";
+	fstream resultFile(resultFileName.c_str(), ios::out | ios::binary | ios::app);
+	double size = (double)FMD2->getIndexSize() / (double)FMD2->getTextSize();
+	cout << "count FMDummy2-256-SCBO-4 " << textFileName << " m=" << m << " queries=" << queriesNum << " size=" << size << "n time=" << timer.getElapsedTime() << endl;
+	resultFile << m << " " << queriesNum << " 256 SCBO 4 " << size << " " << timer.getElapsedTime();
+
+	unsigned int differences = P->getErrorCountsNumber(indexCounts);
+	if (differences > 0) {
+		cout << "DIFFERENCES: " << differences << endl;
+		resultFile << " DIFFERENCES: " << differences;
+	} else {
+		cout << "Differences: " << differences << endl;
+	}
+	resultFile << endl;
+	resultFile.close();
+
+	delete[] indexCounts;
+	delete FMD2;
+	delete P;
+    exit(0);
+}
+
+void fmDummy2_512_SCBO_4(const char *textFileName, unsigned int queriesNum, unsigned int m) {
+	FMDummy2<FMDummy2Type::FMD2_512, FMDummy2Schema::SCHEMA_SCBO, FMDummy2BPC::BITS_4> *FMD2 = new FMDummy2<FMDummy2Type::FMD2_512, FMDummy2Schema::SCHEMA_SCBO, FMDummy2BPC::BITS_4>();
+	string indexFileNameString = "FMD2-" + (string)textFileName + "-512-SCBO-4.idx";
+	char *indexFileName = (char *)indexFileNameString.c_str();
+
+	if (fileExists(indexFileName)) {
+		FMD2->load(indexFileName);
+	} else {
+		FMD2->setVerbose(true);
+		FMD2->build(textFileName);
+		FMD2->save(indexFileName);
+	}
+
+	Patterns *P = new Patterns(textFileName, queriesNum, m);
+	//NegativePatterns *P = new NegativePatterns(textFileName, queriesNum, m);
+	/*MaliciousPatterns *P = new MaliciousPatterns(textFileName, m);
+	queriesNum = P->getQueriesNum();
+	if (queriesNum == 0) exit(1);*/
+	unsigned char **patterns = P->getPatterns();
+	unsigned int *indexCounts = new unsigned int[queriesNum];
+
+	timer.startTimer();
+	for (unsigned int i = 0; i < queriesNum; ++i) {
+		indexCounts[i] = FMD2->count(patterns[i], m);
+	}
+	timer.stopTimer();
+
+	string resultFileName = "results/fmdummy/" + string(textFileName) + "_count_FMDummy2.txt";
+	fstream resultFile(resultFileName.c_str(), ios::out | ios::binary | ios::app);
+	double size = (double)FMD2->getIndexSize() / (double)FMD2->getTextSize();
+	cout << "count FMDummy2-512-SCBO-4 " << textFileName << " m=" << m << " queries=" << queriesNum << " size=" << size << "n time=" << timer.getElapsedTime() << endl;
+	resultFile << m << " " << queriesNum << " 512 SCBO 4 " << size << " " << timer.getElapsedTime();
+
+	unsigned int differences = P->getErrorCountsNumber(indexCounts);
+	if (differences > 0) {
+		cout << "DIFFERENCES: " << differences << endl;
+		resultFile << " DIFFERENCES: " << differences;
+	} else {
+		cout << "Differences: " << differences << endl;
+	}
+	resultFile << endl;
+	resultFile.close();
+
+	delete[] indexCounts;
+	delete FMD2;
+	delete P;
+    exit(0);
+}
+
+void fmDummy2_256_CB_4(const char *textFileName, unsigned int queriesNum, unsigned int m) {
+	FMDummy2<FMDummy2Type::FMD2_256, FMDummy2Schema::SCHEMA_CB, FMDummy2BPC::BITS_4> *FMD2 = new FMDummy2<FMDummy2Type::FMD2_256, FMDummy2Schema::SCHEMA_CB, FMDummy2BPC::BITS_4>();
+	string indexFileNameString = "FMD2-" + (string)textFileName + "-256-CB-4.idx";
+	char *indexFileName = (char *)indexFileNameString.c_str();
+
+	if (fileExists(indexFileName)) {
+		FMD2->load(indexFileName);
+	} else {
+		FMD2->setVerbose(true);
+		FMD2->build(textFileName);
+		FMD2->save(indexFileName);
+	}
+
+	Patterns *P = new Patterns(textFileName, queriesNum, m);
+	//NegativePatterns *P = new NegativePatterns(textFileName, queriesNum, m);
+	/*MaliciousPatterns *P = new MaliciousPatterns(textFileName, m);
+	queriesNum = P->getQueriesNum();
+	if (queriesNum == 0) exit(1);*/
+	unsigned char **patterns = P->getPatterns();
+	unsigned int *indexCounts = new unsigned int[queriesNum];
+
+	timer.startTimer();
+	for (unsigned int i = 0; i < queriesNum; ++i) {
+		indexCounts[i] = FMD2->count(patterns[i], m);
+	}
+	timer.stopTimer();
+
+	string resultFileName = "results/fmdummy/" + string(textFileName) + "_count_FMDummy2.txt";
+	fstream resultFile(resultFileName.c_str(), ios::out | ios::binary | ios::app);
+	double size = (double)FMD2->getIndexSize() / (double)FMD2->getTextSize();
+	cout << "count FMDummy2-256-CB-4 " << textFileName << " m=" << m << " queries=" << queriesNum << " size=" << size << "n time=" << timer.getElapsedTime() << endl;
+	resultFile << m << " " << queriesNum << " 256 CB 4 " << size << " " << timer.getElapsedTime();
+
+	unsigned int differences = P->getErrorCountsNumber(indexCounts);
+	if (differences > 0) {
+		cout << "DIFFERENCES: " << differences << endl;
+		resultFile << " DIFFERENCES: " << differences;
+	} else {
+		cout << "Differences: " << differences << endl;
+	}
+	resultFile << endl;
+	resultFile.close();
+
+	delete[] indexCounts;
+	delete FMD2;
+	delete P;
+    exit(0);
+}
+
+void fmDummy2_512_CB_4(const char *textFileName, unsigned int queriesNum, unsigned int m) {
+	FMDummy2<FMDummy2Type::FMD2_512, FMDummy2Schema::SCHEMA_CB, FMDummy2BPC::BITS_4> *FMD2 = new FMDummy2<FMDummy2Type::FMD2_512, FMDummy2Schema::SCHEMA_CB, FMDummy2BPC::BITS_4>();
+	string indexFileNameString = "FMD2-" + (string)textFileName + "-512-CB-4.idx";
+	char *indexFileName = (char *)indexFileNameString.c_str();
+
+	if (fileExists(indexFileName)) {
+		FMD2->load(indexFileName);
+	} else {
+		FMD2->setVerbose(true);
+		FMD2->build(textFileName);
+		FMD2->save(indexFileName);
+	}
+
+	Patterns *P = new Patterns(textFileName, queriesNum, m);
+	//NegativePatterns *P = new NegativePatterns(textFileName, queriesNum, m);
+	/*MaliciousPatterns *P = new MaliciousPatterns(textFileName, m);
+	queriesNum = P->getQueriesNum();
+	if (queriesNum == 0) exit(1);*/
+	unsigned char **patterns = P->getPatterns();
+	unsigned int *indexCounts = new unsigned int[queriesNum];
+
+	timer.startTimer();
+	for (unsigned int i = 0; i < queriesNum; ++i) {
+		indexCounts[i] = FMD2->count(patterns[i], m);
+	}
+	timer.stopTimer();
+
+	string resultFileName = "results/fmdummy/" + string(textFileName) + "_count_FMDummy2.txt";
+	fstream resultFile(resultFileName.c_str(), ios::out | ios::binary | ios::app);
+	double size = (double)FMD2->getIndexSize() / (double)FMD2->getTextSize();
+	cout << "count FMDummy2-512-CB-4 " << textFileName << " m=" << m << " queries=" << queriesNum << " size=" << size << "n time=" << timer.getElapsedTime() << endl;
+	resultFile << m << " " << queriesNum << " 512 CB 4 " << size << " " << timer.getElapsedTime();
+
+	unsigned int differences = P->getErrorCountsNumber(indexCounts);
+	if (differences > 0) {
+		cout << "DIFFERENCES: " << differences << endl;
+		resultFile << " DIFFERENCES: " << differences;
+	} else {
+		cout << "Differences: " << differences << endl;
+	}
+	resultFile << endl;
+	resultFile.close();
+
+	delete[] indexCounts;
+	delete FMD2;
+	delete P;
+    exit(0);
+}
+
+void fmDummy2Hash_256_SCBO_3(string k, string loadFactor, const char *textFileName, unsigned int queriesNum, unsigned int m) {
+	FMDummy2Hash<FMDummy2Type::FMD2_256, FMDummy2Schema::SCHEMA_SCBO, FMDummy2BPC::BITS_3> *FMD2 = new FMDummy2Hash<FMDummy2Type::FMD2_256, FMDummy2Schema::SCHEMA_SCBO, FMDummy2BPC::BITS_3>(atoi(k.c_str()), atof(loadFactor.c_str()));
+	string indexFileNameString = "FMD2-hash-" + (string)textFileName + "-256-SCBO-3-" +  k + "-" + loadFactor + ".idx";
+	char *indexFileName = (char *)indexFileNameString.c_str();
+
+	if (fileExists(indexFileName)) {
+		FMD2->load(indexFileName);
+	} else {
+		FMD2->setVerbose(true);
+		FMD2->build(textFileName);
+		FMD2->save(indexFileName);
+	}
+
+	Patterns *P = new Patterns(textFileName, queriesNum, m);
+	//NegativePatterns *P = new NegativePatterns(textFileName, queriesNum, m);
+	/*MaliciousPatterns *P = new MaliciousPatterns(textFileName, m);
+	queriesNum = P->getQueriesNum();
+	if (queriesNum == 0) exit(1);*/
 	unsigned char **patterns = P->getPatterns();
 	unsigned int *indexCounts = new unsigned int[queriesNum];
 
@@ -268,8 +761,8 @@ void fmDummy2Hash(string indexType, string encodedSchema, string bits, string k,
 	string resultFileName = "results/fmdummy/" + string(textFileName) + "_count_FMDummy2-hash.txt";
 	fstream resultFile(resultFileName.c_str(), ios::out | ios::binary | ios::app);
 	double size = (double)FMD2->getIndexSize() / (double)FMD2->getTextSize();
-	cout << "count FMDummy2-hash-" << indexType << "-" << encodedSchema << "-" << bits << "-" << k << "-" << loadFactor << " " << textFileName << " m=" << m << " queries=" << queriesNum << " size=" << size << "n time=" << timer.getElapsedTime() << endl;
-	resultFile << m << " " << queriesNum << " " << indexType << " " << encodedSchema << " " << bits << " " << k << " " << loadFactor << " " << size << " " << timer.getElapsedTime();
+	cout << "count FMDummy2-hash-256-SCBO-3-" << k << "-" << loadFactor << " " << textFileName << " m=" << m << " queries=" << queriesNum << " size=" << size << "n time=" << timer.getElapsedTime() << endl;
+	resultFile << m << " " << queriesNum << " 256 SCBO 3 " << k << " " << loadFactor << " " << size << " " << timer.getElapsedTime();
 
 	unsigned int differences = P->getErrorCountsNumber(indexCounts);
 	if (differences > 0) {
@@ -284,19 +777,360 @@ void fmDummy2Hash(string indexType, string encodedSchema, string bits, string k,
 	delete[] indexCounts;
 	delete FMD2;
 	delete P;
-        exit(0);
+    exit(0);
 }
 
-void fmDummy3(string indexType, const char *textFileName, unsigned int queriesNum, unsigned int m) {
-	FMDummy3 *FMD3;
-	string indexFileNameString = "FMD3-" + (string)textFileName + "-" + indexType + ".idx";
+void fmDummy2Hash_512_SCBO_3(string k, string loadFactor, const char *textFileName, unsigned int queriesNum, unsigned int m) {
+	FMDummy2Hash<FMDummy2Type::FMD2_512, FMDummy2Schema::SCHEMA_SCBO, FMDummy2BPC::BITS_3> *FMD2 = new FMDummy2Hash<FMDummy2Type::FMD2_512, FMDummy2Schema::SCHEMA_SCBO, FMDummy2BPC::BITS_3>(atoi(k.c_str()), atof(loadFactor.c_str()));
+	string indexFileNameString = "FMD2-hash-" + (string)textFileName + "-512-SCBO-3-" +  k + "-" + loadFactor + ".idx";
 	char *indexFileName = (char *)indexFileNameString.c_str();
 
 	if (fileExists(indexFileName)) {
-		FMD3 = new FMDummy3();
+		FMD2->load(indexFileName);
+	} else {
+		FMD2->setVerbose(true);
+		FMD2->build(textFileName);
+		FMD2->save(indexFileName);
+	}
+
+	Patterns *P = new Patterns(textFileName, queriesNum, m);
+	//NegativePatterns *P = new NegativePatterns(textFileName, queriesNum, m);
+	/*MaliciousPatterns *P = new MaliciousPatterns(textFileName, m);
+	queriesNum = P->getQueriesNum();
+	if (queriesNum == 0) exit(1);*/
+	unsigned char **patterns = P->getPatterns();
+	unsigned int *indexCounts = new unsigned int[queriesNum];
+
+	timer.startTimer();
+	for (unsigned int i = 0; i < queriesNum; ++i) {
+		indexCounts[i] = FMD2->count(patterns[i], m);
+	}
+	timer.stopTimer();
+
+	string resultFileName = "results/fmdummy/" + string(textFileName) + "_count_FMDummy2-hash.txt";
+	fstream resultFile(resultFileName.c_str(), ios::out | ios::binary | ios::app);
+	double size = (double)FMD2->getIndexSize() / (double)FMD2->getTextSize();
+	cout << "count FMDummy2-hash-512-SCBO-3-" << k << "-" << loadFactor << " " << textFileName << " m=" << m << " queries=" << queriesNum << " size=" << size << "n time=" << timer.getElapsedTime() << endl;
+	resultFile << m << " " << queriesNum << " 512 SCBO 3 " << k << " " << loadFactor << " " << size << " " << timer.getElapsedTime();
+
+	unsigned int differences = P->getErrorCountsNumber(indexCounts);
+	if (differences > 0) {
+		cout << "DIFFERENCES: " << differences << endl;
+		resultFile << " DIFFERENCES: " << differences;
+	} else {
+		cout << "Differences: " << differences << endl;
+	}
+	resultFile << endl;
+	resultFile.close();
+
+	delete[] indexCounts;
+	delete FMD2;
+	delete P;
+    exit(0);
+}
+
+void fmDummy2Hash_256_CB_3(string k, string loadFactor, const char *textFileName, unsigned int queriesNum, unsigned int m) {
+	FMDummy2Hash<FMDummy2Type::FMD2_256, FMDummy2Schema::SCHEMA_CB, FMDummy2BPC::BITS_3> *FMD2 = new FMDummy2Hash<FMDummy2Type::FMD2_256, FMDummy2Schema::SCHEMA_CB, FMDummy2BPC::BITS_3>(atoi(k.c_str()), atof(loadFactor.c_str()));
+	string indexFileNameString = "FMD2-hash-" + (string)textFileName + "-256-CB-3-" +  k + "-" + loadFactor + ".idx";
+	char *indexFileName = (char *)indexFileNameString.c_str();
+
+	if (fileExists(indexFileName)) {
+		FMD2->load(indexFileName);
+	} else {
+		FMD2->setVerbose(true);
+		FMD2->build(textFileName);
+		FMD2->save(indexFileName);
+	}
+
+	Patterns *P = new Patterns(textFileName, queriesNum, m);
+	//NegativePatterns *P = new NegativePatterns(textFileName, queriesNum, m);
+	/*MaliciousPatterns *P = new MaliciousPatterns(textFileName, m);
+	queriesNum = P->getQueriesNum();
+	if (queriesNum == 0) exit(1);*/
+	unsigned char **patterns = P->getPatterns();
+	unsigned int *indexCounts = new unsigned int[queriesNum];
+
+	timer.startTimer();
+	for (unsigned int i = 0; i < queriesNum; ++i) {
+		indexCounts[i] = FMD2->count(patterns[i], m);
+	}
+	timer.stopTimer();
+
+	string resultFileName = "results/fmdummy/" + string(textFileName) + "_count_FMDummy2-hash.txt";
+	fstream resultFile(resultFileName.c_str(), ios::out | ios::binary | ios::app);
+	double size = (double)FMD2->getIndexSize() / (double)FMD2->getTextSize();
+	cout << "count FMDummy2-hash-256-CB-3-" << k << "-" << loadFactor << " " << textFileName << " m=" << m << " queries=" << queriesNum << " size=" << size << "n time=" << timer.getElapsedTime() << endl;
+	resultFile << m << " " << queriesNum << " 256 CB 3 " << k << " " << loadFactor << " " << size << " " << timer.getElapsedTime();
+
+	unsigned int differences = P->getErrorCountsNumber(indexCounts);
+	if (differences > 0) {
+		cout << "DIFFERENCES: " << differences << endl;
+		resultFile << " DIFFERENCES: " << differences;
+	} else {
+		cout << "Differences: " << differences << endl;
+	}
+	resultFile << endl;
+	resultFile.close();
+
+	delete[] indexCounts;
+	delete FMD2;
+	delete P;
+    exit(0);
+}
+
+void fmDummy2Hash_512_CB_3(string k, string loadFactor, const char *textFileName, unsigned int queriesNum, unsigned int m) {
+	FMDummy2Hash<FMDummy2Type::FMD2_512, FMDummy2Schema::SCHEMA_CB, FMDummy2BPC::BITS_3> *FMD2 = new FMDummy2Hash<FMDummy2Type::FMD2_512, FMDummy2Schema::SCHEMA_CB, FMDummy2BPC::BITS_3>(atoi(k.c_str()), atof(loadFactor.c_str()));
+	string indexFileNameString = "FMD2-hash-" + (string)textFileName + "-512-CB-3-" +  k + "-" + loadFactor + ".idx";
+	char *indexFileName = (char *)indexFileNameString.c_str();
+
+	if (fileExists(indexFileName)) {
+		FMD2->load(indexFileName);
+	} else {
+		FMD2->setVerbose(true);
+		FMD2->build(textFileName);
+		FMD2->save(indexFileName);
+	}
+
+	Patterns *P = new Patterns(textFileName, queriesNum, m);
+	//NegativePatterns *P = new NegativePatterns(textFileName, queriesNum, m);
+	/*MaliciousPatterns *P = new MaliciousPatterns(textFileName, m);
+	queriesNum = P->getQueriesNum();
+	if (queriesNum == 0) exit(1);*/
+	unsigned char **patterns = P->getPatterns();
+	unsigned int *indexCounts = new unsigned int[queriesNum];
+
+	timer.startTimer();
+	for (unsigned int i = 0; i < queriesNum; ++i) {
+		indexCounts[i] = FMD2->count(patterns[i], m);
+	}
+	timer.stopTimer();
+
+	string resultFileName = "results/fmdummy/" + string(textFileName) + "_count_FMDummy2-hash.txt";
+	fstream resultFile(resultFileName.c_str(), ios::out | ios::binary | ios::app);
+	double size = (double)FMD2->getIndexSize() / (double)FMD2->getTextSize();
+	cout << "count FMDummy2-hash-512-CB-3-" << k << "-" << loadFactor << " " << textFileName << " m=" << m << " queries=" << queriesNum << " size=" << size << "n time=" << timer.getElapsedTime() << endl;
+	resultFile << m << " " << queriesNum << " 512 CB 3 " << k << " " << loadFactor << " " << size << " " << timer.getElapsedTime();
+
+	unsigned int differences = P->getErrorCountsNumber(indexCounts);
+	if (differences > 0) {
+		cout << "DIFFERENCES: " << differences << endl;
+		resultFile << " DIFFERENCES: " << differences;
+	} else {
+		cout << "Differences: " << differences << endl;
+	}
+	resultFile << endl;
+	resultFile.close();
+
+	delete[] indexCounts;
+	delete FMD2;
+	delete P;
+    exit(0);
+}
+
+void fmDummy2Hash_256_SCBO_4(string k, string loadFactor, const char *textFileName, unsigned int queriesNum, unsigned int m) {
+	FMDummy2Hash<FMDummy2Type::FMD2_256, FMDummy2Schema::SCHEMA_SCBO, FMDummy2BPC::BITS_4> *FMD2 = new FMDummy2Hash<FMDummy2Type::FMD2_256, FMDummy2Schema::SCHEMA_SCBO, FMDummy2BPC::BITS_4>(atoi(k.c_str()), atof(loadFactor.c_str()));
+	string indexFileNameString = "FMD2-hash-" + (string)textFileName + "-256-SCBO-4-" +  k + "-" + loadFactor + ".idx";
+	char *indexFileName = (char *)indexFileNameString.c_str();
+
+	if (fileExists(indexFileName)) {
+		FMD2->load(indexFileName);
+	} else {
+		FMD2->setVerbose(true);
+		FMD2->build(textFileName);
+		FMD2->save(indexFileName);
+	}
+
+	Patterns *P = new Patterns(textFileName, queriesNum, m);
+	//NegativePatterns *P = new NegativePatterns(textFileName, queriesNum, m);
+	/*MaliciousPatterns *P = new MaliciousPatterns(textFileName, m);
+	queriesNum = P->getQueriesNum();
+	if (queriesNum == 0) exit(1);*/
+	unsigned char **patterns = P->getPatterns();
+	unsigned int *indexCounts = new unsigned int[queriesNum];
+
+	timer.startTimer();
+	for (unsigned int i = 0; i < queriesNum; ++i) {
+		indexCounts[i] = FMD2->count(patterns[i], m);
+	}
+	timer.stopTimer();
+
+	string resultFileName = "results/fmdummy/" + string(textFileName) + "_count_FMDummy2-hash.txt";
+	fstream resultFile(resultFileName.c_str(), ios::out | ios::binary | ios::app);
+	double size = (double)FMD2->getIndexSize() / (double)FMD2->getTextSize();
+	cout << "count FMDummy2-hash-256-SCBO-4-" << k << "-" << loadFactor << " " << textFileName << " m=" << m << " queries=" << queriesNum << " size=" << size << "n time=" << timer.getElapsedTime() << endl;
+	resultFile << m << " " << queriesNum << " 256 SCBO 4 " << k << " " << loadFactor << " " << size << " " << timer.getElapsedTime();
+
+	unsigned int differences = P->getErrorCountsNumber(indexCounts);
+	if (differences > 0) {
+		cout << "DIFFERENCES: " << differences << endl;
+		resultFile << " DIFFERENCES: " << differences;
+	} else {
+		cout << "Differences: " << differences << endl;
+	}
+	resultFile << endl;
+	resultFile.close();
+
+	delete[] indexCounts;
+	delete FMD2;
+	delete P;
+    exit(0);
+}
+
+void fmDummy2Hash_512_SCBO_4(string k, string loadFactor, const char *textFileName, unsigned int queriesNum, unsigned int m) {
+	FMDummy2Hash<FMDummy2Type::FMD2_512, FMDummy2Schema::SCHEMA_SCBO, FMDummy2BPC::BITS_4> *FMD2 = new FMDummy2Hash<FMDummy2Type::FMD2_512, FMDummy2Schema::SCHEMA_SCBO, FMDummy2BPC::BITS_4>(atoi(k.c_str()), atof(loadFactor.c_str()));
+	string indexFileNameString = "FMD2-hash-" + (string)textFileName + "-512-SCBO-4-" +  k + "-" + loadFactor + ".idx";
+	char *indexFileName = (char *)indexFileNameString.c_str();
+
+	if (fileExists(indexFileName)) {
+		FMD2->load(indexFileName);
+	} else {
+		FMD2->setVerbose(true);
+		FMD2->build(textFileName);
+		FMD2->save(indexFileName);
+	}
+
+	Patterns *P = new Patterns(textFileName, queriesNum, m);
+	//NegativePatterns *P = new NegativePatterns(textFileName, queriesNum, m);
+	/*MaliciousPatterns *P = new MaliciousPatterns(textFileName, m);
+	queriesNum = P->getQueriesNum();
+	if (queriesNum == 0) exit(1);*/
+	unsigned char **patterns = P->getPatterns();
+	unsigned int *indexCounts = new unsigned int[queriesNum];
+
+	timer.startTimer();
+	for (unsigned int i = 0; i < queriesNum; ++i) {
+		indexCounts[i] = FMD2->count(patterns[i], m);
+	}
+	timer.stopTimer();
+
+	string resultFileName = "results/fmdummy/" + string(textFileName) + "_count_FMDummy2-hash.txt";
+	fstream resultFile(resultFileName.c_str(), ios::out | ios::binary | ios::app);
+	double size = (double)FMD2->getIndexSize() / (double)FMD2->getTextSize();
+	cout << "count FMDummy2-hash-512-SCBO-4-" << k << "-" << loadFactor << " " << textFileName << " m=" << m << " queries=" << queriesNum << " size=" << size << "n time=" << timer.getElapsedTime() << endl;
+	resultFile << m << " " << queriesNum << " 512 SCBO 4 " << k << " " << loadFactor << " " << size << " " << timer.getElapsedTime();
+
+	unsigned int differences = P->getErrorCountsNumber(indexCounts);
+	if (differences > 0) {
+		cout << "DIFFERENCES: " << differences << endl;
+		resultFile << " DIFFERENCES: " << differences;
+	} else {
+		cout << "Differences: " << differences << endl;
+	}
+	resultFile << endl;
+	resultFile.close();
+
+	delete[] indexCounts;
+	delete FMD2;
+	delete P;
+    exit(0);
+}
+
+void fmDummy2Hash_256_CB_4(string k, string loadFactor, const char *textFileName, unsigned int queriesNum, unsigned int m) {
+	FMDummy2Hash<FMDummy2Type::FMD2_256, FMDummy2Schema::SCHEMA_CB, FMDummy2BPC::BITS_4> *FMD2 = new FMDummy2Hash<FMDummy2Type::FMD2_256, FMDummy2Schema::SCHEMA_CB, FMDummy2BPC::BITS_4>(atoi(k.c_str()), atof(loadFactor.c_str()));
+	string indexFileNameString = "FMD2-hash-" + (string)textFileName + "-256-CB-4-" +  k + "-" + loadFactor + ".idx";
+	char *indexFileName = (char *)indexFileNameString.c_str();
+
+	if (fileExists(indexFileName)) {
+		FMD2->load(indexFileName);
+	} else {
+		FMD2->setVerbose(true);
+		FMD2->build(textFileName);
+		FMD2->save(indexFileName);
+	}
+
+	Patterns *P = new Patterns(textFileName, queriesNum, m);
+	//NegativePatterns *P = new NegativePatterns(textFileName, queriesNum, m);
+	/*MaliciousPatterns *P = new MaliciousPatterns(textFileName, m);
+	queriesNum = P->getQueriesNum();
+	if (queriesNum == 0) exit(1);*/
+	unsigned char **patterns = P->getPatterns();
+	unsigned int *indexCounts = new unsigned int[queriesNum];
+
+	timer.startTimer();
+	for (unsigned int i = 0; i < queriesNum; ++i) {
+		indexCounts[i] = FMD2->count(patterns[i], m);
+	}
+	timer.stopTimer();
+
+	string resultFileName = "results/fmdummy/" + string(textFileName) + "_count_FMDummy2-hash.txt";
+	fstream resultFile(resultFileName.c_str(), ios::out | ios::binary | ios::app);
+	double size = (double)FMD2->getIndexSize() / (double)FMD2->getTextSize();
+	cout << "count FMDummy2-hash-256-CB-4-" << k << "-" << loadFactor << " " << textFileName << " m=" << m << " queries=" << queriesNum << " size=" << size << "n time=" << timer.getElapsedTime() << endl;
+	resultFile << m << " " << queriesNum << " 256 CB 4 " << k << " " << loadFactor << " " << size << " " << timer.getElapsedTime();
+
+	unsigned int differences = P->getErrorCountsNumber(indexCounts);
+	if (differences > 0) {
+		cout << "DIFFERENCES: " << differences << endl;
+		resultFile << " DIFFERENCES: " << differences;
+	} else {
+		cout << "Differences: " << differences << endl;
+	}
+	resultFile << endl;
+	resultFile.close();
+
+	delete[] indexCounts;
+	delete FMD2;
+	delete P;
+    exit(0);
+}
+
+void fmDummy2Hash_512_CB_4(string k, string loadFactor, const char *textFileName, unsigned int queriesNum, unsigned int m) {
+	FMDummy2Hash<FMDummy2Type::FMD2_512, FMDummy2Schema::SCHEMA_CB, FMDummy2BPC::BITS_4> *FMD2 = new FMDummy2Hash<FMDummy2Type::FMD2_512, FMDummy2Schema::SCHEMA_CB, FMDummy2BPC::BITS_4>(atoi(k.c_str()), atof(loadFactor.c_str()));
+	string indexFileNameString = "FMD2-hash-" + (string)textFileName + "-512-CB-4-" +  k + "-" + loadFactor + ".idx";
+	char *indexFileName = (char *)indexFileNameString.c_str();
+
+	if (fileExists(indexFileName)) {
+		FMD2->load(indexFileName);
+	} else {
+		FMD2->setVerbose(true);
+		FMD2->build(textFileName);
+		FMD2->save(indexFileName);
+	}
+
+	Patterns *P = new Patterns(textFileName, queriesNum, m);
+	//NegativePatterns *P = new NegativePatterns(textFileName, queriesNum, m);
+	/*MaliciousPatterns *P = new MaliciousPatterns(textFileName, m);
+	queriesNum = P->getQueriesNum();
+	if (queriesNum == 0) exit(1);*/
+	unsigned char **patterns = P->getPatterns();
+	unsigned int *indexCounts = new unsigned int[queriesNum];
+
+	timer.startTimer();
+	for (unsigned int i = 0; i < queriesNum; ++i) {
+		indexCounts[i] = FMD2->count(patterns[i], m);
+	}
+	timer.stopTimer();
+
+	string resultFileName = "results/fmdummy/" + string(textFileName) + "_count_FMDummy2-hash.txt";
+	fstream resultFile(resultFileName.c_str(), ios::out | ios::binary | ios::app);
+	double size = (double)FMD2->getIndexSize() / (double)FMD2->getTextSize();
+	cout << "count FMDummy2-hash-512-CB-4-" << k << "-" << loadFactor << " " << textFileName << " m=" << m << " queries=" << queriesNum << " size=" << size << "n time=" << timer.getElapsedTime() << endl;
+	resultFile << m << " " << queriesNum << " 512 CB 4 " << k << " " << loadFactor << " " << size << " " << timer.getElapsedTime();
+
+	unsigned int differences = P->getErrorCountsNumber(indexCounts);
+	if (differences > 0) {
+		cout << "DIFFERENCES: " << differences << endl;
+		resultFile << " DIFFERENCES: " << differences;
+	} else {
+		cout << "Differences: " << differences << endl;
+	}
+	resultFile << endl;
+	resultFile.close();
+
+	delete[] indexCounts;
+	delete FMD2;
+	delete P;
+    exit(0);
+}
+
+void fmDummy3_512(const char *textFileName, unsigned int queriesNum, unsigned int m) {
+	FMDummy3<FMDummy3Type::FMD3_512> *FMD3 = new FMDummy3<FMDummy3Type::FMD3_512>();
+	string indexFileNameString = "FMD3-" + (string)textFileName + "-512.idx";
+	char *indexFileName = (char *)indexFileNameString.c_str();
+
+	if (fileExists(indexFileName)) {
 		FMD3->load(indexFileName);
 	} else {
-		FMD3 = new FMDummy3(FMDummy3IndexTypesMap[indexType]);
 		FMD3->setVerbose(true);
 		FMD3->build(textFileName);
 		FMD3->save(indexFileName);
@@ -304,10 +1138,10 @@ void fmDummy3(string indexType, const char *textFileName, unsigned int queriesNu
 
 	vector<unsigned char> selectedChars = {'A', 'C', 'G', 'T'};
 	Patterns *P = new Patterns(textFileName, queriesNum, m, selectedChars);
-        //NegativePatterns *P = new NegativePatterns(textFileName, queriesNum, m);
-        /*MaliciousPatterns *P = new MaliciousPatterns(textFileName, m, selectedChars);
-        queriesNum = P->getQueriesNum();
-        if (queriesNum == 0) exit(1);*/
+	//NegativePatterns *P = new NegativePatterns(textFileName, queriesNum, m);
+	/*MaliciousPatterns *P = new MaliciousPatterns(textFileName, m, selectedChars);
+	queriesNum = P->getQueriesNum();
+	if (queriesNum == 0) exit(1);*/
 	unsigned char **patterns = P->getPatterns();
 	unsigned int *indexCounts = new unsigned int[queriesNum];
 
@@ -320,8 +1154,8 @@ void fmDummy3(string indexType, const char *textFileName, unsigned int queriesNu
 	string resultFileName = "results/fmdummy/" + string(textFileName) + "_count_FMDummy3.txt";
 	fstream resultFile(resultFileName.c_str(), ios::out | ios::binary | ios::app);
 	double size = (double)FMD3->getIndexSize() / (double)FMD3->getTextSize();
-	cout << "count FMDummy3-" << indexType << " " << textFileName << " m=" << m << " queries=" << queriesNum << " size=" << size << "n time=" << timer.getElapsedTime() << endl;
-	resultFile << m << " " << queriesNum << " " << indexType << " " << size << " " << timer.getElapsedTime();
+	cout << "count FMDummy3-512 " << textFileName << " m=" << m << " queries=" << queriesNum << " size=" << size << "n time=" << timer.getElapsedTime() << endl;
+	resultFile << m << " " << queriesNum << " 512 " << size << " " << timer.getElapsedTime();
 
 	unsigned int differences = P->getErrorCountsNumber(indexCounts);
 	if (differences > 0) {
@@ -336,19 +1170,17 @@ void fmDummy3(string indexType, const char *textFileName, unsigned int queriesNu
 	delete[] indexCounts;
 	delete FMD3;
 	delete P;
-        exit(0);
+	exit(0);
 }
 
-void fmDummy3Hash(string indexType, string k, string loadFactor, const char *textFileName, unsigned int queriesNum, unsigned int m) {
-	FMDummy3 *FMD3;
-	string indexFileNameString = "FMD3-hash-" + (string)textFileName + "-" + indexType + "-" +  k + "-" + loadFactor + ".idx";
+void fmDummy3_1024(const char *textFileName, unsigned int queriesNum, unsigned int m) {
+	FMDummy3<FMDummy3Type::FMD3_1024> *FMD3 = new FMDummy3<FMDummy3Type::FMD3_1024>();
+	string indexFileNameString = "FMD3-" + (string)textFileName + "-1024.idx";
 	char *indexFileName = (char *)indexFileNameString.c_str();
 
 	if (fileExists(indexFileName)) {
-		FMD3 = new FMDummy3();
 		FMD3->load(indexFileName);
 	} else {
-		FMD3 = new FMDummy3(FMDummy3IndexTypesMap[indexType], atoi(k.c_str()), atof(loadFactor.c_str()));
 		FMD3->setVerbose(true);
 		FMD3->build(textFileName);
 		FMD3->save(indexFileName);
@@ -356,10 +1188,60 @@ void fmDummy3Hash(string indexType, string k, string loadFactor, const char *tex
 
 	vector<unsigned char> selectedChars = {'A', 'C', 'G', 'T'};
 	Patterns *P = new Patterns(textFileName, queriesNum, m, selectedChars);
-        //NegativePatterns *P = new NegativePatterns(textFileName, queriesNum, m);
-        /*MaliciousPatterns *P = new MaliciousPatterns(textFileName, m, selectedChars);
-        queriesNum = P->getQueriesNum();
-        if (queriesNum == 0) exit(1);*/
+	//NegativePatterns *P = new NegativePatterns(textFileName, queriesNum, m);
+	/*MaliciousPatterns *P = new MaliciousPatterns(textFileName, m, selectedChars);
+	queriesNum = P->getQueriesNum();
+	if (queriesNum == 0) exit(1);*/
+	unsigned char **patterns = P->getPatterns();
+	unsigned int *indexCounts = new unsigned int[queriesNum];
+
+	timer.startTimer();
+	for (unsigned int i = 0; i < queriesNum; ++i) {
+		indexCounts[i] = FMD3->count(patterns[i], m);
+	}
+	timer.stopTimer();
+
+	string resultFileName = "results/fmdummy/" + string(textFileName) + "_count_FMDummy3.txt";
+	fstream resultFile(resultFileName.c_str(), ios::out | ios::binary | ios::app);
+	double size = (double)FMD3->getIndexSize() / (double)FMD3->getTextSize();
+	cout << "count FMDummy3-1024 " << textFileName << " m=" << m << " queries=" << queriesNum << " size=" << size << "n time=" << timer.getElapsedTime() << endl;
+	resultFile << m << " " << queriesNum << " 1024 " << size << " " << timer.getElapsedTime();
+
+	unsigned int differences = P->getErrorCountsNumber(indexCounts);
+	if (differences > 0) {
+		cout << "DIFFERENCES: " << differences << endl;
+		resultFile << " DIFFERENCES: " << differences;
+	} else {
+		cout << "Differences: " << differences << endl;
+	}
+	resultFile << endl;
+	resultFile.close();
+
+	delete[] indexCounts;
+	delete FMD3;
+	delete P;
+	exit(0);
+}
+
+void fmDummy3Hash_512(string k, string loadFactor, const char *textFileName, unsigned int queriesNum, unsigned int m) {
+	FMDummy3Hash<FMDummy3Type::FMD3_512> *FMD3 = new FMDummy3Hash<FMDummy3Type::FMD3_512>(atoi(k.c_str()), atof(loadFactor.c_str()));
+	string indexFileNameString = "FMD3-hash-" + (string)textFileName + "-512-" +  k + "-" + loadFactor + ".idx";
+	char *indexFileName = (char *)indexFileNameString.c_str();
+
+	if (fileExists(indexFileName)) {
+		FMD3->load(indexFileName);
+	} else {
+		FMD3->setVerbose(true);
+		FMD3->build(textFileName);
+		FMD3->save(indexFileName);
+	}
+
+	vector<unsigned char> selectedChars = {'A', 'C', 'G', 'T'};
+	Patterns *P = new Patterns(textFileName, queriesNum, m, selectedChars);
+	//NegativePatterns *P = new NegativePatterns(textFileName, queriesNum, m);
+	/*MaliciousPatterns *P = new MaliciousPatterns(textFileName, m, selectedChars);
+	queriesNum = P->getQueriesNum();
+	if (queriesNum == 0) exit(1);*/
 	unsigned char **patterns = P->getPatterns();
 	unsigned int *indexCounts = new unsigned int[queriesNum];
 
@@ -372,8 +1254,8 @@ void fmDummy3Hash(string indexType, string k, string loadFactor, const char *tex
 	string resultFileName = "results/fmdummy/" + string(textFileName) + "_count_FMDummy3-hash.txt";
 	fstream resultFile(resultFileName.c_str(), ios::out | ios::binary | ios::app);
 	double size = (double)FMD3->getIndexSize() / (double)FMD3->getTextSize();
-	cout << "count FMDummy3-hash-" << indexType << "-" << k << "-" << loadFactor << " " << textFileName << " m=" << m << " queries=" << queriesNum << " size=" << size << "n time=" << timer.getElapsedTime() << endl;
-	resultFile << m << " " << queriesNum << " " << indexType << " " << k << " " << loadFactor << " " << size << " " << timer.getElapsedTime();
+	cout << "count FMDummy3-hash-512-" << k << "-" << loadFactor << " " << textFileName << " m=" << m << " queries=" << queriesNum << " size=" << size << "n time=" << timer.getElapsedTime() << endl;
+	resultFile << m << " " << queriesNum << " 512 " << k << " " << loadFactor << " " << size << " " << timer.getElapsedTime();
 
 	unsigned int differences = P->getErrorCountsNumber(indexCounts);
 	if (differences > 0) {
@@ -388,43 +1270,42 @@ void fmDummy3Hash(string indexType, string k, string loadFactor, const char *tex
 	delete[] indexCounts;
 	delete FMD3;
 	delete P;
-        exit(0);
+	exit(0);
 }
 
-void fmDummyWT(string wtType, string indexType, const char *textFileName, unsigned int queriesNum, unsigned int m) {
-	FMDummyWT *FMDWT;
-	string indexFileNameString = "FMDWT-" + (string)textFileName + "-" + wtType + "-" + indexType + ".idx";
+void fmDummy3Hash_1024(string k, string loadFactor, const char *textFileName, unsigned int queriesNum, unsigned int m) {
+	FMDummy3Hash<FMDummy3Type::FMD3_1024> *FMD3 = new FMDummy3Hash<FMDummy3Type::FMD3_1024>(atoi(k.c_str()), atof(loadFactor.c_str()));
+	string indexFileNameString = "FMD3-hash-" + (string)textFileName + "-1024-" +  k + "-" + loadFactor + ".idx";
 	char *indexFileName = (char *)indexFileNameString.c_str();
 
 	if (fileExists(indexFileName)) {
-		FMDWT = new FMDummyWT();
-		FMDWT->load(indexFileName);
+		FMD3->load(indexFileName);
 	} else {
-		FMDWT = new FMDummyWT(FMDummyWTWTTypeMap[wtType], FMDummyWTIndexTypesMap[indexType]);
-		FMDWT->setVerbose(true);
-		FMDWT->build(textFileName);
-		FMDWT->save(indexFileName);
+		FMD3->setVerbose(true);
+		FMD3->build(textFileName);
+		FMD3->save(indexFileName);
 	}
 
-	Patterns *P = new Patterns(textFileName, queriesNum, m);
-        //NegativePatterns *P = new NegativePatterns(textFileName, queriesNum, m);
-        /*MaliciousPatterns *P = new MaliciousPatterns(textFileName, m);
-        queriesNum = P->getQueriesNum();
-        if (queriesNum == 0) exit(1);*/
+	vector<unsigned char> selectedChars = {'A', 'C', 'G', 'T'};
+	Patterns *P = new Patterns(textFileName, queriesNum, m, selectedChars);
+	//NegativePatterns *P = new NegativePatterns(textFileName, queriesNum, m);
+	/*MaliciousPatterns *P = new MaliciousPatterns(textFileName, m, selectedChars);
+	queriesNum = P->getQueriesNum();
+	if (queriesNum == 0) exit(1);*/
 	unsigned char **patterns = P->getPatterns();
 	unsigned int *indexCounts = new unsigned int[queriesNum];
 
 	timer.startTimer();
 	for (unsigned int i = 0; i < queriesNum; ++i) {
-		indexCounts[i] = FMDWT->count(patterns[i], m);
+		indexCounts[i] = FMD3->count(patterns[i], m);
 	}
 	timer.stopTimer();
 
-	string resultFileName = "results/fmdummy/" + string(textFileName) + "_count_FMDummyWT.txt";
+	string resultFileName = "results/fmdummy/" + string(textFileName) + "_count_FMDummy3-hash.txt";
 	fstream resultFile(resultFileName.c_str(), ios::out | ios::binary | ios::app);
-	double size = (double)FMDWT->getIndexSize() / (double)FMDWT->getTextSize();
-	cout << "count FMDummyWT-" << wtType << "-" << indexType << " " << textFileName << " m=" << m << " queries=" << queriesNum << " size=" << size << "n time=" << timer.getElapsedTime() << endl;
-	resultFile << m << " " << queriesNum << " " << wtType << " " << indexType << " " << size << " " << timer.getElapsedTime();
+	double size = (double)FMD3->getIndexSize() / (double)FMD3->getTextSize();
+	cout << "count FMDummy3-hash-1024-" << k << "-" << loadFactor << " " << textFileName << " m=" << m << " queries=" << queriesNum << " size=" << size << "n time=" << timer.getElapsedTime() << endl;
+	resultFile << m << " " << queriesNum << " 1024 " << k << " " << loadFactor << " " << size << " " << timer.getElapsedTime();
 
 	unsigned int differences = P->getErrorCountsNumber(indexCounts);
 	if (differences > 0) {
@@ -437,45 +1318,43 @@ void fmDummyWT(string wtType, string indexType, const char *textFileName, unsign
 	resultFile.close();
 
 	delete[] indexCounts;
-	delete FMDWT;
+	delete FMD3;
 	delete P;
-        exit(0);
+	exit(0);
 }
 
-void fmDummyWTHash(string wtType, string indexType, string k, string loadFactor, const char *textFileName, unsigned int queriesNum, unsigned int m) {
-	FMDummyWT *FMDWT;
-	string indexFileNameString = "FMDWT-hash-" + (string)textFileName + "-" + wtType + "-" + indexType + "-" +  k + "-" + loadFactor + ".idx";
+void fmDummyHWT2_512(const char *textFileName, unsigned int queriesNum, unsigned int m) {
+	FMDummyHWT<FMDummyHWTType::FMHWT_512, WTType::WT2> *FMDHWT = new FMDummyHWT<FMDummyHWTType::FMHWT_512, WTType::WT2>();
+	string indexFileNameString = "FMDHWT-" + (string)textFileName + "-2-512.idx";
 	char *indexFileName = (char *)indexFileNameString.c_str();
 
 	if (fileExists(indexFileName)) {
-		FMDWT = new FMDummyWT();
-		FMDWT->load(indexFileName);
+		FMDHWT->load(indexFileName);
 	} else {
-		FMDWT = new FMDummyWT(FMDummyWTWTTypeMap[wtType], FMDummyWTIndexTypesMap[indexType], atoi(k.c_str()), atof(loadFactor.c_str()));
-		FMDWT->setVerbose(true);
-		FMDWT->build(textFileName);
-		FMDWT->save(indexFileName);
+		FMDHWT->setVerbose(true);
+		FMDHWT->build(textFileName);
+		FMDHWT->save(indexFileName);
 	}
 
 	Patterns *P = new Patterns(textFileName, queriesNum, m);
-        //NegativePatterns *P = new NegativePatterns(textFileName, queriesNum, m);
-        /*MaliciousPatterns *P = new MaliciousPatterns(textFileName, m);
-        queriesNum = P->getQueriesNum();
-        if (queriesNum == 0) exit(1);*/
+	//NegativePatterns *P = new NegativePatterns(textFileName, queriesNum, m);
+	/*MaliciousPatterns *P = new MaliciousPatterns(textFileName, m);
+	queriesNum = P->getQueriesNum();
+	if (queriesNum == 0) exit(1);*/
 	unsigned char **patterns = P->getPatterns();
 	unsigned int *indexCounts = new unsigned int[queriesNum];
 
 	timer.startTimer();
 	for (unsigned int i = 0; i < queriesNum; ++i) {
-		indexCounts[i] = FMDWT->count(patterns[i], m);
+		indexCounts[i] = FMDHWT->count(patterns[i], m);
 	}
 	timer.stopTimer();
 
-	string resultFileName = "results/fmdummy/" + string(textFileName) + "_count_FMDummyWT-hash.txt";
+	string resultFileName = "results/fmdummy/" + string(textFileName) + "_count_FMDummyHWT.txt";
 	fstream resultFile(resultFileName.c_str(), ios::out | ios::binary | ios::app);
-	double size = (double)FMDWT->getIndexSize() / (double)FMDWT->getTextSize();
-	cout << "count FMDummyWT-hash-" << wtType << "-" << indexType << "-" << k << "-" << loadFactor << " " << textFileName << " m=" << m << " queries=" << queriesNum << " size=" << size << "n time=" << timer.getElapsedTime() << endl;
-	resultFile << m << " " << queriesNum << " " << wtType << " " << indexType << " " << k << " " << loadFactor << " " << size << " " << timer.getElapsedTime();
+	double size = (double)FMDHWT->getIndexSize() / (double)FMDHWT->getTextSize();
+	cout << "count FMDummyHWT-2-512 " << textFileName << " m=" << m << " queries=" << queriesNum << " size=" << size << "n time=" << timer.getElapsedTime() << endl;
+	resultFile << m << " " << queriesNum << " 2 512 " << size << " " << timer.getElapsedTime();
 
 	unsigned int differences = P->getErrorCountsNumber(indexCounts);
 	if (differences > 0) {
@@ -488,7 +1367,546 @@ void fmDummyWTHash(string wtType, string indexType, string k, string loadFactor,
 	resultFile.close();
 
 	delete[] indexCounts;
-	delete FMDWT;
+	delete FMDHWT;
 	delete P;
-        exit(0);
+	exit(0);
+}
+
+void fmDummyHWT2_1024(const char *textFileName, unsigned int queriesNum, unsigned int m) {
+	FMDummyHWT<FMDummyHWTType::FMHWT_1024, WTType::WT2> *FMDHWT = new FMDummyHWT<FMDummyHWTType::FMHWT_1024, WTType::WT2>();
+	string indexFileNameString = "FMDHWT-" + (string)textFileName + "-2-1024.idx";
+	char *indexFileName = (char *)indexFileNameString.c_str();
+
+	if (fileExists(indexFileName)) {
+		FMDHWT->load(indexFileName);
+	} else {
+		FMDHWT->setVerbose(true);
+		FMDHWT->build(textFileName);
+		FMDHWT->save(indexFileName);
+	}
+
+	Patterns *P = new Patterns(textFileName, queriesNum, m);
+	//NegativePatterns *P = new NegativePatterns(textFileName, queriesNum, m);
+	/*MaliciousPatterns *P = new MaliciousPatterns(textFileName, m);
+	queriesNum = P->getQueriesNum();
+	if (queriesNum == 0) exit(1);*/
+	unsigned char **patterns = P->getPatterns();
+	unsigned int *indexCounts = new unsigned int[queriesNum];
+
+	timer.startTimer();
+	for (unsigned int i = 0; i < queriesNum; ++i) {
+		indexCounts[i] = FMDHWT->count(patterns[i], m);
+	}
+	timer.stopTimer();
+
+	string resultFileName = "results/fmdummy/" + string(textFileName) + "_count_FMDummyHWT.txt";
+	fstream resultFile(resultFileName.c_str(), ios::out | ios::binary | ios::app);
+	double size = (double)FMDHWT->getIndexSize() / (double)FMDHWT->getTextSize();
+	cout << "count FMDummyHWT-2-1024 " << textFileName << " m=" << m << " queries=" << queriesNum << " size=" << size << "n time=" << timer.getElapsedTime() << endl;
+	resultFile << m << " " << queriesNum << " 2 1024 " << size << " " << timer.getElapsedTime();
+
+	unsigned int differences = P->getErrorCountsNumber(indexCounts);
+	if (differences > 0) {
+		cout << "DIFFERENCES: " << differences << endl;
+		resultFile << " DIFFERENCES: " << differences;
+	} else {
+		cout << "Differences: " << differences << endl;
+	}
+	resultFile << endl;
+	resultFile.close();
+
+	delete[] indexCounts;
+	delete FMDHWT;
+	delete P;
+	exit(0);
+}
+
+void fmDummyHWT4_512(const char *textFileName, unsigned int queriesNum, unsigned int m) {
+	FMDummyHWT<FMDummyHWTType::FMHWT_512, WTType::WT4> *FMDHWT = new FMDummyHWT<FMDummyHWTType::FMHWT_512, WTType::WT4>();
+	string indexFileNameString = "FMDHWT-" + (string)textFileName + "-4-512.idx";
+	char *indexFileName = (char *)indexFileNameString.c_str();
+
+	if (fileExists(indexFileName)) {
+		FMDHWT->load(indexFileName);
+	} else {
+		FMDHWT->setVerbose(true);
+		FMDHWT->build(textFileName);
+		FMDHWT->save(indexFileName);
+	}
+
+	Patterns *P = new Patterns(textFileName, queriesNum, m);
+	//NegativePatterns *P = new NegativePatterns(textFileName, queriesNum, m);
+	/*MaliciousPatterns *P = new MaliciousPatterns(textFileName, m);
+	queriesNum = P->getQueriesNum();
+	if (queriesNum == 0) exit(1);*/
+	unsigned char **patterns = P->getPatterns();
+	unsigned int *indexCounts = new unsigned int[queriesNum];
+
+	timer.startTimer();
+	for (unsigned int i = 0; i < queriesNum; ++i) {
+		indexCounts[i] = FMDHWT->count(patterns[i], m);
+	}
+	timer.stopTimer();
+
+	string resultFileName = "results/fmdummy/" + string(textFileName) + "_count_FMDummyHWT.txt";
+	fstream resultFile(resultFileName.c_str(), ios::out | ios::binary | ios::app);
+	double size = (double)FMDHWT->getIndexSize() / (double)FMDHWT->getTextSize();
+	cout << "count FMDummyHWT-4-512 " << textFileName << " m=" << m << " queries=" << queriesNum << " size=" << size << "n time=" << timer.getElapsedTime() << endl;
+	resultFile << m << " " << queriesNum << " 4 512 " << size << " " << timer.getElapsedTime();
+
+	unsigned int differences = P->getErrorCountsNumber(indexCounts);
+	if (differences > 0) {
+		cout << "DIFFERENCES: " << differences << endl;
+		resultFile << " DIFFERENCES: " << differences;
+	} else {
+		cout << "Differences: " << differences << endl;
+	}
+	resultFile << endl;
+	resultFile.close();
+
+	delete[] indexCounts;
+	delete FMDHWT;
+	delete P;
+	exit(0);
+}
+
+void fmDummyHWT4_1024(const char *textFileName, unsigned int queriesNum, unsigned int m) {
+	FMDummyHWT<FMDummyHWTType::FMHWT_1024, WTType::WT4> *FMDHWT = new FMDummyHWT<FMDummyHWTType::FMHWT_1024, WTType::WT4>();
+	string indexFileNameString = "FMDHWT-" + (string)textFileName + "-4-1024.idx";
+	char *indexFileName = (char *)indexFileNameString.c_str();
+
+	if (fileExists(indexFileName)) {
+		FMDHWT->load(indexFileName);
+	} else {
+		FMDHWT->setVerbose(true);
+		FMDHWT->build(textFileName);
+		FMDHWT->save(indexFileName);
+	}
+
+	Patterns *P = new Patterns(textFileName, queriesNum, m);
+	//NegativePatterns *P = new NegativePatterns(textFileName, queriesNum, m);
+	/*MaliciousPatterns *P = new MaliciousPatterns(textFileName, m);
+	queriesNum = P->getQueriesNum();
+	if (queriesNum == 0) exit(1);*/
+	unsigned char **patterns = P->getPatterns();
+	unsigned int *indexCounts = new unsigned int[queriesNum];
+
+	timer.startTimer();
+	for (unsigned int i = 0; i < queriesNum; ++i) {
+		indexCounts[i] = FMDHWT->count(patterns[i], m);
+	}
+	timer.stopTimer();
+
+	string resultFileName = "results/fmdummy/" + string(textFileName) + "_count_FMDummyHWT.txt";
+	fstream resultFile(resultFileName.c_str(), ios::out | ios::binary | ios::app);
+	double size = (double)FMDHWT->getIndexSize() / (double)FMDHWT->getTextSize();
+	cout << "count FMDummyHWT-4-1024 " << textFileName << " m=" << m << " queries=" << queriesNum << " size=" << size << "n time=" << timer.getElapsedTime() << endl;
+	resultFile << m << " " << queriesNum << " 4 1024 " << size << " " << timer.getElapsedTime();
+
+	unsigned int differences = P->getErrorCountsNumber(indexCounts);
+	if (differences > 0) {
+		cout << "DIFFERENCES: " << differences << endl;
+		resultFile << " DIFFERENCES: " << differences;
+	} else {
+		cout << "Differences: " << differences << endl;
+	}
+	resultFile << endl;
+	resultFile.close();
+
+	delete[] indexCounts;
+	delete FMDHWT;
+	delete P;
+	exit(0);
+}
+
+void fmDummyHWT8_512(const char *textFileName, unsigned int queriesNum, unsigned int m) {
+	FMDummyHWT<FMDummyHWTType::FMHWT_512, WTType::WT8> *FMDHWT = new FMDummyHWT<FMDummyHWTType::FMHWT_512, WTType::WT8>();
+	string indexFileNameString = "FMDHWT-" + (string)textFileName + "-8-512.idx";
+	char *indexFileName = (char *)indexFileNameString.c_str();
+
+	if (fileExists(indexFileName)) {
+		FMDHWT->load(indexFileName);
+	} else {
+		FMDHWT->setVerbose(true);
+		FMDHWT->build(textFileName);
+		FMDHWT->save(indexFileName);
+	}
+
+	Patterns *P = new Patterns(textFileName, queriesNum, m);
+	//NegativePatterns *P = new NegativePatterns(textFileName, queriesNum, m);
+	/*MaliciousPatterns *P = new MaliciousPatterns(textFileName, m);
+	queriesNum = P->getQueriesNum();
+	if (queriesNum == 0) exit(1);*/
+	unsigned char **patterns = P->getPatterns();
+	unsigned int *indexCounts = new unsigned int[queriesNum];
+
+	timer.startTimer();
+	for (unsigned int i = 0; i < queriesNum; ++i) {
+		indexCounts[i] = FMDHWT->count(patterns[i], m);
+	}
+	timer.stopTimer();
+
+	string resultFileName = "results/fmdummy/" + string(textFileName) + "_count_FMDummyHWT.txt";
+	fstream resultFile(resultFileName.c_str(), ios::out | ios::binary | ios::app);
+	double size = (double)FMDHWT->getIndexSize() / (double)FMDHWT->getTextSize();
+	cout << "count FMDummyHWT-8-512 " << textFileName << " m=" << m << " queries=" << queriesNum << " size=" << size << "n time=" << timer.getElapsedTime() << endl;
+	resultFile << m << " " << queriesNum << " 8 512 " << size << " " << timer.getElapsedTime();
+
+	unsigned int differences = P->getErrorCountsNumber(indexCounts);
+	if (differences > 0) {
+		cout << "DIFFERENCES: " << differences << endl;
+		resultFile << " DIFFERENCES: " << differences;
+	} else {
+		cout << "Differences: " << differences << endl;
+	}
+	resultFile << endl;
+	resultFile.close();
+
+	delete[] indexCounts;
+	delete FMDHWT;
+	delete P;
+	exit(0);
+}
+
+void fmDummyHWT8_1024(const char *textFileName, unsigned int queriesNum, unsigned int m) {
+	FMDummyHWT<FMDummyHWTType::FMHWT_1024, WTType::WT8> *FMDHWT = new FMDummyHWT<FMDummyHWTType::FMHWT_1024, WTType::WT8>();
+	string indexFileNameString = "FMDHWT-" + (string)textFileName + "-8-1024.idx";
+	char *indexFileName = (char *)indexFileNameString.c_str();
+
+	if (fileExists(indexFileName)) {
+		FMDHWT->load(indexFileName);
+	} else {
+		FMDHWT->setVerbose(true);
+		FMDHWT->build(textFileName);
+		FMDHWT->save(indexFileName);
+	}
+
+	Patterns *P = new Patterns(textFileName, queriesNum, m);
+	//NegativePatterns *P = new NegativePatterns(textFileName, queriesNum, m);
+	/*MaliciousPatterns *P = new MaliciousPatterns(textFileName, m);
+	queriesNum = P->getQueriesNum();
+	if (queriesNum == 0) exit(1);*/
+	unsigned char **patterns = P->getPatterns();
+	unsigned int *indexCounts = new unsigned int[queriesNum];
+
+	timer.startTimer();
+	for (unsigned int i = 0; i < queriesNum; ++i) {
+		indexCounts[i] = FMDHWT->count(patterns[i], m);
+	}
+	timer.stopTimer();
+
+	string resultFileName = "results/fmdummy/" + string(textFileName) + "_count_FMDummyHWT.txt";
+	fstream resultFile(resultFileName.c_str(), ios::out | ios::binary | ios::app);
+	double size = (double)FMDHWT->getIndexSize() / (double)FMDHWT->getTextSize();
+	cout << "count FMDummyHWT-8-1024 " << textFileName << " m=" << m << " queries=" << queriesNum << " size=" << size << "n time=" << timer.getElapsedTime() << endl;
+	resultFile << m << " " << queriesNum << " 8 1024 " << size << " " << timer.getElapsedTime();
+
+	unsigned int differences = P->getErrorCountsNumber(indexCounts);
+	if (differences > 0) {
+		cout << "DIFFERENCES: " << differences << endl;
+		resultFile << " DIFFERENCES: " << differences;
+	} else {
+		cout << "Differences: " << differences << endl;
+	}
+	resultFile << endl;
+	resultFile.close();
+
+	delete[] indexCounts;
+	delete FMDHWT;
+	delete P;
+	exit(0);
+}
+
+void fmDummyHWT2Hash_512(string k, string loadFactor, const char *textFileName, unsigned int queriesNum, unsigned int m) {
+	FMDummyHWTHash<FMDummyHWTType::FMHWT_512, WTType::WT2> *FMDHWT = new FMDummyHWTHash<FMDummyHWTType::FMHWT_512, WTType::WT2>(atoi(k.c_str()), atof(loadFactor.c_str()));
+	string indexFileNameString = "FMDHWT-hash-" + (string)textFileName + "-2-512-" +  k + "-" + loadFactor + ".idx";
+	char *indexFileName = (char *)indexFileNameString.c_str();
+
+	if (fileExists(indexFileName)) {
+		FMDHWT->load(indexFileName);
+	} else {
+		FMDHWT->setVerbose(true);
+		FMDHWT->build(textFileName);
+		FMDHWT->save(indexFileName);
+	}
+
+	Patterns *P = new Patterns(textFileName, queriesNum, m);
+	//NegativePatterns *P = new NegativePatterns(textFileName, queriesNum, m);
+	/*MaliciousPatterns *P = new MaliciousPatterns(textFileName, m);
+	queriesNum = P->getQueriesNum();
+	if (queriesNum == 0) exit(1);*/
+	unsigned char **patterns = P->getPatterns();
+	unsigned int *indexCounts = new unsigned int[queriesNum];
+
+	timer.startTimer();
+	for (unsigned int i = 0; i < queriesNum; ++i) {
+		indexCounts[i] = FMDHWT->count(patterns[i], m);
+	}
+	timer.stopTimer();
+
+	string resultFileName = "results/fmdummy/" + string(textFileName) + "_count_FMDummyHWT-hash.txt";
+	fstream resultFile(resultFileName.c_str(), ios::out | ios::binary | ios::app);
+	double size = (double)FMDHWT->getIndexSize() / (double)FMDHWT->getTextSize();
+	cout << "count FMDummyWT-hash-2-512-" << k << "-" << loadFactor << " " << textFileName << " m=" << m << " queries=" << queriesNum << " size=" << size << "n time=" << timer.getElapsedTime() << endl;
+	resultFile << m << " " << queriesNum << " 2 512 " << k << " " << loadFactor << " " << size << " " << timer.getElapsedTime();
+
+	unsigned int differences = P->getErrorCountsNumber(indexCounts);
+	if (differences > 0) {
+		cout << "DIFFERENCES: " << differences << endl;
+		resultFile << " DIFFERENCES: " << differences;
+	} else {
+		cout << "Differences: " << differences << endl;
+	}
+	resultFile << endl;
+	resultFile.close();
+
+	delete[] indexCounts;
+	delete FMDHWT;
+	delete P;
+    exit(0);
+}
+
+void fmDummyHWT2Hash_1024(string k, string loadFactor, const char *textFileName, unsigned int queriesNum, unsigned int m) {
+	FMDummyHWTHash<FMDummyHWTType::FMHWT_1024, WTType::WT2> *FMDHWT = new FMDummyHWTHash<FMDummyHWTType::FMHWT_1024, WTType::WT2>(atoi(k.c_str()), atof(loadFactor.c_str()));
+	string indexFileNameString = "FMDHWT-hash-" + (string)textFileName + "-2-1024-" +  k + "-" + loadFactor + ".idx";
+	char *indexFileName = (char *)indexFileNameString.c_str();
+
+	if (fileExists(indexFileName)) {
+		FMDHWT->load(indexFileName);
+	} else {
+		FMDHWT->setVerbose(true);
+		FMDHWT->build(textFileName);
+		FMDHWT->save(indexFileName);
+	}
+
+	Patterns *P = new Patterns(textFileName, queriesNum, m);
+	//NegativePatterns *P = new NegativePatterns(textFileName, queriesNum, m);
+	/*MaliciousPatterns *P = new MaliciousPatterns(textFileName, m);
+	queriesNum = P->getQueriesNum();
+	if (queriesNum == 0) exit(1);*/
+	unsigned char **patterns = P->getPatterns();
+	unsigned int *indexCounts = new unsigned int[queriesNum];
+
+	timer.startTimer();
+	for (unsigned int i = 0; i < queriesNum; ++i) {
+		indexCounts[i] = FMDHWT->count(patterns[i], m);
+	}
+	timer.stopTimer();
+
+	string resultFileName = "results/fmdummy/" + string(textFileName) + "_count_FMDummyHWT-hash.txt";
+	fstream resultFile(resultFileName.c_str(), ios::out | ios::binary | ios::app);
+	double size = (double)FMDHWT->getIndexSize() / (double)FMDHWT->getTextSize();
+	cout << "count FMDummyWT-hash-2-1024-" << k << "-" << loadFactor << " " << textFileName << " m=" << m << " queries=" << queriesNum << " size=" << size << "n time=" << timer.getElapsedTime() << endl;
+	resultFile << m << " " << queriesNum << " 2 1024 " << k << " " << loadFactor << " " << size << " " << timer.getElapsedTime();
+
+	unsigned int differences = P->getErrorCountsNumber(indexCounts);
+	if (differences > 0) {
+		cout << "DIFFERENCES: " << differences << endl;
+		resultFile << " DIFFERENCES: " << differences;
+	} else {
+		cout << "Differences: " << differences << endl;
+	}
+	resultFile << endl;
+	resultFile.close();
+
+	delete[] indexCounts;
+	delete FMDHWT;
+	delete P;
+    exit(0);
+}
+
+void fmDummyHWT4Hash_512(string k, string loadFactor, const char *textFileName, unsigned int queriesNum, unsigned int m) {
+	FMDummyHWTHash<FMDummyHWTType::FMHWT_512, WTType::WT4> *FMDHWT = new FMDummyHWTHash<FMDummyHWTType::FMHWT_512, WTType::WT4>(atoi(k.c_str()), atof(loadFactor.c_str()));
+	string indexFileNameString = "FMDHWT-hash-" + (string)textFileName + "-4-512-" +  k + "-" + loadFactor + ".idx";
+	char *indexFileName = (char *)indexFileNameString.c_str();
+
+	if (fileExists(indexFileName)) {
+		FMDHWT->load(indexFileName);
+	} else {
+		FMDHWT->setVerbose(true);
+		FMDHWT->build(textFileName);
+		FMDHWT->save(indexFileName);
+	}
+
+	Patterns *P = new Patterns(textFileName, queriesNum, m);
+	//NegativePatterns *P = new NegativePatterns(textFileName, queriesNum, m);
+	/*MaliciousPatterns *P = new MaliciousPatterns(textFileName, m);
+	queriesNum = P->getQueriesNum();
+	if (queriesNum == 0) exit(1);*/
+	unsigned char **patterns = P->getPatterns();
+	unsigned int *indexCounts = new unsigned int[queriesNum];
+
+	timer.startTimer();
+	for (unsigned int i = 0; i < queriesNum; ++i) {
+		indexCounts[i] = FMDHWT->count(patterns[i], m);
+	}
+	timer.stopTimer();
+
+	string resultFileName = "results/fmdummy/" + string(textFileName) + "_count_FMDummyHWT-hash.txt";
+	fstream resultFile(resultFileName.c_str(), ios::out | ios::binary | ios::app);
+	double size = (double)FMDHWT->getIndexSize() / (double)FMDHWT->getTextSize();
+	cout << "count FMDummyWT-hash-4-512-" << k << "-" << loadFactor << " " << textFileName << " m=" << m << " queries=" << queriesNum << " size=" << size << "n time=" << timer.getElapsedTime() << endl;
+	resultFile << m << " " << queriesNum << " 4 512 " << k << " " << loadFactor << " " << size << " " << timer.getElapsedTime();
+
+	unsigned int differences = P->getErrorCountsNumber(indexCounts);
+	if (differences > 0) {
+		cout << "DIFFERENCES: " << differences << endl;
+		resultFile << " DIFFERENCES: " << differences;
+	} else {
+		cout << "Differences: " << differences << endl;
+	}
+	resultFile << endl;
+	resultFile.close();
+
+	delete[] indexCounts;
+	delete FMDHWT;
+	delete P;
+    exit(0);
+}
+
+void fmDummyHWT4Hash_1024(string k, string loadFactor, const char *textFileName, unsigned int queriesNum, unsigned int m) {
+	FMDummyHWTHash<FMDummyHWTType::FMHWT_1024, WTType::WT4> *FMDHWT = new FMDummyHWTHash<FMDummyHWTType::FMHWT_1024, WTType::WT4>(atoi(k.c_str()), atof(loadFactor.c_str()));
+	string indexFileNameString = "FMDHWT-hash-" + (string)textFileName + "-4-1024-" +  k + "-" + loadFactor + ".idx";
+	char *indexFileName = (char *)indexFileNameString.c_str();
+
+	if (fileExists(indexFileName)) {
+		FMDHWT->load(indexFileName);
+	} else {
+		FMDHWT->setVerbose(true);
+		FMDHWT->build(textFileName);
+		FMDHWT->save(indexFileName);
+	}
+
+	Patterns *P = new Patterns(textFileName, queriesNum, m);
+	//NegativePatterns *P = new NegativePatterns(textFileName, queriesNum, m);
+	/*MaliciousPatterns *P = new MaliciousPatterns(textFileName, m);
+	queriesNum = P->getQueriesNum();
+	if (queriesNum == 0) exit(1);*/
+	unsigned char **patterns = P->getPatterns();
+	unsigned int *indexCounts = new unsigned int[queriesNum];
+
+	timer.startTimer();
+	for (unsigned int i = 0; i < queriesNum; ++i) {
+		indexCounts[i] = FMDHWT->count(patterns[i], m);
+	}
+	timer.stopTimer();
+
+	string resultFileName = "results/fmdummy/" + string(textFileName) + "_count_FMDummyHWT-hash.txt";
+	fstream resultFile(resultFileName.c_str(), ios::out | ios::binary | ios::app);
+	double size = (double)FMDHWT->getIndexSize() / (double)FMDHWT->getTextSize();
+	cout << "count FMDummyWT-hash-4-1024-" << k << "-" << loadFactor << " " << textFileName << " m=" << m << " queries=" << queriesNum << " size=" << size << "n time=" << timer.getElapsedTime() << endl;
+	resultFile << m << " " << queriesNum << " 4 1024 " << k << " " << loadFactor << " " << size << " " << timer.getElapsedTime();
+
+	unsigned int differences = P->getErrorCountsNumber(indexCounts);
+	if (differences > 0) {
+		cout << "DIFFERENCES: " << differences << endl;
+		resultFile << " DIFFERENCES: " << differences;
+	} else {
+		cout << "Differences: " << differences << endl;
+	}
+	resultFile << endl;
+	resultFile.close();
+
+	delete[] indexCounts;
+	delete FMDHWT;
+	delete P;
+    exit(0);
+}
+
+void fmDummyHWT8Hash_512(string k, string loadFactor, const char *textFileName, unsigned int queriesNum, unsigned int m) {
+	FMDummyHWTHash<FMDummyHWTType::FMHWT_512, WTType::WT8> *FMDHWT = new FMDummyHWTHash<FMDummyHWTType::FMHWT_512, WTType::WT8>(atoi(k.c_str()), atof(loadFactor.c_str()));
+	string indexFileNameString = "FMDHWT-hash-" + (string)textFileName + "-8-512-" +  k + "-" + loadFactor + ".idx";
+	char *indexFileName = (char *)indexFileNameString.c_str();
+
+	if (fileExists(indexFileName)) {
+		FMDHWT->load(indexFileName);
+	} else {
+		FMDHWT->setVerbose(true);
+		FMDHWT->build(textFileName);
+		FMDHWT->save(indexFileName);
+	}
+
+	Patterns *P = new Patterns(textFileName, queriesNum, m);
+	//NegativePatterns *P = new NegativePatterns(textFileName, queriesNum, m);
+	/*MaliciousPatterns *P = new MaliciousPatterns(textFileName, m);
+	queriesNum = P->getQueriesNum();
+	if (queriesNum == 0) exit(1);*/
+	unsigned char **patterns = P->getPatterns();
+	unsigned int *indexCounts = new unsigned int[queriesNum];
+
+	timer.startTimer();
+	for (unsigned int i = 0; i < queriesNum; ++i) {
+		indexCounts[i] = FMDHWT->count(patterns[i], m);
+	}
+	timer.stopTimer();
+
+	string resultFileName = "results/fmdummy/" + string(textFileName) + "_count_FMDummyHWT-hash.txt";
+	fstream resultFile(resultFileName.c_str(), ios::out | ios::binary | ios::app);
+	double size = (double)FMDHWT->getIndexSize() / (double)FMDHWT->getTextSize();
+	cout << "count FMDummyWT-hash-8-512-" << k << "-" << loadFactor << " " << textFileName << " m=" << m << " queries=" << queriesNum << " size=" << size << "n time=" << timer.getElapsedTime() << endl;
+	resultFile << m << " " << queriesNum << " 8 512 " << k << " " << loadFactor << " " << size << " " << timer.getElapsedTime();
+
+	unsigned int differences = P->getErrorCountsNumber(indexCounts);
+	if (differences > 0) {
+		cout << "DIFFERENCES: " << differences << endl;
+		resultFile << " DIFFERENCES: " << differences;
+	} else {
+		cout << "Differences: " << differences << endl;
+	}
+	resultFile << endl;
+	resultFile.close();
+
+	delete[] indexCounts;
+	delete FMDHWT;
+	delete P;
+    exit(0);
+}
+
+void fmDummyHWT8Hash_1024(string k, string loadFactor, const char *textFileName, unsigned int queriesNum, unsigned int m) {
+	FMDummyHWTHash<FMDummyHWTType::FMHWT_1024, WTType::WT8> *FMDHWT = new FMDummyHWTHash<FMDummyHWTType::FMHWT_1024, WTType::WT8>(atoi(k.c_str()), atof(loadFactor.c_str()));
+	string indexFileNameString = "FMDHWT-hash-" + (string)textFileName + "-8-1024-" +  k + "-" + loadFactor + ".idx";
+	char *indexFileName = (char *)indexFileNameString.c_str();
+
+	if (fileExists(indexFileName)) {
+		FMDHWT->load(indexFileName);
+	} else {
+		FMDHWT->setVerbose(true);
+		FMDHWT->build(textFileName);
+		FMDHWT->save(indexFileName);
+	}
+
+	Patterns *P = new Patterns(textFileName, queriesNum, m);
+	//NegativePatterns *P = new NegativePatterns(textFileName, queriesNum, m);
+	/*MaliciousPatterns *P = new MaliciousPatterns(textFileName, m);
+	queriesNum = P->getQueriesNum();
+	if (queriesNum == 0) exit(1);*/
+	unsigned char **patterns = P->getPatterns();
+	unsigned int *indexCounts = new unsigned int[queriesNum];
+
+	timer.startTimer();
+	for (unsigned int i = 0; i < queriesNum; ++i) {
+		indexCounts[i] = FMDHWT->count(patterns[i], m);
+	}
+	timer.stopTimer();
+
+	string resultFileName = "results/fmdummy/" + string(textFileName) + "_count_FMDummyHWT-hash.txt";
+	fstream resultFile(resultFileName.c_str(), ios::out | ios::binary | ios::app);
+	double size = (double)FMDHWT->getIndexSize() / (double)FMDHWT->getTextSize();
+	cout << "count FMDummyWT-hash-8-1024-" << k << "-" << loadFactor << " " << textFileName << " m=" << m << " queries=" << queriesNum << " size=" << size << "n time=" << timer.getElapsedTime() << endl;
+	resultFile << m << " " << queriesNum << " 8 1024 " << k << " " << loadFactor << " " << size << " " << timer.getElapsedTime();
+
+	unsigned int differences = P->getErrorCountsNumber(indexCounts);
+	if (differences > 0) {
+		cout << "DIFFERENCES: " << differences << endl;
+		resultFile << " DIFFERENCES: " << differences;
+	} else {
+		cout << "Differences: " << differences << endl;
+	}
+	resultFile << endl;
+	resultFile.close();
+
+	delete[] indexCounts;
+	delete FMDHWT;
+	delete P;
+    exit(0);
 }
