@@ -182,7 +182,7 @@ Limitations:
 
 Constructors:
 ```
-FMDummy3<FMDummy3Type T>(unsigned int k, double loadFactor);
+FMDummy3Hash<FMDummy3Type T>(unsigned int k, double loadFactor);
 ```
 
 ##FMDummyHWT\<FMDummyHWTType T, WTType W\>
@@ -198,7 +198,7 @@ Parameters:
 
 Constructors:
 ```
-FMDummyWT<FMDummyHWTType T, WTType W>();
+FMDummyHWT<FMDummyHWTType T, WTType W>();
 ```
 
 ##FMDummyHWTHash\<FMDummyHWTType T, WTType W\>
@@ -240,7 +240,7 @@ int main(int argc, char *argv[]) {
 
 	unsigned int queriesNum = 1000000;
 	unsigned int patternLen = 20;
-        vector<unsigned char> selectedChars = {'A', 'C', 'G', 'T'};
+	vector<unsigned char> selectedChars = {'A', 'C', 'G', 'T'};
 	FMDummy1<FMDummy1Type::FMD1_256> *FMD1 = new FMDummy1<FMDummy1Type::FMD1_256>(selectedChars);
 	const char *textFileName = "dna";
 	const char *indexFileName = "dna-fm1.idx";
