@@ -1673,8 +1673,8 @@ enum WTType {
 };
 
 enum FMDummyHWTType {
-        FMHWT_512 = 8,
-        FMHWT_1024 = 16
+        FMDHWT_512 = 8,
+        FMDHWT_1024 = 16
 };
 
 template<FMDummyHWTType T, WTType W> class FMDummyHWT : public Index {
@@ -1730,7 +1730,7 @@ public:
                     break;
                 default:
                     switch(T) {
-                        case FMDummyHWTType::FMHWT_1024:
+                        case FMDummyHWTType::FMDHWT_1024:
                             this->wt = createWT2_1024_counter32(bwt, bwtLen, 0, this->code, this->codeLen);
                             break;
                         default:
@@ -1831,7 +1831,7 @@ public:
             switch (W) {
                 case WTType::WT4:
                     switch(T) {
-                        case FMDummyHWTType::FMHWT_1024:
+                        case FMDummyHWTType::FMDHWT_1024:
                             return count_WT4_1024(pattern, patternLen - 1, this->c, this->wt, this->c[pattern[patternLen - 1]] + 1, this->c[pattern[patternLen - 1] + 1], this->code, this->codeLen);
                             break;
                         default:
@@ -1841,7 +1841,7 @@ public:
                     break;
                 case WTType::WT8:
                     switch(T) {
-                        case FMDummyHWTType::FMHWT_1024:
+                        case FMDummyHWTType::FMDHWT_1024:
                             return count_WT8_1024(pattern, patternLen - 1, this->c, this->wt, this->c[pattern[patternLen - 1]] + 1, this->c[pattern[patternLen - 1] + 1], this->code, this->codeLen);
                             break;
                         default:
@@ -1851,7 +1851,7 @@ public:
                     break;
                 default:
                     switch(T) {
-                        case FMDummyHWTType::FMHWT_1024:
+                        case FMDummyHWTType::FMDHWT_1024:
                             return count_WT2_1024_counter32(pattern, patternLen - 1, this->c, this->wt, this->c[pattern[patternLen - 1]] + 1, this->c[pattern[patternLen - 1] + 1], this->code, this->codeLen);
                             break;
                         default:
@@ -1909,7 +1909,7 @@ public:
                     break;
                 default:
                     switch(T) {
-                        case FMDummyHWTType::FMHWT_1024:
+                        case FMDummyHWTType::FMDHWT_1024:
                             this->wt = createWT2_1024_counter32(bwt, bwtLen, 0, this->code, this->codeLen);
                             break;
                         default:
@@ -2010,7 +2010,7 @@ public:
             switch (W) {
                 case WTType::WT4:
                     switch(T) {
-                        case FMDummyHWTType::FMHWT_1024:
+                        case FMDummyHWTType::FMDHWT_1024:
                             return count_WT4_1024(pattern, patternLen - this->ht->k, this->c, this->wt, leftBoundary + 1, rightBoundary, this->code, this->codeLen);
                             break;
                         default:
@@ -2020,7 +2020,7 @@ public:
                     break;
                 case WTType::WT8:
                     switch(T) {
-                        case FMDummyHWTType::FMHWT_1024:
+                        case FMDummyHWTType::FMDHWT_1024:
                             return count_WT8_1024(pattern, patternLen - this->ht->k, this->c, this->wt, leftBoundary + 1, rightBoundary, this->code, this->codeLen);
                             break;
                         default:
@@ -2030,7 +2030,7 @@ public:
                     break;
                 default:
                     switch(T) {
-                        case FMDummyHWTType::FMHWT_1024:
+                        case FMDummyHWTType::FMDHWT_1024:
                             return count_WT2_1024_counter32(pattern, patternLen - this->ht->k, this->c, this->wt, leftBoundary + 1, rightBoundary, this->code, this->codeLen);
                             break;
                         default:

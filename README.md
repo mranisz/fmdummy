@@ -189,8 +189,8 @@ FMDummy3Hash<FMDummy3Type T>(unsigned int k, double loadFactor);
 
 Parameters:
 - T:
-      - FMDummyHWTType::FMHWT_512 - using 512b blocks: 64b of rank data and 448b of encoded text data
-      - FMDummyHWTType::FMHWT_1024 - using 1024b blocks: 64b of rank data and 960b of encoded text data
+      - FMDummyHWTType::FMDHWT_512 - using 512b blocks: 64b of rank data and 448b of encoded text data
+      - FMDummyHWTType::FMDHWT_1024 - using 1024b blocks: 64b of rank data and 960b of encoded text data
 - W:
       - WTType::WT2 - using binary Huffman-shaped wavelet tree
       - WTType::WT4 - using 4-ary Huffman-shaped wavelet tree
@@ -206,8 +206,8 @@ FMDummyHWTHash is FMDummyHWT with hashed k-symbol prefixes of suffixes from suff
 
 Parameters:
 - T:
-      - FMDummyHWTType::FMHWT_512 - using 512b blocks: 64b of rank data and 448b of encoded text data
-      - FMDummyHWTType::FMHWT_1024 - using 1024b blocks: 64b of rank data and 960b of encoded text data
+      - FMDummyHWTType::FMDHWT_512 - using 512b blocks: 64b of rank data and 448b of encoded text data
+      - FMDummyHWTType::FMDHWT_1024 - using 1024b blocks: 64b of rank data and 960b of encoded text data
 - W:
       - WTType::WT2 - using binary Huffman-shaped wavelet tree
       - WTType::WT4 - using 4-ary Huffman-shaped wavelet tree
