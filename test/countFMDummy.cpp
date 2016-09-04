@@ -144,7 +144,7 @@ int main(int argc, char *argv[]) {
 }
 
 void fmDummy1_256(string selectedChars, const char *textFileName, unsigned int queriesNum, unsigned int m) {
-	FMDummy1<FMDummy1Type::FMD1_256> *FMD1 = new FMDummy1<FMDummy1Type::FMD1_256>(FMDummy1SelectedCharsMap[selectedChars]);
+	FMDummy1<FMD1_256> *FMD1 = new FMDummy1<FMD1_256>(FMDummy1SelectedCharsMap[selectedChars]);
 	string indexFileNameString = "FMD1-" + (string)textFileName + "-256-" + selectedChars + ".idx";
 	const char *indexFileName = indexFileNameString.c_str();
 
@@ -193,7 +193,7 @@ void fmDummy1_256(string selectedChars, const char *textFileName, unsigned int q
 }
 
 void fmDummy1_512(string selectedChars, const char *textFileName, unsigned int queriesNum, unsigned int m) {
-	FMDummy1<FMDummy1Type::FMD1_512> *FMD1 = new FMDummy1<FMDummy1Type::FMD1_512>(FMDummy1SelectedCharsMap[selectedChars]);
+	FMDummy1<FMD1_512> *FMD1 = new FMDummy1<FMD1_512>(FMDummy1SelectedCharsMap[selectedChars]);
 	string indexFileNameString = "FMD1-" + (string)textFileName + "-512-" + selectedChars + ".idx";
 	const char *indexFileName = indexFileNameString.c_str();
 
@@ -242,7 +242,7 @@ void fmDummy1_512(string selectedChars, const char *textFileName, unsigned int q
 }
 
 void fmDummy1Hash_256(string selectedChars, string k, string loadFactor, const char *textFileName, unsigned int queriesNum, unsigned int m) {
-	FMDummy1Hash<FMDummy1Type::FMD1_256> *FMD1 = new FMDummy1Hash<FMDummy1Type::FMD1_256>(FMDummy1SelectedCharsMap[selectedChars], atoi(k.c_str()), atof(loadFactor.c_str()));
+	FMDummy1Hash<FMD1_256> *FMD1 = new FMDummy1Hash<FMD1_256>(FMDummy1SelectedCharsMap[selectedChars], atoi(k.c_str()), atof(loadFactor.c_str()));
 	string indexFileNameString = "FMD1-hash-" + (string)textFileName + "-256-" + selectedChars + "-" +  k + "-" + loadFactor + ".idx";
 	char *indexFileName = (char *)indexFileNameString.c_str();
 
@@ -291,7 +291,7 @@ void fmDummy1Hash_256(string selectedChars, string k, string loadFactor, const c
 }
 
 void fmDummy1Hash_512(string selectedChars, string k, string loadFactor, const char *textFileName, unsigned int queriesNum, unsigned int m) {
-	FMDummy1Hash<FMDummy1Type::FMD1_512> *FMD1 = new FMDummy1Hash<FMDummy1Type::FMD1_512>(FMDummy1SelectedCharsMap[selectedChars], atoi(k.c_str()), atof(loadFactor.c_str()));
+	FMDummy1Hash<FMD1_512> *FMD1 = new FMDummy1Hash<FMD1_512>(FMDummy1SelectedCharsMap[selectedChars], atoi(k.c_str()), atof(loadFactor.c_str()));
 	string indexFileNameString = "FMD1-hash-" + (string)textFileName + "-512-" + selectedChars + "-" +  k + "-" + loadFactor + ".idx";
 	char *indexFileName = (char *)indexFileNameString.c_str();
 
@@ -340,7 +340,7 @@ void fmDummy1Hash_512(string selectedChars, string k, string loadFactor, const c
 }
 
 void fmDummy2_256_SCBO_3(const char *textFileName, unsigned int queriesNum, unsigned int m) {
-	FMDummy2<FMDummy2Type::FMD2_256, FMDummy2Schema::SCHEMA_SCBO, FMDummy2BPC::BITS_3> *FMD2 = new FMDummy2<FMDummy2Type::FMD2_256, FMDummy2Schema::SCHEMA_SCBO, FMDummy2BPC::BITS_3>();
+	FMDummy2<FMD2_256, FMD2_SCHEMA_SCBO, FMD2_BPC_3> *FMD2 = new FMDummy2<FMD2_256, FMD2_SCHEMA_SCBO, FMD2_BPC_3>();
 	string indexFileNameString = "FMD2-" + (string)textFileName + "-256-SCBO-3.idx";
 	char *indexFileName = (char *)indexFileNameString.c_str();
 
@@ -389,7 +389,7 @@ void fmDummy2_256_SCBO_3(const char *textFileName, unsigned int queriesNum, unsi
 }
 
 void fmDummy2_512_SCBO_3(const char *textFileName, unsigned int queriesNum, unsigned int m) {
-	FMDummy2<FMDummy2Type::FMD2_512, FMDummy2Schema::SCHEMA_SCBO, FMDummy2BPC::BITS_3> *FMD2 = new FMDummy2<FMDummy2Type::FMD2_512, FMDummy2Schema::SCHEMA_SCBO, FMDummy2BPC::BITS_3>();
+	FMDummy2<FMD2_512, FMD2_SCHEMA_SCBO, FMD2_BPC_3> *FMD2 = new FMDummy2<FMD2_512, FMD2_SCHEMA_SCBO, FMD2_BPC_3>();
 	string indexFileNameString = "FMD2-" + (string)textFileName + "-512-SCBO-3.idx";
 	char *indexFileName = (char *)indexFileNameString.c_str();
 
@@ -438,7 +438,7 @@ void fmDummy2_512_SCBO_3(const char *textFileName, unsigned int queriesNum, unsi
 }
 
 void fmDummy2_256_CB_3(const char *textFileName, unsigned int queriesNum, unsigned int m) {
-	FMDummy2<FMDummy2Type::FMD2_256, FMDummy2Schema::SCHEMA_CB, FMDummy2BPC::BITS_3> *FMD2 = new FMDummy2<FMDummy2Type::FMD2_256, FMDummy2Schema::SCHEMA_CB, FMDummy2BPC::BITS_3>();
+	FMDummy2<FMD2_256, FMD2_SCHEMA_CB, FMD2_BPC_3> *FMD2 = new FMDummy2<FMD2_256, FMD2_SCHEMA_CB, FMD2_BPC_3>();
 	string indexFileNameString = "FMD2-" + (string)textFileName + "-256-CB-3.idx";
 	char *indexFileName = (char *)indexFileNameString.c_str();
 
@@ -487,7 +487,7 @@ void fmDummy2_256_CB_3(const char *textFileName, unsigned int queriesNum, unsign
 }
 
 void fmDummy2_512_CB_3(const char *textFileName, unsigned int queriesNum, unsigned int m) {
-	FMDummy2<FMDummy2Type::FMD2_512, FMDummy2Schema::SCHEMA_CB, FMDummy2BPC::BITS_3> *FMD2 = new FMDummy2<FMDummy2Type::FMD2_512, FMDummy2Schema::SCHEMA_CB, FMDummy2BPC::BITS_3>();
+	FMDummy2<FMD2_512, FMD2_SCHEMA_CB, FMD2_BPC_3> *FMD2 = new FMDummy2<FMD2_512, FMD2_SCHEMA_CB, FMD2_BPC_3>();
 	string indexFileNameString = "FMD2-" + (string)textFileName + "-512-CB-3.idx";
 	char *indexFileName = (char *)indexFileNameString.c_str();
 
@@ -536,7 +536,7 @@ void fmDummy2_512_CB_3(const char *textFileName, unsigned int queriesNum, unsign
 }
 
 void fmDummy2_256_SCBO_4(const char *textFileName, unsigned int queriesNum, unsigned int m) {
-	FMDummy2<FMDummy2Type::FMD2_256, FMDummy2Schema::SCHEMA_SCBO, FMDummy2BPC::BITS_4> *FMD2 = new FMDummy2<FMDummy2Type::FMD2_256, FMDummy2Schema::SCHEMA_SCBO, FMDummy2BPC::BITS_4>();
+	FMDummy2<FMD2_256, FMD2_SCHEMA_SCBO, FMD2_BPC_4> *FMD2 = new FMDummy2<FMD2_256, FMD2_SCHEMA_SCBO, FMD2_BPC_4>();
 	string indexFileNameString = "FMD2-" + (string)textFileName + "-256-SCBO-4.idx";
 	char *indexFileName = (char *)indexFileNameString.c_str();
 
@@ -585,7 +585,7 @@ void fmDummy2_256_SCBO_4(const char *textFileName, unsigned int queriesNum, unsi
 }
 
 void fmDummy2_512_SCBO_4(const char *textFileName, unsigned int queriesNum, unsigned int m) {
-	FMDummy2<FMDummy2Type::FMD2_512, FMDummy2Schema::SCHEMA_SCBO, FMDummy2BPC::BITS_4> *FMD2 = new FMDummy2<FMDummy2Type::FMD2_512, FMDummy2Schema::SCHEMA_SCBO, FMDummy2BPC::BITS_4>();
+	FMDummy2<FMD2_512, FMD2_SCHEMA_SCBO, FMD2_BPC_4> *FMD2 = new FMDummy2<FMD2_512, FMD2_SCHEMA_SCBO, FMD2_BPC_4>();
 	string indexFileNameString = "FMD2-" + (string)textFileName + "-512-SCBO-4.idx";
 	char *indexFileName = (char *)indexFileNameString.c_str();
 
@@ -634,7 +634,7 @@ void fmDummy2_512_SCBO_4(const char *textFileName, unsigned int queriesNum, unsi
 }
 
 void fmDummy2_256_CB_4(const char *textFileName, unsigned int queriesNum, unsigned int m) {
-	FMDummy2<FMDummy2Type::FMD2_256, FMDummy2Schema::SCHEMA_CB, FMDummy2BPC::BITS_4> *FMD2 = new FMDummy2<FMDummy2Type::FMD2_256, FMDummy2Schema::SCHEMA_CB, FMDummy2BPC::BITS_4>();
+	FMDummy2<FMD2_256, FMD2_SCHEMA_CB, FMD2_BPC_4> *FMD2 = new FMDummy2<FMD2_256, FMD2_SCHEMA_CB, FMD2_BPC_4>();
 	string indexFileNameString = "FMD2-" + (string)textFileName + "-256-CB-4.idx";
 	char *indexFileName = (char *)indexFileNameString.c_str();
 
@@ -683,7 +683,7 @@ void fmDummy2_256_CB_4(const char *textFileName, unsigned int queriesNum, unsign
 }
 
 void fmDummy2_512_CB_4(const char *textFileName, unsigned int queriesNum, unsigned int m) {
-	FMDummy2<FMDummy2Type::FMD2_512, FMDummy2Schema::SCHEMA_CB, FMDummy2BPC::BITS_4> *FMD2 = new FMDummy2<FMDummy2Type::FMD2_512, FMDummy2Schema::SCHEMA_CB, FMDummy2BPC::BITS_4>();
+	FMDummy2<FMD2_512, FMD2_SCHEMA_CB, FMD2_BPC_4> *FMD2 = new FMDummy2<FMD2_512, FMD2_SCHEMA_CB, FMD2_BPC_4>();
 	string indexFileNameString = "FMD2-" + (string)textFileName + "-512-CB-4.idx";
 	char *indexFileName = (char *)indexFileNameString.c_str();
 
@@ -732,7 +732,7 @@ void fmDummy2_512_CB_4(const char *textFileName, unsigned int queriesNum, unsign
 }
 
 void fmDummy2Hash_256_SCBO_3(string k, string loadFactor, const char *textFileName, unsigned int queriesNum, unsigned int m) {
-	FMDummy2Hash<FMDummy2Type::FMD2_256, FMDummy2Schema::SCHEMA_SCBO, FMDummy2BPC::BITS_3> *FMD2 = new FMDummy2Hash<FMDummy2Type::FMD2_256, FMDummy2Schema::SCHEMA_SCBO, FMDummy2BPC::BITS_3>(atoi(k.c_str()), atof(loadFactor.c_str()));
+	FMDummy2Hash<FMD2_256, FMD2_SCHEMA_SCBO, FMD2_BPC_3> *FMD2 = new FMDummy2Hash<FMD2_256, FMD2_SCHEMA_SCBO, FMD2_BPC_3>(atoi(k.c_str()), atof(loadFactor.c_str()));
 	string indexFileNameString = "FMD2-hash-" + (string)textFileName + "-256-SCBO-3-" +  k + "-" + loadFactor + ".idx";
 	char *indexFileName = (char *)indexFileNameString.c_str();
 
@@ -781,7 +781,7 @@ void fmDummy2Hash_256_SCBO_3(string k, string loadFactor, const char *textFileNa
 }
 
 void fmDummy2Hash_512_SCBO_3(string k, string loadFactor, const char *textFileName, unsigned int queriesNum, unsigned int m) {
-	FMDummy2Hash<FMDummy2Type::FMD2_512, FMDummy2Schema::SCHEMA_SCBO, FMDummy2BPC::BITS_3> *FMD2 = new FMDummy2Hash<FMDummy2Type::FMD2_512, FMDummy2Schema::SCHEMA_SCBO, FMDummy2BPC::BITS_3>(atoi(k.c_str()), atof(loadFactor.c_str()));
+	FMDummy2Hash<FMD2_512, FMD2_SCHEMA_SCBO, FMD2_BPC_3> *FMD2 = new FMDummy2Hash<FMD2_512, FMD2_SCHEMA_SCBO, FMD2_BPC_3>(atoi(k.c_str()), atof(loadFactor.c_str()));
 	string indexFileNameString = "FMD2-hash-" + (string)textFileName + "-512-SCBO-3-" +  k + "-" + loadFactor + ".idx";
 	char *indexFileName = (char *)indexFileNameString.c_str();
 
@@ -830,7 +830,7 @@ void fmDummy2Hash_512_SCBO_3(string k, string loadFactor, const char *textFileNa
 }
 
 void fmDummy2Hash_256_CB_3(string k, string loadFactor, const char *textFileName, unsigned int queriesNum, unsigned int m) {
-	FMDummy2Hash<FMDummy2Type::FMD2_256, FMDummy2Schema::SCHEMA_CB, FMDummy2BPC::BITS_3> *FMD2 = new FMDummy2Hash<FMDummy2Type::FMD2_256, FMDummy2Schema::SCHEMA_CB, FMDummy2BPC::BITS_3>(atoi(k.c_str()), atof(loadFactor.c_str()));
+	FMDummy2Hash<FMD2_256, FMD2_SCHEMA_CB, FMD2_BPC_3> *FMD2 = new FMDummy2Hash<FMD2_256, FMD2_SCHEMA_CB, FMD2_BPC_3>(atoi(k.c_str()), atof(loadFactor.c_str()));
 	string indexFileNameString = "FMD2-hash-" + (string)textFileName + "-256-CB-3-" +  k + "-" + loadFactor + ".idx";
 	char *indexFileName = (char *)indexFileNameString.c_str();
 
@@ -879,7 +879,7 @@ void fmDummy2Hash_256_CB_3(string k, string loadFactor, const char *textFileName
 }
 
 void fmDummy2Hash_512_CB_3(string k, string loadFactor, const char *textFileName, unsigned int queriesNum, unsigned int m) {
-	FMDummy2Hash<FMDummy2Type::FMD2_512, FMDummy2Schema::SCHEMA_CB, FMDummy2BPC::BITS_3> *FMD2 = new FMDummy2Hash<FMDummy2Type::FMD2_512, FMDummy2Schema::SCHEMA_CB, FMDummy2BPC::BITS_3>(atoi(k.c_str()), atof(loadFactor.c_str()));
+	FMDummy2Hash<FMD2_512, FMD2_SCHEMA_CB, FMD2_BPC_3> *FMD2 = new FMDummy2Hash<FMD2_512, FMD2_SCHEMA_CB, FMD2_BPC_3>(atoi(k.c_str()), atof(loadFactor.c_str()));
 	string indexFileNameString = "FMD2-hash-" + (string)textFileName + "-512-CB-3-" +  k + "-" + loadFactor + ".idx";
 	char *indexFileName = (char *)indexFileNameString.c_str();
 
@@ -928,7 +928,7 @@ void fmDummy2Hash_512_CB_3(string k, string loadFactor, const char *textFileName
 }
 
 void fmDummy2Hash_256_SCBO_4(string k, string loadFactor, const char *textFileName, unsigned int queriesNum, unsigned int m) {
-	FMDummy2Hash<FMDummy2Type::FMD2_256, FMDummy2Schema::SCHEMA_SCBO, FMDummy2BPC::BITS_4> *FMD2 = new FMDummy2Hash<FMDummy2Type::FMD2_256, FMDummy2Schema::SCHEMA_SCBO, FMDummy2BPC::BITS_4>(atoi(k.c_str()), atof(loadFactor.c_str()));
+	FMDummy2Hash<FMD2_256, FMD2_SCHEMA_SCBO, FMD2_BPC_4> *FMD2 = new FMDummy2Hash<FMD2_256, FMD2_SCHEMA_SCBO, FMD2_BPC_4>(atoi(k.c_str()), atof(loadFactor.c_str()));
 	string indexFileNameString = "FMD2-hash-" + (string)textFileName + "-256-SCBO-4-" +  k + "-" + loadFactor + ".idx";
 	char *indexFileName = (char *)indexFileNameString.c_str();
 
@@ -977,7 +977,7 @@ void fmDummy2Hash_256_SCBO_4(string k, string loadFactor, const char *textFileNa
 }
 
 void fmDummy2Hash_512_SCBO_4(string k, string loadFactor, const char *textFileName, unsigned int queriesNum, unsigned int m) {
-	FMDummy2Hash<FMDummy2Type::FMD2_512, FMDummy2Schema::SCHEMA_SCBO, FMDummy2BPC::BITS_4> *FMD2 = new FMDummy2Hash<FMDummy2Type::FMD2_512, FMDummy2Schema::SCHEMA_SCBO, FMDummy2BPC::BITS_4>(atoi(k.c_str()), atof(loadFactor.c_str()));
+	FMDummy2Hash<FMD2_512, FMD2_SCHEMA_SCBO, FMD2_BPC_4> *FMD2 = new FMDummy2Hash<FMD2_512, FMD2_SCHEMA_SCBO, FMD2_BPC_4>(atoi(k.c_str()), atof(loadFactor.c_str()));
 	string indexFileNameString = "FMD2-hash-" + (string)textFileName + "-512-SCBO-4-" +  k + "-" + loadFactor + ".idx";
 	char *indexFileName = (char *)indexFileNameString.c_str();
 
@@ -1026,7 +1026,7 @@ void fmDummy2Hash_512_SCBO_4(string k, string loadFactor, const char *textFileNa
 }
 
 void fmDummy2Hash_256_CB_4(string k, string loadFactor, const char *textFileName, unsigned int queriesNum, unsigned int m) {
-	FMDummy2Hash<FMDummy2Type::FMD2_256, FMDummy2Schema::SCHEMA_CB, FMDummy2BPC::BITS_4> *FMD2 = new FMDummy2Hash<FMDummy2Type::FMD2_256, FMDummy2Schema::SCHEMA_CB, FMDummy2BPC::BITS_4>(atoi(k.c_str()), atof(loadFactor.c_str()));
+	FMDummy2Hash<FMD2_256, FMD2_SCHEMA_CB, FMD2_BPC_4> *FMD2 = new FMDummy2Hash<FMD2_256, FMD2_SCHEMA_CB, FMD2_BPC_4>(atoi(k.c_str()), atof(loadFactor.c_str()));
 	string indexFileNameString = "FMD2-hash-" + (string)textFileName + "-256-CB-4-" +  k + "-" + loadFactor + ".idx";
 	char *indexFileName = (char *)indexFileNameString.c_str();
 
@@ -1075,7 +1075,7 @@ void fmDummy2Hash_256_CB_4(string k, string loadFactor, const char *textFileName
 }
 
 void fmDummy2Hash_512_CB_4(string k, string loadFactor, const char *textFileName, unsigned int queriesNum, unsigned int m) {
-	FMDummy2Hash<FMDummy2Type::FMD2_512, FMDummy2Schema::SCHEMA_CB, FMDummy2BPC::BITS_4> *FMD2 = new FMDummy2Hash<FMDummy2Type::FMD2_512, FMDummy2Schema::SCHEMA_CB, FMDummy2BPC::BITS_4>(atoi(k.c_str()), atof(loadFactor.c_str()));
+	FMDummy2Hash<FMD2_512, FMD2_SCHEMA_CB, FMD2_BPC_4> *FMD2 = new FMDummy2Hash<FMD2_512, FMD2_SCHEMA_CB, FMD2_BPC_4>(atoi(k.c_str()), atof(loadFactor.c_str()));
 	string indexFileNameString = "FMD2-hash-" + (string)textFileName + "-512-CB-4-" +  k + "-" + loadFactor + ".idx";
 	char *indexFileName = (char *)indexFileNameString.c_str();
 
@@ -1124,7 +1124,7 @@ void fmDummy2Hash_512_CB_4(string k, string loadFactor, const char *textFileName
 }
 
 void fmDummy3_512(const char *textFileName, unsigned int queriesNum, unsigned int m) {
-	FMDummy3<FMDummy3Type::FMD3_512> *FMD3 = new FMDummy3<FMDummy3Type::FMD3_512>();
+	FMDummy3<FMD3_512> *FMD3 = new FMDummy3<FMD3_512>();
 	string indexFileNameString = "FMD3-" + (string)textFileName + "-512.idx";
 	char *indexFileName = (char *)indexFileNameString.c_str();
 
@@ -1174,7 +1174,7 @@ void fmDummy3_512(const char *textFileName, unsigned int queriesNum, unsigned in
 }
 
 void fmDummy3_1024(const char *textFileName, unsigned int queriesNum, unsigned int m) {
-	FMDummy3<FMDummy3Type::FMD3_1024> *FMD3 = new FMDummy3<FMDummy3Type::FMD3_1024>();
+	FMDummy3<FMD3_1024> *FMD3 = new FMDummy3<FMD3_1024>();
 	string indexFileNameString = "FMD3-" + (string)textFileName + "-1024.idx";
 	char *indexFileName = (char *)indexFileNameString.c_str();
 
@@ -1224,7 +1224,7 @@ void fmDummy3_1024(const char *textFileName, unsigned int queriesNum, unsigned i
 }
 
 void fmDummy3Hash_512(string k, string loadFactor, const char *textFileName, unsigned int queriesNum, unsigned int m) {
-	FMDummy3Hash<FMDummy3Type::FMD3_512> *FMD3 = new FMDummy3Hash<FMDummy3Type::FMD3_512>(atoi(k.c_str()), atof(loadFactor.c_str()));
+	FMDummy3Hash<FMD3_512> *FMD3 = new FMDummy3Hash<FMD3_512>(atoi(k.c_str()), atof(loadFactor.c_str()));
 	string indexFileNameString = "FMD3-hash-" + (string)textFileName + "-512-" +  k + "-" + loadFactor + ".idx";
 	char *indexFileName = (char *)indexFileNameString.c_str();
 
@@ -1274,7 +1274,7 @@ void fmDummy3Hash_512(string k, string loadFactor, const char *textFileName, uns
 }
 
 void fmDummy3Hash_1024(string k, string loadFactor, const char *textFileName, unsigned int queriesNum, unsigned int m) {
-	FMDummy3Hash<FMDummy3Type::FMD3_1024> *FMD3 = new FMDummy3Hash<FMDummy3Type::FMD3_1024>(atoi(k.c_str()), atof(loadFactor.c_str()));
+	FMDummy3Hash<FMD3_1024> *FMD3 = new FMDummy3Hash<FMD3_1024>(atoi(k.c_str()), atof(loadFactor.c_str()));
 	string indexFileNameString = "FMD3-hash-" + (string)textFileName + "-1024-" +  k + "-" + loadFactor + ".idx";
 	char *indexFileName = (char *)indexFileNameString.c_str();
 
@@ -1324,7 +1324,7 @@ void fmDummy3Hash_1024(string k, string loadFactor, const char *textFileName, un
 }
 
 void fmDummyHWT2_512(const char *textFileName, unsigned int queriesNum, unsigned int m) {
-	FMDummyHWT<FMDummyHWTType::FMDHWT_512, WTType::WTDummy2> *FMDHWT = new FMDummyHWT<FMDummyHWTType::FMDHWT_512, WTType::WTDummy2>();
+	FMDummyHWT<FMDHWT_512, WTDummy_2> *FMDHWT = new FMDummyHWT<FMDHWT_512, WTDummy_2>();
 	string indexFileNameString = "FMDHWT-" + (string)textFileName + "-2-512.idx";
 	char *indexFileName = (char *)indexFileNameString.c_str();
 
@@ -1373,7 +1373,7 @@ void fmDummyHWT2_512(const char *textFileName, unsigned int queriesNum, unsigned
 }
 
 void fmDummyHWT2_1024(const char *textFileName, unsigned int queriesNum, unsigned int m) {
-	FMDummyHWT<FMDummyHWTType::FMDHWT_1024, WTType::WTDummy2> *FMDHWT = new FMDummyHWT<FMDummyHWTType::FMDHWT_1024, WTType::WTDummy2>();
+	FMDummyHWT<FMDHWT_1024, WTDummy_2> *FMDHWT = new FMDummyHWT<FMDHWT_1024, WTDummy_2>();
 	string indexFileNameString = "FMDHWT-" + (string)textFileName + "-2-1024.idx";
 	char *indexFileName = (char *)indexFileNameString.c_str();
 
@@ -1422,7 +1422,7 @@ void fmDummyHWT2_1024(const char *textFileName, unsigned int queriesNum, unsigne
 }
 
 void fmDummyHWT4_512(const char *textFileName, unsigned int queriesNum, unsigned int m) {
-	FMDummyHWT<FMDummyHWTType::FMDHWT_512, WTType::WTDummy4> *FMDHWT = new FMDummyHWT<FMDummyHWTType::FMDHWT_512, WTType::WTDummy4>();
+	FMDummyHWT<FMDHWT_512, WTDummy_4> *FMDHWT = new FMDummyHWT<FMDHWT_512, WTDummy_4>();
 	string indexFileNameString = "FMDHWT-" + (string)textFileName + "-4-512.idx";
 	char *indexFileName = (char *)indexFileNameString.c_str();
 
@@ -1471,7 +1471,7 @@ void fmDummyHWT4_512(const char *textFileName, unsigned int queriesNum, unsigned
 }
 
 void fmDummyHWT4_1024(const char *textFileName, unsigned int queriesNum, unsigned int m) {
-	FMDummyHWT<FMDummyHWTType::FMDHWT_1024, WTType::WTDummy4> *FMDHWT = new FMDummyHWT<FMDummyHWTType::FMDHWT_1024, WTType::WTDummy4>();
+	FMDummyHWT<FMDHWT_1024, WTDummy_4> *FMDHWT = new FMDummyHWT<FMDHWT_1024, WTDummy_4>();
 	string indexFileNameString = "FMDHWT-" + (string)textFileName + "-4-1024.idx";
 	char *indexFileName = (char *)indexFileNameString.c_str();
 
@@ -1520,7 +1520,7 @@ void fmDummyHWT4_1024(const char *textFileName, unsigned int queriesNum, unsigne
 }
 
 void fmDummyHWT8_512(const char *textFileName, unsigned int queriesNum, unsigned int m) {
-	FMDummyHWT<FMDummyHWTType::FMDHWT_512, WTType::WTDummy8> *FMDHWT = new FMDummyHWT<FMDummyHWTType::FMDHWT_512, WTType::WTDummy8>();
+	FMDummyHWT<FMDHWT_512, WTDummy_8> *FMDHWT = new FMDummyHWT<FMDHWT_512, WTDummy_8>();
 	string indexFileNameString = "FMDHWT-" + (string)textFileName + "-8-512.idx";
 	char *indexFileName = (char *)indexFileNameString.c_str();
 
@@ -1569,7 +1569,7 @@ void fmDummyHWT8_512(const char *textFileName, unsigned int queriesNum, unsigned
 }
 
 void fmDummyHWT8_1024(const char *textFileName, unsigned int queriesNum, unsigned int m) {
-	FMDummyHWT<FMDummyHWTType::FMDHWT_1024, WTType::WTDummy8> *FMDHWT = new FMDummyHWT<FMDummyHWTType::FMDHWT_1024, WTType::WTDummy8>();
+	FMDummyHWT<FMDHWT_1024, WTDummy_8> *FMDHWT = new FMDummyHWT<FMDHWT_1024, WTDummy_8>();
 	string indexFileNameString = "FMDHWT-" + (string)textFileName + "-8-1024.idx";
 	char *indexFileName = (char *)indexFileNameString.c_str();
 
@@ -1618,7 +1618,7 @@ void fmDummyHWT8_1024(const char *textFileName, unsigned int queriesNum, unsigne
 }
 
 void fmDummyHWT2Hash_512(string k, string loadFactor, const char *textFileName, unsigned int queriesNum, unsigned int m) {
-	FMDummyHWTHash<FMDummyHWTType::FMDHWT_512, WTType::WTDummy2> *FMDHWT = new FMDummyHWTHash<FMDummyHWTType::FMDHWT_512, WTType::WTDummy2>(atoi(k.c_str()), atof(loadFactor.c_str()));
+	FMDummyHWTHash<FMDHWT_512, WTDummy_2> *FMDHWT = new FMDummyHWTHash<FMDHWT_512, WTDummy_2>(atoi(k.c_str()), atof(loadFactor.c_str()));
 	string indexFileNameString = "FMDHWT-hash-" + (string)textFileName + "-2-512-" +  k + "-" + loadFactor + ".idx";
 	char *indexFileName = (char *)indexFileNameString.c_str();
 
@@ -1667,7 +1667,7 @@ void fmDummyHWT2Hash_512(string k, string loadFactor, const char *textFileName, 
 }
 
 void fmDummyHWT2Hash_1024(string k, string loadFactor, const char *textFileName, unsigned int queriesNum, unsigned int m) {
-	FMDummyHWTHash<FMDummyHWTType::FMDHWT_1024, WTType::WTDummy2> *FMDHWT = new FMDummyHWTHash<FMDummyHWTType::FMDHWT_1024, WTType::WTDummy2>(atoi(k.c_str()), atof(loadFactor.c_str()));
+	FMDummyHWTHash<FMDHWT_1024, WTDummy_2> *FMDHWT = new FMDummyHWTHash<FMDHWT_1024, WTDummy_2>(atoi(k.c_str()), atof(loadFactor.c_str()));
 	string indexFileNameString = "FMDHWT-hash-" + (string)textFileName + "-2-1024-" +  k + "-" + loadFactor + ".idx";
 	char *indexFileName = (char *)indexFileNameString.c_str();
 
@@ -1716,7 +1716,7 @@ void fmDummyHWT2Hash_1024(string k, string loadFactor, const char *textFileName,
 }
 
 void fmDummyHWT4Hash_512(string k, string loadFactor, const char *textFileName, unsigned int queriesNum, unsigned int m) {
-	FMDummyHWTHash<FMDummyHWTType::FMDHWT_512, WTType::WTDummy4> *FMDHWT = new FMDummyHWTHash<FMDummyHWTType::FMDHWT_512, WTType::WTDummy4>(atoi(k.c_str()), atof(loadFactor.c_str()));
+	FMDummyHWTHash<FMDHWT_512, WTDummy_4> *FMDHWT = new FMDummyHWTHash<FMDHWT_512, WTDummy_4>(atoi(k.c_str()), atof(loadFactor.c_str()));
 	string indexFileNameString = "FMDHWT-hash-" + (string)textFileName + "-4-512-" +  k + "-" + loadFactor + ".idx";
 	char *indexFileName = (char *)indexFileNameString.c_str();
 
@@ -1765,7 +1765,7 @@ void fmDummyHWT4Hash_512(string k, string loadFactor, const char *textFileName, 
 }
 
 void fmDummyHWT4Hash_1024(string k, string loadFactor, const char *textFileName, unsigned int queriesNum, unsigned int m) {
-	FMDummyHWTHash<FMDummyHWTType::FMDHWT_1024, WTType::WTDummy4> *FMDHWT = new FMDummyHWTHash<FMDummyHWTType::FMDHWT_1024, WTType::WTDummy4>(atoi(k.c_str()), atof(loadFactor.c_str()));
+	FMDummyHWTHash<FMDHWT_1024, WTDummy_4> *FMDHWT = new FMDummyHWTHash<FMDHWT_1024, WTDummy_4>(atoi(k.c_str()), atof(loadFactor.c_str()));
 	string indexFileNameString = "FMDHWT-hash-" + (string)textFileName + "-4-1024-" +  k + "-" + loadFactor + ".idx";
 	char *indexFileName = (char *)indexFileNameString.c_str();
 
@@ -1814,7 +1814,7 @@ void fmDummyHWT4Hash_1024(string k, string loadFactor, const char *textFileName,
 }
 
 void fmDummyHWT8Hash_512(string k, string loadFactor, const char *textFileName, unsigned int queriesNum, unsigned int m) {
-	FMDummyHWTHash<FMDummyHWTType::FMDHWT_512, WTType::WTDummy8> *FMDHWT = new FMDummyHWTHash<FMDummyHWTType::FMDHWT_512, WTType::WTDummy8>(atoi(k.c_str()), atof(loadFactor.c_str()));
+	FMDummyHWTHash<FMDHWT_512, WTDummy_8> *FMDHWT = new FMDummyHWTHash<FMDHWT_512, WTDummy_8>(atoi(k.c_str()), atof(loadFactor.c_str()));
 	string indexFileNameString = "FMDHWT-hash-" + (string)textFileName + "-8-512-" +  k + "-" + loadFactor + ".idx";
 	char *indexFileName = (char *)indexFileNameString.c_str();
 
@@ -1863,7 +1863,7 @@ void fmDummyHWT8Hash_512(string k, string loadFactor, const char *textFileName, 
 }
 
 void fmDummyHWT8Hash_1024(string k, string loadFactor, const char *textFileName, unsigned int queriesNum, unsigned int m) {
-	FMDummyHWTHash<FMDummyHWTType::FMDHWT_1024, WTType::WTDummy8> *FMDHWT = new FMDummyHWTHash<FMDummyHWTType::FMDHWT_1024, WTType::WTDummy8>(atoi(k.c_str()), atof(loadFactor.c_str()));
+	FMDummyHWTHash<FMDHWT_1024, WTDummy_8> *FMDHWT = new FMDummyHWTHash<FMDHWT_1024, WTDummy_8>(atoi(k.c_str()), atof(loadFactor.c_str()));
 	string indexFileNameString = "FMDHWT-hash-" + (string)textFileName + "-8-1024-" +  k + "-" + loadFactor + ".idx";
 	char *indexFileName = (char *)indexFileNameString.c_str();
 

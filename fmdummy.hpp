@@ -465,13 +465,13 @@ enum FMDummy2Type {
 };
 
 enum FMDummy2BPC {
-        BITS_3 = 3,
-        BITS_4 = 4
+        FMD2_BPC_3 = 3,
+        FMD2_BPC_4 = 4
 };
 
 enum FMDummy2Schema {
-        SCHEMA_SCBO = 1,
-        SCHEMA_CB = 2
+        FMD2_SCHEMA_SCBO = 1,
+        FMD2_SCHEMA_CB = 2
 };
 
 
@@ -790,7 +790,7 @@ public:
             unsigned char *encodedText = NULL;
             unsigned int b = 0;
             switch (S) {
-                case FMDummy2Schema::SCHEMA_SCBO:
+                case FMDummy2Schema::FMD2_SCHEMA_SCBO:
                     if (this->verbose) cout << "SCBO text encoding ... " << flush;
                     encodedText = this->getEncodedInSCBO(text, this->textLen, encodedTextLen);
                     if (this->verbose) cout << "Done" << endl;
@@ -833,7 +833,7 @@ public:
             if (this->verbose) cout << "Done" << endl;
 
             fillArrayC(encodedText, encodedTextLen, this->c, this->verbose);
-            if (S == FMDummy2Schema::SCHEMA_CB) this->bInC = this->c[b];
+            if (S == FMDummy2Schema::FMD2_SCHEMA_CB) this->bInC = this->c[b];
 
             if (this->verbose) cout << "Interweaving BWT with ranks ... " << flush;
             switch(T) {
@@ -868,7 +868,7 @@ public:
                             fwrite(this->alignedBWTWithRanks[i], (size_t)sizeof(unsigned long long), (size_t)this->bwtWithRanksLen, outFile);
                     }
             }
-            if (S == FMDummy2Schema::SCHEMA_CB) fwrite(&this->bInC, (size_t)sizeof(unsigned int), (size_t)1, outFile);
+            if (S == FMDummy2Schema::FMD2_SCHEMA_CB) fwrite(&this->bInC, (size_t)sizeof(unsigned int), (size_t)1, outFile);
             fclose(outFile);
             if (this->verbose) cout << "Done" << endl;
         }
@@ -925,7 +925,7 @@ public:
                             }
                     }
             }
-            if (S == FMDummy2Schema::SCHEMA_CB) {
+            if (S == FMDummy2Schema::FMD2_SCHEMA_CB) {
                     result = fread(&this->bInC, (size_t)sizeof(unsigned int), (size_t)1, inFile);
                     if (result != 1) {
                             cout << "Error loading index from " << fileName << endl;
@@ -960,7 +960,7 @@ public:
             switch(T) {
                 case FMDummy2Type::FMD2_512:
                     switch(S) {
-                        case FMDummy2Schema::SCHEMA_SCBO:
+                        case FMDummy2Schema::FMD2_SCHEMA_SCBO:
                             return count_512_counter40(encodedPattern, encodedPatternLen - 1, this->c, this->alignedBWTWithRanks, this->c[encodedPattern[encodedPatternLen - 1]] + 1, this->c[encodedPattern[encodedPatternLen - 1] + 1]);
                             break;
                         default:
@@ -970,7 +970,7 @@ public:
                     break;
                 default:
                     switch(S) {
-                        case FMDummy2Schema::SCHEMA_SCBO:
+                        case FMDummy2Schema::FMD2_SCHEMA_SCBO:
                             return count_256_counter48(encodedPattern, encodedPatternLen - 1, this->c, this->alignedBWTWithRanks, this->c[encodedPattern[encodedPatternLen - 1]] + 1, this->c[encodedPattern[encodedPatternLen - 1] + 1]);
                             break;
                         default:
@@ -1019,7 +1019,7 @@ public:
             unsigned char *encodedText = NULL;
             unsigned int b = 0;
             switch (S) {
-                case FMDummy2Schema::SCHEMA_SCBO:
+                case FMDummy2Schema::FMD2_SCHEMA_SCBO:
                         if (this->verbose) cout << "SCBO text encoding ... " << flush;
                         encodedText = this->getEncodedInSCBO(text, this->textLen, encodedTextLen);
                         if (this->verbose) cout << "Done" << endl;
@@ -1061,7 +1061,7 @@ public:
             if (this->verbose) cout << "Done" << endl;
 
             fillArrayC(encodedText, encodedTextLen, this->c, this->verbose);
-            if (S == FMDummy2Schema::SCHEMA_CB) this->bInC = this->c[b];
+            if (S == FMDummy2Schema::FMD2_SCHEMA_CB) this->bInC = this->c[b];
 
             if (this->verbose) cout << "Interweaving BWT with ranks ... " << flush;
             switch(T) {
@@ -1087,7 +1087,7 @@ public:
                             encode(entry, this->ht->k, this->encodedChars, this->encodedCharsLen, this->maxEncodedCharsLen, encodedPattern, encodedPatternLen);
                             diff = this->ht->alignedBoundariesHT[2 * i + 1] - this->ht->alignedBoundariesHT[2 * i];
                             switch (S) {
-                                case FMDummy2Schema::SCHEMA_SCBO:
+                                case FMDummy2Schema::FMD2_SCHEMA_SCBO:
                                         switch(T) {
                                         case FMDummy2Type::FMD2_512:
                                             getCountBoundaries_512_counter40(encodedPattern, encodedPatternLen - 1, this->c, this->alignedBWTWithRanks, this->c[encodedPattern[encodedPatternLen - 1]] + 1, this->c[encodedPattern[encodedPatternLen - 1] + 1], this->ht->alignedBoundariesHT[2 * i], this->ht->alignedBoundariesHT[2 * i + 1]);
@@ -1154,7 +1154,7 @@ public:
                             fwrite(this->alignedBWTWithRanks[i], (size_t)sizeof(unsigned long long), (size_t)this->bwtWithRanksLen, outFile);
                     }
             }
-            if (S == FMDummy2Schema::SCHEMA_CB) fwrite(&this->bInC, (size_t)sizeof(unsigned int), (size_t)1, outFile);
+            if (S == FMDummy2Schema::FMD2_SCHEMA_CB) fwrite(&this->bInC, (size_t)sizeof(unsigned int), (size_t)1, outFile);
             this->ht->save(outFile);
             fclose(outFile);
             if (this->verbose) cout << "Done" << endl;
@@ -1212,7 +1212,7 @@ public:
                             }
                     }
             }
-            if (S == FMDummy2Schema::SCHEMA_CB) {
+            if (S == FMDummy2Schema::FMD2_SCHEMA_CB) {
                     result = fread(&this->bInC, (size_t)sizeof(unsigned int), (size_t)1, inFile);
                     if (result != 1) {
                             cout << "Error loading index from " << fileName << endl;
@@ -1246,7 +1246,7 @@ public:
             switch(T) {
                 case FMDummy2Type::FMD2_512:
                     switch(S) {
-                        case FMDummy2Schema::SCHEMA_SCBO:
+                        case FMDummy2Schema::FMD2_SCHEMA_SCBO:
                             return count_512_counter40(this->encodedPattern, encodedPatternLen, this->c, this->alignedBWTWithRanks, leftBoundary + 1, rightBoundary);
                             break;
                         default:
@@ -1256,7 +1256,7 @@ public:
                     break;
                 default:
                     switch(S) {
-                        case FMDummy2Schema::SCHEMA_SCBO:
+                        case FMDummy2Schema::FMD2_SCHEMA_SCBO:
                             return count_256_counter48(this->encodedPattern, encodedPatternLen, this->c, this->alignedBWTWithRanks, leftBoundary + 1, rightBoundary);
                             break;
                         default:
@@ -3767,10 +3767,10 @@ unsigned int count_HWTDummy8_1024(unsigned char *pattern, unsigned int i, unsign
 
 }
 
-enum WTType {
-        WTDummy2 = 2,
-        WTDummy4 = 4,
-        WTDummy8 = 8
+enum WTDummyType {
+        WTDummy_2 = 2,
+        WTDummy_4 = 4,
+        WTDummy_8 = 8
 };
 
 enum FMDummyHWTType {
@@ -3778,7 +3778,7 @@ enum FMDummyHWTType {
         FMDHWT_1024 = 16
 };
 
-template<FMDummyHWTType T, WTType W> class FMDummyHWT : public Index {
+template<FMDummyHWTType T, WTDummyType W> class FMDummyHWT : public Index {
 protected:
 	WTDummy *wt;
 	alignas(128) unsigned long long code[256];
@@ -3823,10 +3823,10 @@ public:
             if (this->verbose) cout << "Done" << endl;
             if (this->verbose) cout << "Building WT ... " << flush;
             switch (W) {
-                case WTType::WTDummy4:
+                case WTDummyType::WTDummy_4:
                     this->wt = createHWTDummy4(T, bwt, bwtLen, 0, this->code, this->codeLen);
                     break;
-                case WTType::WTDummy8:
+                case WTDummyType::WTDummy_8:
                     this->wt = createHWTDummy8(T, bwt, bwtLen, 0, this->code, this->codeLen);
                     break;
                 default:
@@ -3930,7 +3930,7 @@ public:
 
 	unsigned int count(unsigned char *pattern, unsigned int patternLen) {
             switch (W) {
-                case WTType::WTDummy4:
+                case WTDummyType::WTDummy_4:
                     switch(T) {
                         case FMDummyHWTType::FMDHWT_1024:
                             return count_HWTDummy4_1024(pattern, patternLen - 1, this->c, this->wt, this->c[pattern[patternLen - 1]] + 1, this->c[pattern[patternLen - 1] + 1], this->code, this->codeLen);
@@ -3940,7 +3940,7 @@ public:
                             break;
                     }
                     break;
-                case WTType::WTDummy8:
+                case WTDummyType::WTDummy_8:
                     switch(T) {
                         case FMDummyHWTType::FMDHWT_1024:
                             return count_HWTDummy8_1024(pattern, patternLen - 1, this->c, this->wt, this->c[pattern[patternLen - 1]] + 1, this->c[pattern[patternLen - 1] + 1], this->code, this->codeLen);
@@ -3964,7 +3964,7 @@ public:
         }
 };
 
-template<FMDummyHWTType T, WTType W> class FMDummyHWTHash : public FMDummyHWT<T, W> {
+template<FMDummyHWTType T, WTDummyType W> class FMDummyHWTHash : public FMDummyHWT<T, W> {
 private:
         HTExt<HTType::HT_STANDARD> *ht = NULL;
         
@@ -4002,10 +4002,10 @@ public:
             if (this->verbose) cout << "Done" << endl;
             if (this->verbose) cout << "Building WT ... " << flush;
             switch (W) {
-                case WTType::WTDummy4:
+                case WTDummyType::WTDummy_4:
                     this->wt = createHWTDummy4(T, bwt, bwtLen, 0, this->code, this->codeLen);
                     break;
-                case WTType::WTDummy8:
+                case WTDummyType::WTDummy_8:
                     this->wt = createHWTDummy8(T, bwt, bwtLen, 0, this->code, this->codeLen);
                     break;
                 default:
@@ -4109,7 +4109,7 @@ public:
             unsigned int leftBoundary, rightBoundary;
             this->ht->getBoundaries(pattern + (patternLen - this->ht->k), leftBoundary, rightBoundary);
             switch (W) {
-                case WTType::WTDummy4:
+                case WTDummyType::WTDummy_4:
                     switch(T) {
                         case FMDummyHWTType::FMDHWT_1024:
                             return count_HWTDummy4_1024(pattern, patternLen - this->ht->k, this->c, this->wt, leftBoundary + 1, rightBoundary, this->code, this->codeLen);
@@ -4119,7 +4119,7 @@ public:
                             break;
                     }
                     break;
-                case WTType::WTDummy8:
+                case WTDummyType::WTDummy_8:
                     switch(T) {
                         case FMDummyHWTType::FMDHWT_1024:
                             return count_HWTDummy8_1024(pattern, patternLen - this->ht->k, this->c, this->wt, leftBoundary + 1, rightBoundary, this->code, this->codeLen);
