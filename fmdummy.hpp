@@ -258,7 +258,7 @@ public:
 
 template<FMDummy1Type T> class FMDummy1Hash : public FMDummy1<T> {
 private:
-	HTExt<HTType::STANDARD> *ht = NULL;
+	HTExt<HTType::HT_STANDARD> *ht = NULL;
 
 	void freeMemory() {
             FMDummy1<T>::freeMemory();
@@ -269,13 +269,13 @@ public:
         FMDummy1Hash(unsigned int k, double loadFactor) {
 		this->initialize();
 		this->setSelectedChars({});
-                this->ht = new HTExt<HTType::STANDARD>(k, loadFactor);
+                this->ht = new HTExt<HTType::HT_STANDARD>(k, loadFactor);
 	}
         
 	FMDummy1Hash(vector<unsigned char> selectedChars, unsigned int k, double loadFactor) {
 		this->initialize();
 		this->setSelectedChars(selectedChars);
-                this->ht = new HTExt<HTType::STANDARD>(k, loadFactor);
+                this->ht = new HTExt<HTType::HT_STANDARD>(k, loadFactor);
 	}
 
 	~FMDummy1Hash() {
@@ -429,7 +429,7 @@ public:
                     this->allChars = false;
             } else this->allChars = true;
             delete this->ht;
-            this->ht = new HTExt<HTType::STANDARD>();
+            this->ht = new HTExt<HTType::HT_STANDARD>();
             this->ht->load(inFile);
             fclose(inFile);
             if (this->verbose) cout << "Done" << endl;
@@ -984,7 +984,7 @@ public:
 
 template<FMDummy2Type T, FMDummy2Schema S, FMDummy2BPC BPC> class FMDummy2Hash : public FMDummy2<T, S, BPC> {
 protected:
-	HTExt<HTType::STANDARD> *ht = NULL;
+	HTExt<HTType::HT_STANDARD> *ht = NULL;
 
 	void freeMemory() {
             FMDummy2<T, S, BPC>::freeMemory();
@@ -994,7 +994,7 @@ protected:
 public:
 	FMDummy2Hash(unsigned int k, double loadFactor) {
 		this->initialize();
-		this->ht = new HTExt<HTType::STANDARD>(k, loadFactor);
+		this->ht = new HTExt<HTType::HT_STANDARD>(k, loadFactor);
 	}
 
 	~FMDummy2Hash() {
@@ -1080,7 +1080,7 @@ public:
             unsigned char *encodedPattern = new unsigned char[this->maxEncodedCharsLen * this->ht->k + 1];
             unsigned int encodedPatternLen;
             for (unsigned int i = 0; i < this->ht->bucketsNum; ++i) {
-                    if (this->ht->alignedBoundariesHT[2 * i] != HT<HTType::STANDARD>::emptyValueHT) {
+                    if (this->ht->alignedBoundariesHT[2 * i] != HT<HTType::HT_STANDARD>::emptyValueHT) {
                             entry[0] = cutOutEntries[2 * i];
                             entry[1] = cutOutEntries[2 * i + 1];
                             for (unsigned int j = 0; j < this->ht->prefixLength; ++j) entry[j + 2] = this->ht->alignedEntriesHT[i * this->ht->prefixLength + j];
@@ -1220,7 +1220,7 @@ public:
                     }
             }
             delete this->ht;
-            this->ht = new HTExt<HTType::STANDARD>();
+            this->ht = new HTExt<HTType::HT_STANDARD>();
             this->ht->load(inFile);
             fclose(inFile);
             if (this->verbose) cout << "Done" << endl;
@@ -1510,7 +1510,7 @@ public:
 
 template<FMDummy3Type T> class FMDummy3Hash : public FMDummy3<T> {
 private:
-	HTExt<HTType::STANDARD> *ht = NULL;
+	HTExt<HTType::HT_STANDARD> *ht = NULL;
         
 	void freeMemory() {
             FMDummy3<T>::freeMemory();
@@ -1520,7 +1520,7 @@ private:
 public:
 	FMDummy3Hash(unsigned int k, double loadFactor) {
 		this->initialize();
-		this->ht = new HTExt<HTType::STANDARD>(k, loadFactor);
+		this->ht = new HTExt<HTType::HT_STANDARD>(k, loadFactor);
 	}
 
 	~FMDummy3Hash() {
@@ -1636,7 +1636,7 @@ public:
                     }
             }
             delete this->ht;
-            this->ht = new HTExt<HTType::STANDARD>();
+            this->ht = new HTExt<HTType::HT_STANDARD>();
             this->ht->load(inFile);
             fclose(inFile);
             if (this->verbose) cout << "Done" << endl;
@@ -3966,7 +3966,7 @@ public:
 
 template<FMDummyHWTType T, WTType W> class FMDummyHWTHash : public FMDummyHWT<T, W> {
 private:
-        HTExt<HTType::STANDARD> *ht = NULL;
+        HTExt<HTType::HT_STANDARD> *ht = NULL;
         
 	void freeMemory() {
             FMDummyHWT<T, W>::freeMemory();
@@ -3977,7 +3977,7 @@ public:
 
 	FMDummyHWTHash(unsigned int k, double loadFactor) {
 		this->initialize();
-		this->ht = new HTExt<HTType::STANDARD>(k, loadFactor);
+		this->ht = new HTExt<HTType::HT_STANDARD>(k, loadFactor);
 	}
 
 	~FMDummyHWTHash() {
@@ -4089,7 +4089,7 @@ public:
                     this->wt->load(inFile);
             }
             delete this->ht;
-            this->ht = new HTExt<HTType::STANDARD>();
+            this->ht = new HTExt<HTType::HT_STANDARD>();
             this->ht->load(inFile);
             fclose(inFile);
             if (this->verbose) cout << "Done" << endl;
