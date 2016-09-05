@@ -151,7 +151,6 @@ void fmDummy1_256(string selectedChars, const char *textFileName, unsigned int q
 	if (fileExists(indexFileName)) {
 		FMD1->load(indexFileName);
 	} else {
-		FMD1->setVerbose(true);
 		FMD1->build(textFileName);
 		FMD1->save(indexFileName);
 	}
@@ -200,7 +199,6 @@ void fmDummy1_512(string selectedChars, const char *textFileName, unsigned int q
 	if (fileExists(indexFileName)) {
 		FMD1->load(indexFileName);
 	} else {
-		FMD1->setVerbose(true);
 		FMD1->build(textFileName);
 		FMD1->save(indexFileName);
 	}
@@ -249,7 +247,6 @@ void fmDummy1Hash_256(string selectedChars, string k, string loadFactor, const c
 	if (fileExists(indexFileName)) {
 		FMD1->load(indexFileName);
 	} else {
-		FMD1->setVerbose(true);
 		FMD1->build(textFileName);
 		FMD1->save(indexFileName);
 	}
@@ -298,7 +295,6 @@ void fmDummy1Hash_512(string selectedChars, string k, string loadFactor, const c
 	if (fileExists(indexFileName)) {
 		FMD1->load(indexFileName);
 	} else {
-		FMD1->setVerbose(true);
 		FMD1->build(textFileName);
 		FMD1->save(indexFileName);
 	}
@@ -347,7 +343,6 @@ void fmDummy2_256_SCBO_3(const char *textFileName, unsigned int queriesNum, unsi
 	if (fileExists(indexFileName)) {
 		FMD2->load(indexFileName);
 	} else {
-		FMD2->setVerbose(true);
 		FMD2->build(textFileName);
 		FMD2->save(indexFileName);
 	}
@@ -396,7 +391,6 @@ void fmDummy2_512_SCBO_3(const char *textFileName, unsigned int queriesNum, unsi
 	if (fileExists(indexFileName)) {
 		FMD2->load(indexFileName);
 	} else {
-		FMD2->setVerbose(true);
 		FMD2->build(textFileName);
 		FMD2->save(indexFileName);
 	}
@@ -445,7 +439,6 @@ void fmDummy2_256_CB_3(const char *textFileName, unsigned int queriesNum, unsign
 	if (fileExists(indexFileName)) {
 		FMD2->load(indexFileName);
 	} else {
-		FMD2->setVerbose(true);
 		FMD2->build(textFileName);
 		FMD2->save(indexFileName);
 	}
@@ -494,7 +487,6 @@ void fmDummy2_512_CB_3(const char *textFileName, unsigned int queriesNum, unsign
 	if (fileExists(indexFileName)) {
 		FMD2->load(indexFileName);
 	} else {
-		FMD2->setVerbose(true);
 		FMD2->build(textFileName);
 		FMD2->save(indexFileName);
 	}
@@ -543,7 +535,6 @@ void fmDummy2_256_SCBO_4(const char *textFileName, unsigned int queriesNum, unsi
 	if (fileExists(indexFileName)) {
 		FMD2->load(indexFileName);
 	} else {
-		FMD2->setVerbose(true);
 		FMD2->build(textFileName);
 		FMD2->save(indexFileName);
 	}
@@ -592,7 +583,6 @@ void fmDummy2_512_SCBO_4(const char *textFileName, unsigned int queriesNum, unsi
 	if (fileExists(indexFileName)) {
 		FMD2->load(indexFileName);
 	} else {
-		FMD2->setVerbose(true);
 		FMD2->build(textFileName);
 		FMD2->save(indexFileName);
 	}
@@ -641,7 +631,6 @@ void fmDummy2_256_CB_4(const char *textFileName, unsigned int queriesNum, unsign
 	if (fileExists(indexFileName)) {
 		FMD2->load(indexFileName);
 	} else {
-		FMD2->setVerbose(true);
 		FMD2->build(textFileName);
 		FMD2->save(indexFileName);
 	}
@@ -690,7 +679,6 @@ void fmDummy2_512_CB_4(const char *textFileName, unsigned int queriesNum, unsign
 	if (fileExists(indexFileName)) {
 		FMD2->load(indexFileName);
 	} else {
-		FMD2->setVerbose(true);
 		FMD2->build(textFileName);
 		FMD2->save(indexFileName);
 	}
@@ -739,7 +727,6 @@ void fmDummy2Hash_256_SCBO_3(string k, string loadFactor, const char *textFileNa
 	if (fileExists(indexFileName)) {
 		FMD2->load(indexFileName);
 	} else {
-		FMD2->setVerbose(true);
 		FMD2->build(textFileName);
 		FMD2->save(indexFileName);
 	}
@@ -788,7 +775,6 @@ void fmDummy2Hash_512_SCBO_3(string k, string loadFactor, const char *textFileNa
 	if (fileExists(indexFileName)) {
 		FMD2->load(indexFileName);
 	} else {
-		FMD2->setVerbose(true);
 		FMD2->build(textFileName);
 		FMD2->save(indexFileName);
 	}
@@ -837,7 +823,6 @@ void fmDummy2Hash_256_CB_3(string k, string loadFactor, const char *textFileName
 	if (fileExists(indexFileName)) {
 		FMD2->load(indexFileName);
 	} else {
-		FMD2->setVerbose(true);
 		FMD2->build(textFileName);
 		FMD2->save(indexFileName);
 	}
@@ -886,7 +871,6 @@ void fmDummy2Hash_512_CB_3(string k, string loadFactor, const char *textFileName
 	if (fileExists(indexFileName)) {
 		FMD2->load(indexFileName);
 	} else {
-		FMD2->setVerbose(true);
 		FMD2->build(textFileName);
 		FMD2->save(indexFileName);
 	}
@@ -935,7 +919,6 @@ void fmDummy2Hash_256_SCBO_4(string k, string loadFactor, const char *textFileNa
 	if (fileExists(indexFileName)) {
 		FMD2->load(indexFileName);
 	} else {
-		FMD2->setVerbose(true);
 		FMD2->build(textFileName);
 		FMD2->save(indexFileName);
 	}
@@ -984,7 +967,6 @@ void fmDummy2Hash_512_SCBO_4(string k, string loadFactor, const char *textFileNa
 	if (fileExists(indexFileName)) {
 		FMD2->load(indexFileName);
 	} else {
-		FMD2->setVerbose(true);
 		FMD2->build(textFileName);
 		FMD2->save(indexFileName);
 	}
@@ -1033,7 +1015,6 @@ void fmDummy2Hash_256_CB_4(string k, string loadFactor, const char *textFileName
 	if (fileExists(indexFileName)) {
 		FMD2->load(indexFileName);
 	} else {
-		FMD2->setVerbose(true);
 		FMD2->build(textFileName);
 		FMD2->save(indexFileName);
 	}
@@ -1082,7 +1063,6 @@ void fmDummy2Hash_512_CB_4(string k, string loadFactor, const char *textFileName
 	if (fileExists(indexFileName)) {
 		FMD2->load(indexFileName);
 	} else {
-		FMD2->setVerbose(true);
 		FMD2->build(textFileName);
 		FMD2->save(indexFileName);
 	}
@@ -1131,7 +1111,6 @@ void fmDummy3_512(const char *textFileName, unsigned int queriesNum, unsigned in
 	if (fileExists(indexFileName)) {
 		FMD3->load(indexFileName);
 	} else {
-		FMD3->setVerbose(true);
 		FMD3->build(textFileName);
 		FMD3->save(indexFileName);
 	}
@@ -1181,7 +1160,6 @@ void fmDummy3_1024(const char *textFileName, unsigned int queriesNum, unsigned i
 	if (fileExists(indexFileName)) {
 		FMD3->load(indexFileName);
 	} else {
-		FMD3->setVerbose(true);
 		FMD3->build(textFileName);
 		FMD3->save(indexFileName);
 	}
@@ -1231,7 +1209,6 @@ void fmDummy3Hash_512(string k, string loadFactor, const char *textFileName, uns
 	if (fileExists(indexFileName)) {
 		FMD3->load(indexFileName);
 	} else {
-		FMD3->setVerbose(true);
 		FMD3->build(textFileName);
 		FMD3->save(indexFileName);
 	}
@@ -1281,7 +1258,6 @@ void fmDummy3Hash_1024(string k, string loadFactor, const char *textFileName, un
 	if (fileExists(indexFileName)) {
 		FMD3->load(indexFileName);
 	} else {
-		FMD3->setVerbose(true);
 		FMD3->build(textFileName);
 		FMD3->save(indexFileName);
 	}
@@ -1331,7 +1307,6 @@ void fmDummyHWT2_512(const char *textFileName, unsigned int queriesNum, unsigned
 	if (fileExists(indexFileName)) {
 		FMDHWT->load(indexFileName);
 	} else {
-		FMDHWT->setVerbose(true);
 		FMDHWT->build(textFileName);
 		FMDHWT->save(indexFileName);
 	}
@@ -1380,7 +1355,6 @@ void fmDummyHWT2_1024(const char *textFileName, unsigned int queriesNum, unsigne
 	if (fileExists(indexFileName)) {
 		FMDHWT->load(indexFileName);
 	} else {
-		FMDHWT->setVerbose(true);
 		FMDHWT->build(textFileName);
 		FMDHWT->save(indexFileName);
 	}
@@ -1429,7 +1403,6 @@ void fmDummyHWT4_512(const char *textFileName, unsigned int queriesNum, unsigned
 	if (fileExists(indexFileName)) {
 		FMDHWT->load(indexFileName);
 	} else {
-		FMDHWT->setVerbose(true);
 		FMDHWT->build(textFileName);
 		FMDHWT->save(indexFileName);
 	}
@@ -1478,7 +1451,6 @@ void fmDummyHWT4_1024(const char *textFileName, unsigned int queriesNum, unsigne
 	if (fileExists(indexFileName)) {
 		FMDHWT->load(indexFileName);
 	} else {
-		FMDHWT->setVerbose(true);
 		FMDHWT->build(textFileName);
 		FMDHWT->save(indexFileName);
 	}
@@ -1527,7 +1499,6 @@ void fmDummyHWT8_512(const char *textFileName, unsigned int queriesNum, unsigned
 	if (fileExists(indexFileName)) {
 		FMDHWT->load(indexFileName);
 	} else {
-		FMDHWT->setVerbose(true);
 		FMDHWT->build(textFileName);
 		FMDHWT->save(indexFileName);
 	}
@@ -1576,7 +1547,6 @@ void fmDummyHWT8_1024(const char *textFileName, unsigned int queriesNum, unsigne
 	if (fileExists(indexFileName)) {
 		FMDHWT->load(indexFileName);
 	} else {
-		FMDHWT->setVerbose(true);
 		FMDHWT->build(textFileName);
 		FMDHWT->save(indexFileName);
 	}
@@ -1625,7 +1595,6 @@ void fmDummyHWT2Hash_512(string k, string loadFactor, const char *textFileName, 
 	if (fileExists(indexFileName)) {
 		FMDHWT->load(indexFileName);
 	} else {
-		FMDHWT->setVerbose(true);
 		FMDHWT->build(textFileName);
 		FMDHWT->save(indexFileName);
 	}
@@ -1674,7 +1643,6 @@ void fmDummyHWT2Hash_1024(string k, string loadFactor, const char *textFileName,
 	if (fileExists(indexFileName)) {
 		FMDHWT->load(indexFileName);
 	} else {
-		FMDHWT->setVerbose(true);
 		FMDHWT->build(textFileName);
 		FMDHWT->save(indexFileName);
 	}
@@ -1723,7 +1691,6 @@ void fmDummyHWT4Hash_512(string k, string loadFactor, const char *textFileName, 
 	if (fileExists(indexFileName)) {
 		FMDHWT->load(indexFileName);
 	} else {
-		FMDHWT->setVerbose(true);
 		FMDHWT->build(textFileName);
 		FMDHWT->save(indexFileName);
 	}
@@ -1772,7 +1739,6 @@ void fmDummyHWT4Hash_1024(string k, string loadFactor, const char *textFileName,
 	if (fileExists(indexFileName)) {
 		FMDHWT->load(indexFileName);
 	} else {
-		FMDHWT->setVerbose(true);
 		FMDHWT->build(textFileName);
 		FMDHWT->save(indexFileName);
 	}
@@ -1821,7 +1787,6 @@ void fmDummyHWT8Hash_512(string k, string loadFactor, const char *textFileName, 
 	if (fileExists(indexFileName)) {
 		FMDHWT->load(indexFileName);
 	} else {
-		FMDHWT->setVerbose(true);
 		FMDHWT->build(textFileName);
 		FMDHWT->save(indexFileName);
 	}
@@ -1870,7 +1835,6 @@ void fmDummyHWT8Hash_1024(string k, string loadFactor, const char *textFileName,
 	if (fileExists(indexFileName)) {
 		FMDHWT->load(indexFileName);
 	} else {
-		FMDHWT->setVerbose(true);
 		FMDHWT->build(textFileName);
 		FMDHWT->save(indexFileName);
 	}

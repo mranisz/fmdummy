@@ -62,10 +62,6 @@ unsigned int getTextSize();
 ```
 unsigned int count(unsigned char *pattern, unsigned int patternLen);
 ```
-- set **verbose** mode:
-```
-void setVerbose(bool verbose);
-```
 
 ##FMDummy1\<FMDummy1Type T\>
 FMDummy1 can be built for up to 16 selected characters from text.
@@ -248,7 +244,6 @@ int main(int argc, char *argv[]) {
 	if (fileExists(indexFileName)) {
 		FMD1->load(indexFileName);
 	} else {
-		FMD1->setVerbose(true);
 		FMD1->build(textFileName);
 		FMD1->save(indexFileName);
 	}

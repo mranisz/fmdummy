@@ -33,7 +33,7 @@ enum FMDummy1Type {
         FMD1_512 = 2
 };
 
-template<FMDummy1Type T> class FMDummy1 : public Index {
+template<FMDummy1Type T> class FMDummy1 {
 protected:
 	alignas(128) unsigned long long *bwtWithRanks[256];
 	alignas(128) unsigned long long *alignedBWTWithRanks[256];
@@ -92,7 +92,7 @@ public:
             unsigned char *text = readText(textFileName, this->textLen, 0);
             checkNullChar(text, this->textLen);
             if (this->allChars) {
-                    if (this->verbose) cout << "Counting char frequencies ... " << flush;
+                    cout << "Counting char frequencies ... " << flush;
                     unsigned int charsFreq[256];
                     for (unsigned int i = 0; i < 256; ++i) charsFreq[i] = 0;
                     unsigned int selectedCharsLen = 0;
@@ -100,7 +100,7 @@ public:
                             if (charsFreq[(unsigned int)text[i]] == 0) ++selectedCharsLen;
                             ++charsFreq[(unsigned int)text[i]];
                     }
-                    if (this->verbose) cout << "Done" << endl;
+                    cout << "Done" << endl;
                     if (selectedCharsLen > 16) {
                             cout << "Error building index: text cannot contain more than 16 unique symbols" << endl;
                             exit(1);
@@ -109,8 +109,8 @@ public:
                     for (unsigned int i = 0; i < 256; ++i) if (charsFreq[i] > 0) this->selectedChars.push_back(i);
             }
             unsigned int bwtLen;
-            unsigned char *bwt = getBWT(textFileName, text, this->textLen, bwtLen, 0, this->verbose);
-            if (this->verbose) cout << "Compacting BWT for selected chars ... " << flush;
+            unsigned char *bwt = getBWT(textFileName, text, this->textLen, bwtLen, 0);
+            cout << "Compacting BWT for selected chars ... " << flush;
             ++bwtLen;
             unsigned int bwtDenseLen = (bwtLen / 8);
             if (bwtLen % 8 > 0) ++bwtDenseLen;
@@ -130,13 +130,13 @@ public:
                     delete[] bwtDense;
             }
             delete[] bwt;
-            if (this->verbose) cout << "Done" << endl;
+            cout << "Done" << endl;
 
-            fillArrayC(text, this->textLen, this->c, this->verbose);
+            fillArrayC(text, this->textLen, this->c);
 
             delete[] text;
 
-            if (this->verbose) cout << "Interweaving BWT with ranks ... " << flush;
+            cout << "Interweaving BWT with ranks ... " << flush;
             switch(T) {
                 case FMDummy1Type::FMD1_512:
                     buildRank_512_counter40(bwtDenseInLong, bwtDenseInLongLen, this->selectedChars, this->bwtWithRanks, this->bwtWithRanksLen, this->alignedBWTWithRanks);
@@ -145,17 +145,13 @@ public:
                     buildRank_256_counter48(bwtDenseInLong, bwtDenseInLongLen, this->selectedChars, this->bwtWithRanks, this->bwtWithRanksLen, this->alignedBWTWithRanks);
                     break;
             }
-            if (this->verbose) cout << "Done" << endl;
+            cout << "Done" << endl;
 
             for (vector<unsigned char>::iterator it = selectedChars.begin(); it != selectedChars.end(); ++it) delete[] bwtDenseInLong[*it];
-            if (this->verbose) cout << "Index successfully built" << endl;
+            cout << "Index successfully built" << endl;
         }
         
-	void save(const char *fileName) {
-            if (this->verbose) cout << "Saving index in " << fileName << " ... " << flush;
-            FILE *outFile;
-            outFile = fopen(fileName, "w");
-            fwrite(&this->verbose, (size_t)sizeof(bool), (size_t)1, outFile);
+	void save(FILE *outFile) {
             fwrite(&this->textLen, (size_t)sizeof(unsigned int), (size_t)1, outFile);
             fwrite(this->c, (size_t)sizeof(unsigned int), (size_t)257, outFile);
             fwrite(&this->bwtWithRanksLen, (size_t)sizeof(unsigned int), (size_t)1, outFile);
@@ -167,40 +163,37 @@ public:
                             fwrite(this->alignedBWTWithRanks[*it], (size_t)sizeof(unsigned long long), (size_t)this->bwtWithRanksLen, outFile);
                     }
             }
-            fclose(outFile);
-            if (this->verbose) cout << "Done" << endl;
         }
         
-	void load(const char *fileName) {
+        void save(const char *fileName) {
+            cout << "Saving index in " << fileName << " ... " << flush;
+            FILE *outFile = fopen(fileName, "w");
+            this->save(outFile);
+            fclose(outFile);
+            cout << "Done" << endl;
+        }
+        
+	void load(FILE *inFile) {
             this->free();
-            FILE *inFile;
-            inFile = fopen(fileName, "rb");
-            size_t result;
-            result = fread(&this->verbose, (size_t)sizeof(bool), (size_t)1, inFile);
+            size_t result = fread(&this->textLen, (size_t)sizeof(unsigned int), (size_t)1, inFile);
             if (result != 1) {
-                    cout << "Error loading index from " << fileName << endl;
-                    exit(1);
-            }
-            if (this->verbose) cout << "Loading index from " << fileName << " ... " << flush;
-            result = fread(&this->textLen, (size_t)sizeof(unsigned int), (size_t)1, inFile);
-            if (result != 1) {
-                    cout << "Error loading index from " << fileName << endl;
+                    cout << "Error loading index" << endl;
                     exit(1);
             }
             result = fread(this->c, (size_t)sizeof(unsigned int), (size_t)257, inFile);
             if (result != 257) {
-                    cout << "Error loading index from " << fileName << endl;
+                    cout << "Error loading index" << endl;
                     exit(1);
             }
             result = fread(&this->bwtWithRanksLen, (size_t)sizeof(unsigned int), (size_t)1, inFile);
             if (result != 1) {
-                    cout << "Error loading index from " << fileName << endl;
+                    cout << "Error loading index" << endl;
                     exit(1);
             }
             unsigned int selectedCharsLen;
             result = fread(&selectedCharsLen, (size_t)sizeof(unsigned int), (size_t)1, inFile);
             if (result != 1) {
-                    cout << "Error loading index from " << fileName << endl;
+                    cout << "Error loading index" << endl;
                     exit(1);
             }
             this->selectedChars = {};
@@ -209,7 +202,7 @@ public:
                             unsigned char c;
                             result = fread(&c, (size_t)sizeof(unsigned char), (size_t)1, inFile);
                             if (result != 1) {
-                                    cout << "Error loading index from " << fileName << endl;
+                                    cout << "Error loading index" << endl;
                                     exit(1);
                             }
                             this->selectedChars.push_back(c);
@@ -218,14 +211,20 @@ public:
                             while ((unsigned long long)(this->alignedBWTWithRanks[c]) % 128) ++(this->alignedBWTWithRanks[c]);
                             result = fread(this->alignedBWTWithRanks[c], (size_t)sizeof(unsigned long long), (size_t)this->bwtWithRanksLen, inFile);
                             if (result != this->bwtWithRanksLen) {
-                                    cout << "Error loading index from " << fileName << endl;
+                                    cout << "Error loading index" << endl;
                                     exit(1);
                             }
                     }
                     this->allChars = false;
             } else this->allChars = true;
+        }
+        
+        void load(const char *fileName) {
+            FILE *inFile = fopen(fileName, "rb");
+            cout << "Loading index from " << fileName << " ... " << flush;
+            this->load(inFile);
             fclose(inFile);
-            if (this->verbose) cout << "Done" << endl;
+            cout << "Done" << endl;
         }
         
 	void free() {
@@ -288,7 +287,7 @@ public:
             unsigned char *text = readText(textFileName, this->textLen, 0);
             checkNullChar(text, this->textLen);
             if (this->allChars) {
-                    if (this->verbose) cout << "Counting char frequencies ... " << flush;
+                    cout << "Counting char frequencies ... " << flush;
                     unsigned int charsFreq[256];
                     for (unsigned int i = 0; i < 256; ++i) charsFreq[i] = 0;
                     unsigned int selectedCharsLen = 0;
@@ -296,7 +295,7 @@ public:
                             if (charsFreq[(unsigned int)text[i]] == 0) ++selectedCharsLen;
                             ++charsFreq[(unsigned int)text[i]];
                     }
-                    if (this->verbose) cout << "Done" << endl;
+                    cout << "Done" << endl;
                     if (selectedCharsLen > 16) {
                             cout << "Error building index: text cannot contain more than 16 unique symbols" << endl;
                             exit(1);
@@ -306,14 +305,14 @@ public:
             }
             unsigned int bwtLen;
             unsigned int saLen;
-            unsigned int *sa = getSA(textFileName, text, this->textLen, saLen, 0, this->verbose);
-            if (this->verbose) cout << "Building hash table ... " << flush;
+            unsigned int *sa = getSA(textFileName, text, this->textLen, saLen, 0);
+            cout << "Building hash table ... " << flush;
             if (this->allChars) this->ht->build(text, this->textLen, sa, saLen);
             else this->ht->build(text, this->textLen, sa, saLen, this->selectedChars);
-            if (this->verbose) cout << "Done" << endl;
-            unsigned char *bwt = getBWT(text, this->textLen, sa, saLen, bwtLen, 0, this->verbose);
+            cout << "Done" << endl;
+            unsigned char *bwt = getBWT(text, this->textLen, sa, saLen, bwtLen, 0);
             delete[] sa;
-            if (this->verbose) cout << "Compacting BWT for selected chars ... " << flush;
+            cout << "Compacting BWT for selected chars ... " << flush;
             ++bwtLen;
             unsigned int bwtDenseLen = (bwtLen / 8);
             if (bwtLen % 8 > 0) ++bwtDenseLen;
@@ -333,13 +332,13 @@ public:
                     delete[] bwtDense;
             }
             delete[] bwt;
-            if (this->verbose) cout << "Done" << endl;
+            cout << "Done" << endl;
 
-            fillArrayC(text, this->textLen, this->c, this->verbose);
+            fillArrayC(text, this->textLen, this->c);
 
             delete[] text;
 
-            if (this->verbose) cout << "Interweaving BWT with ranks ... " << flush;
+            cout << "Interweaving BWT with ranks ... " << flush;
             switch(T) {
                 case FMDummy1Type::FMD1_512:
                     buildRank_512_counter40(bwtDenseInLong, bwtDenseInLongLen, this->selectedChars, this->bwtWithRanks, this->bwtWithRanksLen, this->alignedBWTWithRanks);
@@ -348,91 +347,38 @@ public:
                     buildRank_256_counter48(bwtDenseInLong, bwtDenseInLongLen, this->selectedChars, this->bwtWithRanks, this->bwtWithRanksLen, this->alignedBWTWithRanks);
                     break;
             }
-            if (this->verbose) cout << "Done" << endl;
+            cout << "Done" << endl;
 
             for (vector<unsigned char>::iterator it = this->selectedChars.begin(); it != this->selectedChars.end(); ++it) delete[] bwtDenseInLong[*it];
-            if (this->verbose) cout << "Index successfully built" << endl;
+            cout << "Index successfully built" << endl;
         }
         
-	void save(const char *fileName) {
-            if (this->verbose) cout << "Saving index in " << fileName << " ... " << flush;
-            FILE *outFile;
-            outFile = fopen(fileName, "w");
-            fwrite(&this->verbose, (size_t)sizeof(bool), (size_t)1, outFile);
-            fwrite(&this->textLen, (size_t)sizeof(unsigned int), (size_t)1, outFile);
-            fwrite(this->c, (size_t)sizeof(unsigned int), (size_t)257, outFile);
-            fwrite(&this->bwtWithRanksLen, (size_t)sizeof(unsigned int), (size_t)1, outFile);
-            unsigned int selectedCharsLen = this->selectedChars.size();
-            fwrite(&selectedCharsLen, (size_t)sizeof(unsigned int), (size_t)1, outFile);
-            if (this->selectedChars.size() > 0) {
-                    for (vector<unsigned char>::iterator it = this->selectedChars.begin(); it != this->selectedChars.end(); ++it) {
-                            fwrite(&(*it), (size_t)sizeof(unsigned char), (size_t)1, outFile);
-                            fwrite(this->alignedBWTWithRanks[*it], (size_t)sizeof(unsigned long long), (size_t)this->bwtWithRanksLen, outFile);
-                    }
-            }
+	void save(FILE *outFile) {
+            FMDummy1<T>::save(outFile);
             this->ht->save(outFile);
-            fclose(outFile);
-            if (this->verbose) cout << "Done" << endl;
         }
         
-	void load(const char *fileName) {
-            this->free();
-            FILE *inFile;
-            inFile = fopen(fileName, "rb");
-            size_t result;
-            result = fread(&this->verbose, (size_t)sizeof(bool), (size_t)1, inFile);
-            if (result != 1) {
-                    cout << "Error loading index from " << fileName << endl;
-                    exit(1);
-            }
-            if (this->verbose) cout << "Loading index from " << fileName << " ... " << flush;
-            result = fread(&this->textLen, (size_t)sizeof(unsigned int), (size_t)1, inFile);
-            if (result != 1) {
-                    cout << "Error loading index from " << fileName << endl;
-                    exit(1);
-            }
-            result = fread(this->c, (size_t)sizeof(unsigned int), (size_t)257, inFile);
-            if (result != 257) {
-                    cout << "Error loading index from " << fileName << endl;
-                    exit(1);
-            }
-            result = fread(&this->bwtWithRanksLen, (size_t)sizeof(unsigned int), (size_t)1, inFile);
-            if (result != 1) {
-                    cout << "Error loading index from " << fileName << endl;
-                    exit(1);
-            }
-            unsigned int selectedCharsLen;
-            result = fread(&selectedCharsLen, (size_t)sizeof(unsigned int), (size_t)1, inFile);
-            if (result != 1) {
-                    cout << "Error loading index from " << fileName << endl;
-                    exit(1);
-            }
-            this->selectedChars = {};
-            if (selectedCharsLen > 0) {
-                    for (unsigned int i = 0; i < selectedCharsLen; ++i) {
-                            unsigned char c;
-                            result = fread(&c, (size_t)sizeof(unsigned char), (size_t)1, inFile);
-                            if (result != 1) {
-                                    cout << "Error loading index from " << fileName << endl;
-                                    exit(1);
-                            }
-                            this->selectedChars.push_back(c);
-                            this->bwtWithRanks[c] = new unsigned long long[this->bwtWithRanksLen + 16];
-                            this->alignedBWTWithRanks[c] = this->bwtWithRanks[c];
-                            while ((unsigned long long)(this->alignedBWTWithRanks[c]) % 128) ++(this->alignedBWTWithRanks[c]);
-                            result = fread(this->alignedBWTWithRanks[c], (size_t)sizeof(unsigned long long), (size_t)this->bwtWithRanksLen, inFile);
-                            if (result != this->bwtWithRanksLen) {
-                                    cout << "Error loading index from " << fileName << endl;
-                                    exit(1);
-                            }
-                    }
-                    this->allChars = false;
-            } else this->allChars = true;
+        void save(const char *fileName) {
+            cout << "Saving index in " << fileName << " ... " << flush;
+            FILE *outFile = fopen(fileName, "w");
+            this->save(outFile);
+            fclose(outFile);
+            cout << "Done" << endl;
+        }
+        
+	void load(FILE *inFile) {
+            FMDummy1<T>::load(inFile);
             delete this->ht;
             this->ht = new HTExt<HTType::HT_STANDARD>();
             this->ht->load(inFile);
+        }
+        
+        void load(const char *fileName) {
+            FILE *inFile = fopen(fileName, "rb");
+            cout << "Loading index from " << fileName << " ... " << flush;
+            this->load(inFile);
             fclose(inFile);
-            if (this->verbose) cout << "Done" << endl;
+            cout << "Done" << endl;
         }
         
 	void free() {
@@ -475,7 +421,7 @@ enum FMDummy2Schema {
 };
 
 
-template<FMDummy2Type T, FMDummy2Schema S, FMDummy2BPC BPC> class FMDummy2 : public Index {
+template<FMDummy2Type T, FMDummy2Schema S, FMDummy2BPC BPC> class FMDummy2 {
 protected:
 	alignas(128) unsigned long long *bwtWithRanks[256];
 	alignas(128) unsigned long long *alignedBWTWithRanks[256];
@@ -791,25 +737,25 @@ public:
             unsigned int b = 0;
             switch (S) {
                 case FMDummy2Schema::FMD2_SCHEMA_SCBO:
-                    if (this->verbose) cout << "SCBO text encoding ... " << flush;
+                    cout << "SCBO text encoding ... " << flush;
                     encodedText = this->getEncodedInSCBO(text, this->textLen, encodedTextLen);
-                    if (this->verbose) cout << "Done" << endl;
+                    cout << "Done" << endl;
                     break;
                 default:
-                    if (this->verbose) cout << "CB text encoding ... " << flush;
+                    cout << "CB text encoding ... " << flush;
                     encodedText = this->getEncodedInCB(text, this->textLen, encodedTextLen, b);
-                    if (this->verbose) cout << "Done" << endl;
+                    cout << "Done" << endl;
                     break;
             }
             this->setMaxEncodedCharsLen();
             delete[] text;
             unsigned int bwtLen;
             unsigned int encodedSALen;
-            unsigned int *encodedSA = getSA(encodedText, encodedTextLen, encodedSALen, 0, this->verbose);
-            unsigned char *bwt = getBWT(encodedText, encodedTextLen, encodedSA, encodedSALen, bwtLen, 0, this->verbose);
+            unsigned int *encodedSA = getSA(encodedText, encodedTextLen, encodedSALen, 0);
+            unsigned char *bwt = getBWT(encodedText, encodedTextLen, encodedSA, encodedSALen, bwtLen, 0);
             delete[] encodedSA;
             unsigned int encodedCharsLen = (unsigned int)exp2((double)BPC);
-            if (this->verbose) cout << "Compacting BWT ... " << flush;
+            cout << "Compacting BWT ... " << flush;
             ++bwtLen;
             unsigned int bwtDenseLen = (bwtLen / 8);
             if (bwtLen % 8 > 0) ++bwtDenseLen;
@@ -830,12 +776,12 @@ public:
                     delete[] bwtDense;
             }
             delete[] bwt;
-            if (this->verbose) cout << "Done" << endl;
+            cout << "Done" << endl;
 
-            fillArrayC(encodedText, encodedTextLen, this->c, this->verbose);
+            fillArrayC(encodedText, encodedTextLen, this->c);
             if (S == FMDummy2Schema::FMD2_SCHEMA_CB) this->bInC = this->c[b];
 
-            if (this->verbose) cout << "Interweaving BWT with ranks ... " << flush;
+            cout << "Interweaving BWT with ranks ... " << flush;
             switch(T) {
                 case FMDummy2Type::FMD2_512:
                     buildRank_512_counter40(bwtDenseInLong, bwtDenseInLongLen, encodedChars, this->bwtWithRanks, this->bwtWithRanksLen, this->alignedBWTWithRanks);
@@ -844,19 +790,15 @@ public:
                     buildRank_256_counter48(bwtDenseInLong, bwtDenseInLongLen, encodedChars, this->bwtWithRanks, this->bwtWithRanksLen, this->alignedBWTWithRanks);
                     break;
             }
-            if (this->verbose) cout << "Done" << endl;
+            cout << "Done" << endl;
 
             for (vector<unsigned char>::iterator it = encodedChars.begin(); it != encodedChars.end(); ++it) delete[] bwtDenseInLong[*it];
             delete[] encodedText;
 
-            if (this->verbose) cout << "Index successfully built" << endl;
+            cout << "Index successfully built" << endl;
         }
         
-	void save(const char *fileName) {
-            if (this->verbose) cout << "Saving index in " << fileName << " ... " << flush;
-            FILE *outFile;
-            outFile = fopen(fileName, "w");
-            fwrite(&this->verbose, (size_t)sizeof(bool), (size_t)1, outFile);
+	void save(FILE *outFile) {
             fwrite(&this->textLen, (size_t)sizeof(unsigned int), (size_t)1, outFile);
             fwrite(this->c, (size_t)sizeof(unsigned int), (size_t)257, outFile);
             fwrite(this->encodedCharsLen, (size_t)sizeof(unsigned int), (size_t)256, outFile);
@@ -869,47 +811,44 @@ public:
                     }
             }
             if (S == FMDummy2Schema::FMD2_SCHEMA_CB) fwrite(&this->bInC, (size_t)sizeof(unsigned int), (size_t)1, outFile);
-            fclose(outFile);
-            if (this->verbose) cout << "Done" << endl;
         }
         
-	void load(const char *fileName) {
+        void save(const char *fileName) {
+            cout << "Saving index in " << fileName << " ... " << flush;
+            FILE *outFile = fopen(fileName, "w");
+            this->save(outFile);
+            fclose(outFile);
+            cout << "Done" << endl;
+        }
+        
+	void load(FILE *inFile) {
             this->free();
-            FILE *inFile;
-            inFile = fopen(fileName, "rb");
-            size_t result;
-            result = fread(&this->verbose, (size_t)sizeof(bool), (size_t)1, inFile);
+            size_t result = fread(&this->textLen, (size_t)sizeof(unsigned int), (size_t)1, inFile);
             if (result != 1) {
-                    cout << "Error loading index from " << fileName << endl;
-                    exit(1);
-            }
-            if (this->verbose) cout << "Loading index from " << fileName << " ... " << flush;
-            result = fread(&this->textLen, (size_t)sizeof(unsigned int), (size_t)1, inFile);
-            if (result != 1) {
-                    cout << "Error loading index from " << fileName << endl;
+                    cout << "Error loading index" << endl;
                     exit(1);
             }
             result = fread(this->c, (size_t)sizeof(unsigned int), (size_t)257, inFile);
             if (result != 257) {
-                    cout << "Error loading index from " << fileName << endl;
+                    cout << "Error loading index" << endl;
                     exit(1);
             }
             result = fread(this->encodedCharsLen, (size_t)sizeof(unsigned int), (size_t)256, inFile);
             if (result != 256) {
-                    cout << "Error loading index from " << fileName << endl;
+                    cout << "Error loading index" << endl;
                     exit(1);
             }
             this->setMaxEncodedCharsLen();
             this->encodedChars = new unsigned char[this->maxEncodedCharsLen * 256];
             result = fread(this->encodedChars, (size_t)sizeof(unsigned char), (size_t)this->maxEncodedCharsLen * 256, inFile);
             if (result != this->maxEncodedCharsLen * 256) {
-                    cout << "Error loading index from " << fileName << endl;
+                    cout << "Error loading index" << endl;
                     exit(1);
             }
             unsigned int maxChar = (unsigned int)exp2((double)BPC);
             result = fread(&this->bwtWithRanksLen, (size_t)sizeof(unsigned int), (size_t)1, inFile);
             if (result != 1) {
-                    cout << "Error loading index from " << fileName << endl;
+                    cout << "Error loading index" << endl;
                     exit(1);
             }
             if (this->bwtWithRanksLen > 0) {
@@ -920,7 +859,7 @@ public:
                             while ((unsigned long long)(this->alignedBWTWithRanks[i]) % 128) ++(this->alignedBWTWithRanks[i]);
                             result = fread(this->alignedBWTWithRanks[i], (size_t)sizeof(unsigned long long), (size_t)this->bwtWithRanksLen, inFile);
                             if (result != this->bwtWithRanksLen) {
-                                    cout << "Error loading index from " << fileName << endl;
+                                    cout << "Error loading index" << endl;
                                     exit(1);
                             }
                     }
@@ -928,12 +867,18 @@ public:
             if (S == FMDummy2Schema::FMD2_SCHEMA_CB) {
                     result = fread(&this->bInC, (size_t)sizeof(unsigned int), (size_t)1, inFile);
                     if (result != 1) {
-                            cout << "Error loading index from " << fileName << endl;
+                            cout << "Error loading index" << endl;
                             exit(1);
                     }
             }
+        }
+        
+        void load(const char *fileName) {
+            FILE *inFile = fopen(fileName, "rb");
+            cout << "Loading index from " << fileName << " ... " << flush;
+            this->load(inFile);
             fclose(inFile);
-            if (this->verbose) cout << "Done" << endl;
+            cout << "Done" << endl;
         }
         
 	void free() {
@@ -1007,37 +952,37 @@ public:
             unsigned char *text = readText(textFileName, this->textLen, 0);
             checkNullChar(text, this->textLen);
             unsigned int saLen;
-            unsigned int *sa = getSA(textFileName, text, this->textLen, saLen, 0, this->verbose);
-            if (this->verbose) cout << "Building hash table ... " << flush;
+            unsigned int *sa = getSA(textFileName, text, this->textLen, saLen, 0);
+            cout << "Building hash table ... " << flush;
             unsigned int uniqueSuffixNum = getUniqueSuffixNum(this->ht->k, text, this->textLen, sa, saLen);
             unsigned long long bucketsNum = (double)uniqueSuffixNum * (1.0 / this->ht->loadFactor);
             unsigned char *cutOutEntries = new unsigned char[bucketsNum * 2];
             this->ht->build(text, this->textLen, sa, saLen, {}, cutOutEntries);
-            if (this->verbose) cout << "Done" << endl;
+            cout << "Done" << endl;
             delete[] sa;
             unsigned int encodedTextLen;
             unsigned char *encodedText = NULL;
             unsigned int b = 0;
             switch (S) {
                 case FMDummy2Schema::FMD2_SCHEMA_SCBO:
-                        if (this->verbose) cout << "SCBO text encoding ... " << flush;
+                        cout << "SCBO text encoding ... " << flush;
                         encodedText = this->getEncodedInSCBO(text, this->textLen, encodedTextLen);
-                        if (this->verbose) cout << "Done" << endl;
+                        cout << "Done" << endl;
                         break;
                 default:
-                        if (this->verbose) cout << "CB text encoding ... " << flush;
+                        cout << "CB text encoding ... " << flush;
                         encodedText = this->getEncodedInCB(text, this->textLen, encodedTextLen, b);
-                        if (this->verbose) cout << "Done" << endl;
+                        cout << "Done" << endl;
                         break;
             }
             this->setMaxEncodedCharsLen();
             delete[] text;
             unsigned int bwtLen;
             unsigned int encodedSALen;
-            unsigned int *encodedSA = getSA(encodedText, encodedTextLen, encodedSALen, 0, this->verbose);
-            unsigned char *bwt = getBWT(encodedText, encodedTextLen, encodedSA, encodedSALen, bwtLen, 0, this->verbose);
+            unsigned int *encodedSA = getSA(encodedText, encodedTextLen, encodedSALen, 0);
+            unsigned char *bwt = getBWT(encodedText, encodedTextLen, encodedSA, encodedSALen, bwtLen, 0);
             unsigned int encodedCharsLen = (unsigned int)exp2((double)BPC);
-            if (this->verbose) cout << "Compacting BWT ... " << flush;
+            cout << "Compacting BWT ... " << flush;
             ++bwtLen;
             unsigned int bwtDenseLen = (bwtLen / 8);
             if (bwtLen % 8 > 0) ++bwtDenseLen;
@@ -1058,12 +1003,12 @@ public:
                     delete[] bwtDense;
             }
             delete[] bwt;
-            if (this->verbose) cout << "Done" << endl;
+            cout << "Done" << endl;
 
-            fillArrayC(encodedText, encodedTextLen, this->c, this->verbose);
+            fillArrayC(encodedText, encodedTextLen, this->c);
             if (S == FMDummy2Schema::FMD2_SCHEMA_CB) this->bInC = this->c[b];
 
-            if (this->verbose) cout << "Interweaving BWT with ranks ... " << flush;
+            cout << "Interweaving BWT with ranks ... " << flush;
             switch(T) {
                 case FMDummy2Type::FMD2_512:
                     buildRank_512_counter40(bwtDenseInLong, bwtDenseInLongLen, encodedChars, this->bwtWithRanks, this->bwtWithRanksLen, this->alignedBWTWithRanks);
@@ -1072,9 +1017,9 @@ public:
                     buildRank_256_counter48(bwtDenseInLong, bwtDenseInLongLen, encodedChars, this->bwtWithRanks, this->bwtWithRanksLen, this->alignedBWTWithRanks);
                     break;
             }
-            if (this->verbose) cout << "Done" << endl;
+            cout << "Done" << endl;
             unsigned int diff;
-            if (this->verbose) cout << "Modifying hash table for encoded text ... " << flush;
+            cout << "Modifying hash table for encoded text ... " << flush;
             unsigned char *entry = new unsigned char[this->ht->k + 1];
             entry[this->ht->k] = '\0';
             unsigned char *encodedPattern = new unsigned char[this->maxEncodedCharsLen * this->ht->k + 1];
@@ -1129,101 +1074,43 @@ public:
                     }
             }
             delete[] encodedPattern;
-            if (this->verbose) cout << "Done" << endl;
+            cout << "Done" << endl;
             delete[] encodedSA;
 
             for (vector<unsigned char>::iterator it = encodedChars.begin(); it != encodedChars.end(); ++it) delete[] bwtDenseInLong[*it];
             delete[] encodedText;
 
-            if (this->verbose) cout << "Index successfully built" << endl;
+            cout << "Index successfully built" << endl;
         }
         
-	void save(const char *fileName) {
-            if (this->verbose) cout << "Saving index in " << fileName << " ... " << flush;
-            FILE *outFile;
-            outFile = fopen(fileName, "w");
-            fwrite(&this->verbose, (size_t)sizeof(bool), (size_t)1, outFile);
-            fwrite(&this->textLen, (size_t)sizeof(unsigned int), (size_t)1, outFile);
-            fwrite(this->c, (size_t)sizeof(unsigned int), (size_t)257, outFile);
-            fwrite(this->encodedCharsLen, (size_t)sizeof(unsigned int), (size_t)256, outFile);
-            fwrite(this->encodedChars, (size_t)sizeof(unsigned char), (size_t)this->maxEncodedCharsLen * 256, outFile);
-            unsigned int maxChar = (unsigned int)exp2((double)BPC);
-            fwrite(&this->bwtWithRanksLen, (size_t)sizeof(unsigned int), (size_t)1, outFile);
-            if (this->bwtWithRanksLen > 0) {
-                    for (unsigned int i = 1; i < maxChar + 1; ++i) {
-                            fwrite(this->alignedBWTWithRanks[i], (size_t)sizeof(unsigned long long), (size_t)this->bwtWithRanksLen, outFile);
-                    }
-            }
-            if (S == FMDummy2Schema::FMD2_SCHEMA_CB) fwrite(&this->bInC, (size_t)sizeof(unsigned int), (size_t)1, outFile);
+	void save(FILE *outFile) {
+            FMDummy2<T, S, BPC>::save(outFile);
             this->ht->save(outFile);
             fclose(outFile);
-            if (this->verbose) cout << "Done" << endl;
+            cout << "Done" << endl;
         }
         
-	void load(const char *fileName) {
-            this->free();
-            FILE *inFile;
-            inFile = fopen(fileName, "rb");
-            size_t result;
-            result = fread(&this->verbose, (size_t)sizeof(bool), (size_t)1, inFile);
-            if (result != 1) {
-                    cout << "Error loading index from " << fileName << endl;
-                    exit(1);
-            }
-            if (this->verbose) cout << "Loading index from " << fileName << " ... " << flush;
-            result = fread(&this->textLen, (size_t)sizeof(unsigned int), (size_t)1, inFile);
-            if (result != 1) {
-                    cout << "Error loading index from " << fileName << endl;
-                    exit(1);
-            }
-            result = fread(this->c, (size_t)sizeof(unsigned int), (size_t)257, inFile);
-            if (result != 257) {
-                    cout << "Error loading index from " << fileName << endl;
-                    exit(1);
-            }
-            result = fread(this->encodedCharsLen, (size_t)sizeof(unsigned int), (size_t)256, inFile);
-            if (result != 256) {
-                    cout << "Error loading index from " << fileName << endl;
-                    exit(1);
-            }
-            this->setMaxEncodedCharsLen();
-            this->encodedChars = new unsigned char[this->maxEncodedCharsLen * 256];
-            result = fread(this->encodedChars, (size_t)sizeof(unsigned char), (size_t)this->maxEncodedCharsLen * 256, inFile);
-            if (result != this->maxEncodedCharsLen * 256) {
-                    cout << "Error loading index from " << fileName << endl;
-                    exit(1);
-            }
-            unsigned int maxChar = (unsigned int)exp2((double)BPC);
-            result = fread(&this->bwtWithRanksLen, (size_t)sizeof(unsigned int), (size_t)1, inFile);
-            if (result != 1) {
-                    cout << "Error loading index from " << fileName << endl;
-                    exit(1);
-            }
-            if (this->bwtWithRanksLen > 0) {
-                    for (int i = 0; i < 256; ++i) this->alignedBWTWithRanks[i] = NULL;
-                    for (unsigned int i = 1; i < maxChar + 1; ++i) {
-                            this->bwtWithRanks[i] = new unsigned long long[this->bwtWithRanksLen + 16];
-                            this->alignedBWTWithRanks[i] = this->bwtWithRanks[i];
-                            while ((unsigned long long)(this->alignedBWTWithRanks[i]) % 128) ++(this->alignedBWTWithRanks[i]);
-                            result = fread(this->alignedBWTWithRanks[i], (size_t)sizeof(unsigned long long), (size_t)this->bwtWithRanksLen, inFile);
-                            if (result != this->bwtWithRanksLen) {
-                                    cout << "Error loading index from " << fileName << endl;
-                                    exit(1);
-                            }
-                    }
-            }
-            if (S == FMDummy2Schema::FMD2_SCHEMA_CB) {
-                    result = fread(&this->bInC, (size_t)sizeof(unsigned int), (size_t)1, inFile);
-                    if (result != 1) {
-                            cout << "Error loading index from " << fileName << endl;
-                            exit(1);
-                    }
-            }
+        void save(const char *fileName) {
+            cout << "Saving index in " << fileName << " ... " << flush;
+            FILE *outFile = fopen(fileName, "w");
+            this->save(outFile);
+            fclose(outFile);
+            cout << "Done" << endl;
+        }
+        
+	void load(FILE *inFile) {
+            FMDummy2<T, S, BPC>::load(inFile);
             delete this->ht;
             this->ht = new HTExt<HTType::HT_STANDARD>();
             this->ht->load(inFile);
+        }
+        
+        void load(const char *fileName) {
+            FILE *inFile = fopen(fileName, "rb");
+            cout << "Loading index from " << fileName << " ... " << flush;
+            this->load(inFile);
             fclose(inFile);
-            if (this->verbose) cout << "Done" << endl;
+            cout << "Done" << endl;
         }
         
 	void free() {
@@ -1273,7 +1160,7 @@ enum FMDummy3Type {
         FMD3_1024 = 2
 };
 
-template<FMDummy3Type T> class FMDummy3 : public Index {
+template<FMDummy3Type T> class FMDummy3 {
 protected:
 	unsigned char *bwtWithRanks;
 	unsigned char *alignedBWTWithRanks;
@@ -1381,7 +1268,7 @@ public:
             this->free();
             unsigned char *text = readText(textFileName, this->textLen, 0);
             checkNullChar(text, this->textLen);
-            if (this->verbose) cout << "Converting text ... " << flush;
+            cout << "Converting text ... " << flush;
             unsigned char *convertedText = new unsigned char[this->textLen];
             for (unsigned int i = 0; i < this->textLen; ++i) {
                     switch (text[i]) {
@@ -1393,21 +1280,21 @@ public:
                     }
             }
             delete[] text;
-            if (this->verbose) cout << "Done" << endl;
+            cout << "Done" << endl;
 
             unsigned int bwtLen;
             vector<unsigned char> selectedChars = { 'A', 'C', 'G', 'T' };
-            unsigned char *bwt = getBWT(convertedText, this->textLen, bwtLen, 0, this->verbose);
-            if (this->verbose) cout << "Encoding BWT ... " << flush;
+            unsigned char *bwt = getBWT(convertedText, this->textLen, bwtLen, 0);
+            cout << "Encoding BWT ... " << flush;
             ++bwtLen;
             unsigned int bwtEnc125Len;
             unsigned char *bwtEnc125 = encode125(bwt, bwtLen, selectedChars, bwtEnc125Len);
             delete[] bwt;
-            if (this->verbose) cout << "Done" << endl;
+            cout << "Done" << endl;
             fill125LUT(selectedChars, this->lut);
-            fillArrayC(convertedText, this->textLen, this->c, this->verbose);
+            fillArrayC(convertedText, this->textLen, this->c);
             delete[] convertedText;
-            if (this->verbose) cout << "Interweaving BWT with ranks ... " << flush;
+            cout << "Interweaving BWT with ranks ... " << flush;
             switch (T) {
                 case FMDummy3Type::FMD3_1024:
                         this->buildRank_1024_enc125(bwtEnc125, bwtEnc125Len);
@@ -1416,54 +1303,47 @@ public:
                         this->buildRank_512_enc125(bwtEnc125, bwtEnc125Len);
                         break;
             }
-            if (this->verbose) cout << "Done" << endl;
+            cout << "Done" << endl;
             delete[] bwtEnc125;
-            if (this->verbose) cout << "Index successfully built" << endl;
+            cout << "Index successfully built" << endl;
         }
         
-	void save(const char *fileName) {
-            if (this->verbose) cout << "Saving index in " << fileName << " ... " << flush;
-            FILE *outFile;
-            outFile = fopen(fileName, "w");
-            fwrite(&this->verbose, (size_t)sizeof(bool), (size_t)1, outFile);
+	void save(FILE *outFile) {
             fwrite(&this->textLen, (size_t)sizeof(unsigned int), (size_t)1, outFile);
             fwrite(this->c, (size_t)sizeof(unsigned int), (size_t)257, outFile);
             fwrite(this->lut, (size_t)sizeof(unsigned int), (size_t)(256 * 125), outFile);
             fwrite(&this->bwtWithRanksLen, (size_t)sizeof(unsigned int), (size_t)1, outFile);
             if (this->bwtWithRanksLen > 0) fwrite(this->alignedBWTWithRanks, (size_t)sizeof(unsigned char), (size_t)this->bwtWithRanksLen, outFile);
-            fclose(outFile);
-            if (this->verbose) cout << "Done" << endl;
         }
         
-	void load(const char *fileName) {
+        void save(const char *fileName) {
+            cout << "Saving index in " << fileName << " ... " << flush;
+            FILE *outFile = fopen(fileName, "w");
+            this->save(outFile);
+            fclose(outFile);
+            cout << "Done" << endl;
+        }
+        
+	void load(FILE *inFile) {
             this->free();
-            FILE *inFile;
-            inFile = fopen(fileName, "rb");
-            size_t result;
-            result = fread(&this->verbose, (size_t)sizeof(bool), (size_t)1, inFile);
+            size_t result = fread(&this->textLen, (size_t)sizeof(unsigned int), (size_t)1, inFile);
             if (result != 1) {
-                    cout << "Error loading index from " << fileName << endl;
-                    exit(1);
-            }
-            if (this->verbose) cout << "Loading index from " << fileName << " ... " << flush;
-            result = fread(&this->textLen, (size_t)sizeof(unsigned int), (size_t)1, inFile);
-            if (result != 1) {
-                    cout << "Error loading index from " << fileName << endl;
+                    cout << "Error loading index" << endl;
                     exit(1);
             }
             result = fread(this->c, (size_t)sizeof(unsigned int), (size_t)257, inFile);
             if (result != 257) {
-                    cout << "Error loading index from " << fileName << endl;
+                    cout << "Error loading index" << endl;
                     exit(1);
             }
             result = fread(this->lut, (size_t)sizeof(unsigned int), (size_t)(256 * 125), inFile);
             if (result != (256 * 125)) {
-                    cout << "Error loading index from " << fileName << endl;
+                    cout << "Error loading index" << endl;
                     exit(1);
             }
             result = fread(&this->bwtWithRanksLen, (size_t)sizeof(unsigned int), (size_t)1, inFile);
             if (result != 1) {
-                    cout << "Error loading index from " << fileName << endl;
+                    cout << "Error loading index" << endl;
                     exit(1);
             }
             if (this->bwtWithRanksLen > 0) {
@@ -1472,12 +1352,18 @@ public:
                     while ((unsigned long long)this->alignedBWTWithRanks % 128) ++this->alignedBWTWithRanks;
                     result = fread(this->alignedBWTWithRanks, (size_t)sizeof(unsigned char), (size_t)this->bwtWithRanksLen, inFile);
                     if (result != this->bwtWithRanksLen) {
-                            cout << "Error loading index from " << fileName << endl;
+                            cout << "Error loading index" << endl;
                             exit(1);
                     }
             }
+        }
+        
+        void load(const char *fileName) {
+            FILE *inFile = fopen(fileName, "rb");
+            cout << "Loading index from " << fileName << " ... " << flush;
+            this->load(inFile);
             fclose(inFile);
-            if (this->verbose) cout << "Done" << endl;
+            cout << "Done" << endl;
         }
         
 	void free() {
@@ -1532,7 +1418,7 @@ public:
             this->free();
             unsigned char *text = readText(textFileName, this->textLen, 0);
             checkNullChar(text, this->textLen);
-            if (this->verbose) cout << "Converting text ... " << flush;
+            cout << "Converting text ... " << flush;
             unsigned char *convertedText = new unsigned char[this->textLen];
             for (unsigned int i = 0; i < this->textLen; ++i) {
                     switch (text[i]) {
@@ -1544,28 +1430,28 @@ public:
                     }
             }
             delete[] text;
-            if (this->verbose) cout << "Done" << endl;
+            cout << "Done" << endl;
 
             unsigned int bwtLen;
             vector<unsigned char> selectedChars = { 'A', 'C', 'G', 'T' };
             unsigned int saLen;
-            unsigned int *sa = getSA(convertedText, this->textLen, saLen, 0, this->verbose);
-            if (this->verbose) cout << "Building hash table ... " << flush;
+            unsigned int *sa = getSA(convertedText, this->textLen, saLen, 0);
+            cout << "Building hash table ... " << flush;
 
             this->ht->build(convertedText, this->textLen, sa, saLen, selectedChars);
-            if (this->verbose) cout << "Done" << endl;
-            unsigned char *bwt = getBWT(convertedText, this->textLen, sa, saLen, bwtLen, 0, this->verbose);
+            cout << "Done" << endl;
+            unsigned char *bwt = getBWT(convertedText, this->textLen, sa, saLen, bwtLen, 0);
             delete[] sa;
-            if (this->verbose) cout << "Encoding BWT ... " << flush;
+            cout << "Encoding BWT ... " << flush;
             ++bwtLen;
             unsigned int bwtEnc125Len;
             unsigned char *bwtEnc125 = encode125(bwt, bwtLen, selectedChars, bwtEnc125Len);
             delete[] bwt;
-            if (this->verbose) cout << "Done" << endl;
+            cout << "Done" << endl;
             fill125LUT(selectedChars, this->lut);
-            fillArrayC(convertedText, this->textLen, this->c, this->verbose);
+            fillArrayC(convertedText, this->textLen, this->c);
             delete[] convertedText;
-            if (this->verbose) cout << "Interweaving BWT with ranks ... " << flush;
+            cout << "Interweaving BWT with ranks ... " << flush;
             switch (T) {
                 case FMDummy3Type::FMD3_1024:
                         this->buildRank_1024_enc125(bwtEnc125, bwtEnc125Len);
@@ -1574,72 +1460,37 @@ public:
                         this->buildRank_512_enc125(bwtEnc125, bwtEnc125Len);
                         break;
             }
-            if (this->verbose) cout << "Done" << endl;
+            cout << "Done" << endl;
             delete[] bwtEnc125;
-            if (this->verbose) cout << "Index successfully built" << endl;
+            cout << "Index successfully built" << endl;
         }
 
-	void save(const char *fileName) {
-            if (this->verbose) cout << "Saving index in " << fileName << " ... " << flush;
-            FILE *outFile;
-            outFile = fopen(fileName, "w");
-            fwrite(&this->verbose, (size_t)sizeof(bool), (size_t)1, outFile);
-            fwrite(&this->textLen, (size_t)sizeof(unsigned int), (size_t)1, outFile);
-            fwrite(this->c, (size_t)sizeof(unsigned int), (size_t)257, outFile);
-            fwrite(this->lut, (size_t)sizeof(unsigned int), (size_t)(256 * 125), outFile);
-            fwrite(&this->bwtWithRanksLen, (size_t)sizeof(unsigned int), (size_t)1, outFile);
-            if (this->bwtWithRanksLen > 0) fwrite(this->alignedBWTWithRanks, (size_t)sizeof(unsigned char), (size_t)this->bwtWithRanksLen, outFile);
+	void save(FILE *outFile) {
+            FMDummy3<T>::save(outFile);
             this->ht->save(outFile);
+        }
+        
+        void save(const char *fileName) {
+            cout << "Saving index in " << fileName << " ... " << flush;
+            FILE *outFile = fopen(fileName, "w");
+            this->save(outFile);
             fclose(outFile);
-            if (this->verbose) cout << "Done" << endl;
+            cout << "Done" << endl;
         }
 
-	void load(const char *fileName) {
-            this->free();
-            FILE *inFile;
-            inFile = fopen(fileName, "rb");
-            size_t result;
-            result = fread(&this->verbose, (size_t)sizeof(bool), (size_t)1, inFile);
-            if (result != 1) {
-                    cout << "Error loading index from " << fileName << endl;
-                    exit(1);
-            }
-            if (this->verbose) cout << "Loading index from " << fileName << " ... " << flush;
-            result = fread(&this->textLen, (size_t)sizeof(unsigned int), (size_t)1, inFile);
-            if (result != 1) {
-                    cout << "Error loading index from " << fileName << endl;
-                    exit(1);
-            }
-            result = fread(this->c, (size_t)sizeof(unsigned int), (size_t)257, inFile);
-            if (result != 257) {
-                    cout << "Error loading index from " << fileName << endl;
-                    exit(1);
-            }
-            result = fread(this->lut, (size_t)sizeof(unsigned int), (size_t)(256 * 125), inFile);
-            if (result != (256 * 125)) {
-                    cout << "Error loading index from " << fileName << endl;
-                    exit(1);
-            }
-            result = fread(&this->bwtWithRanksLen, (size_t)sizeof(unsigned int), (size_t)1, inFile);
-            if (result != 1) {
-                    cout << "Error loading index from " << fileName << endl;
-                    exit(1);
-            }
-            if (this->bwtWithRanksLen > 0) {
-                    this->bwtWithRanks = new unsigned char[this->bwtWithRanksLen + 128];
-                    this->alignedBWTWithRanks = this->bwtWithRanks;
-                    while ((unsigned long long)this->alignedBWTWithRanks % 128) ++this->alignedBWTWithRanks;
-                    result = fread(this->alignedBWTWithRanks, (size_t)sizeof(unsigned char), (size_t)this->bwtWithRanksLen, inFile);
-                    if (result != this->bwtWithRanksLen) {
-                            cout << "Error loading index from " << fileName << endl;
-                            exit(1);
-                    }
-            }
+	void load(FILE *inFile) {
+            FMDummy3<T>::load(inFile);
             delete this->ht;
             this->ht = new HTExt<HTType::HT_STANDARD>();
             this->ht->load(inFile);
+        }
+        
+        void load(const char *fileName) {
+            FILE *inFile = fopen(fileName, "rb");
+            cout << "Loading index from " << fileName << " ... " << flush;
+            this->load(inFile);
             fclose(inFile);
-            if (this->verbose) cout << "Done" << endl;
+            cout << "Done" << endl;
         }
 
 	void free() {
@@ -1736,7 +1587,7 @@ public:
             size_t result;
             result = fread(&this->bitsLen, (size_t)sizeof(unsigned int), (size_t)1, inFile);
             if (result != 1) {
-                    cout << "Error loading index" << endl;
+                    cout << "Error loading wt" << endl;
                     exit(1);
             }
             if (this->bitsLen > 0) {
@@ -1745,20 +1596,20 @@ public:
                     while ((unsigned long long)(this->alignedBits) % 128) ++(this->alignedBits);
                     result = fread(this->alignedBits, (size_t)sizeof(unsigned long long), (size_t)this->bitsLen, inFile);
                     if (result != this->bitsLen) {
-                            cout << "Error loading index" << endl;
+                            cout << "Error loading wt" << endl;
                             exit(1);
                     }
             }
             result = fread(&this->nodesLen, (size_t)sizeof(unsigned int), (size_t)1, inFile);
             if (result != 1) {
-                    cout << "Error loading index" << endl;
+                    cout << "Error loading wt" << endl;
                     exit(1);
             }
             this->nodes = new WTDummy *[this->nodesLen];
             for (unsigned int i = 0; i < this->nodesLen; ++i) {
                     result = fread(&isNotNullNode, (size_t)sizeof(bool), (size_t)1, inFile);
                     if (result != 1) {
-                            cout << "Error loading index" << endl;
+                            cout << "Error loading wt" << endl;
                             exit(1);
                     }
                     if (isNotNullNode) {
@@ -3778,7 +3629,7 @@ enum FMDummyHWTType {
         FMDHWT_1024 = 16
 };
 
-template<FMDummyHWTType T, WTDummyType W> class FMDummyHWT : public Index {
+template<FMDummyHWTType T, WTDummyType W> class FMDummyHWT {
 protected:
 	WTDummy *wt;
 	alignas(128) unsigned long long code[256];
@@ -3817,11 +3668,11 @@ public:
             unsigned char *text = readText(textFileName, this->textLen, 0);
             checkNullChar(text, this->textLen);
             unsigned int bwtLen;
-            unsigned char *bwt = getBWT(textFileName, text, this->textLen, bwtLen, 0, this->verbose);
-            if (this->verbose) cout << "Huffman encoding ... " << flush;
+            unsigned char *bwt = getBWT(textFileName, text, this->textLen, bwtLen, 0);
+            cout << "Huffman encoding ... " << flush;
             encodeHuffFromText(W, bwt, bwtLen, this->code, this->codeLen);
-            if (this->verbose) cout << "Done" << endl;
-            if (this->verbose) cout << "Building WT ... " << flush;
+            cout << "Done" << endl;
+            cout << "Building WT ... " << flush;
             switch (W) {
                 case WTDummyType::WTDummy_4:
                     this->wt = createHWTDummy4(T, bwt, bwtLen, 0, this->code, this->codeLen);
@@ -3841,19 +3692,15 @@ public:
                     break;
             }
             delete[] bwt;
-            if (this->verbose) cout << "Done" << endl;
-            fillArrayC(text, this->textLen, this->c, this->verbose);
+            cout << "Done" << endl;
+            fillArrayC(text, this->textLen, this->c);
             delete[] text;
-            if (this->verbose) cout << "Index successfully built" << endl;
+            cout << "Index successfully built" << endl;
         }
         
-	void save(const char *fileName) {
+	void save(FILE *outFile) {
             bool nullPointer = false;
             bool notNullPointer = true;
-            if (this->verbose) cout << "Saving index in " << fileName << " ... " << flush;
-            FILE *outFile;
-            outFile = fopen(fileName, "w");
-            fwrite(&this->verbose, (size_t)sizeof(bool), (size_t)1, outFile);
             fwrite(&this->textLen, (size_t)sizeof(unsigned int), (size_t)1, outFile);
             fwrite(this->c, (size_t)sizeof(unsigned int), (size_t)257, outFile);
             fwrite(this->code, (size_t)sizeof(unsigned long long), (size_t)256, outFile);
@@ -3863,53 +3710,56 @@ public:
                     fwrite(&notNullPointer, (size_t)sizeof(bool), (size_t)1, outFile);
                     this->wt->save(outFile);
             }
-            fclose(outFile);
-            if (this->verbose) cout << "Done" << endl;
         }
         
-	void load(const char *fileName) {
+        void save(const char *fileName) {
+            cout << "Saving index in " << fileName << " ... " << flush;
+            FILE *outFile = fopen(fileName, "w");
+            this->save(outFile);
+            fclose(outFile);
+            cout << "Done" << endl;
+        }
+        
+	void load(FILE *inFile) {
             this->free();
             bool isNotNullPointer;
-            FILE *inFile;
-            inFile = fopen(fileName, "rb");
-            size_t result;
-            result = fread(&this->verbose, (size_t)sizeof(bool), (size_t)1, inFile);
+            size_t result = fread(&this->textLen, (size_t)sizeof(unsigned int), (size_t)1, inFile);
             if (result != 1) {
-                    cout << "Error loading index from " << fileName << endl;
-                    exit(1);
-            }
-            if (this->verbose) cout << "Loading index from " << fileName << " ... " << flush;
-            result = fread(&this->textLen, (size_t)sizeof(unsigned int), (size_t)1, inFile);
-            if (result != 1) {
-                    cout << "Error loading index from " << fileName << endl;
+                    cout << "Error loading index" << endl;
                     exit(1);
             }
             result = fread(this->c, (size_t)sizeof(unsigned int), (size_t)257, inFile);
             if (result != 257) {
-                    cout << "Error loading index from " << fileName << endl;
+                    cout << "Error loading index" << endl;
                     exit(1);
             }
             result = fread(this->code, (size_t)sizeof(unsigned long long), (size_t)256, inFile);
             if (result != 256) {
-                    cout << "Error loading index from " << fileName << endl;
+                    cout << "Error loading index" << endl;
                     exit(1);
             }
             result = fread(this->codeLen, (size_t)sizeof(unsigned int), (size_t)256, inFile);
             if (result != 256) {
-                    cout << "Error loading index from " << fileName << endl;
+                    cout << "Error loading index" << endl;
                     exit(1);
             }
             result = fread(&isNotNullPointer, (size_t)sizeof(bool), (size_t)1, inFile);
             if (result != 1) {
-                    cout << "Error loading index from " << fileName << endl;
+                    cout << "Error loading index" << endl;
                     exit(1);
             }
             if (isNotNullPointer) {
                     this->wt = new WTDummy();
                     this->wt->load(inFile);
             }
+        }
+        
+        void load(const char *fileName) {
+            FILE *inFile = fopen(fileName, "rb");
+            cout << "Loading index from " << fileName << " ... " << flush;
+            this->load(inFile);
             fclose(inFile);
-            if (this->verbose) cout << "Done" << endl;
+            cout << "Done" << endl;
         }
         
 	void free() {
@@ -3991,16 +3841,16 @@ public:
             checkNullChar(text, this->textLen);
             unsigned int bwtLen;
             unsigned int saLen;
-            unsigned int *sa = getSA(textFileName, text, this->textLen, saLen, 0, this->verbose);
-            if (this->verbose) cout << "Building hash table ... " << flush;
+            unsigned int *sa = getSA(textFileName, text, this->textLen, saLen, 0);
+            cout << "Building hash table ... " << flush;
             this->ht->build(text, this->textLen, sa, saLen);
-            if (this->verbose) cout << "Done" << endl;
-            unsigned char *bwt = getBWT(text, this->textLen, sa, saLen, bwtLen, 0, this->verbose);
+            cout << "Done" << endl;
+            unsigned char *bwt = getBWT(text, this->textLen, sa, saLen, bwtLen, 0);
             delete[] sa;
-            if (this->verbose) cout << "Huffman encoding ... " << flush;
+            cout << "Huffman encoding ... " << flush;
             encodeHuffFromText(W, bwt, bwtLen, this->code, this->codeLen);
-            if (this->verbose) cout << "Done" << endl;
-            if (this->verbose) cout << "Building WT ... " << flush;
+            cout << "Done" << endl;
+            cout << "Building WT ... " << flush;
             switch (W) {
                 case WTDummyType::WTDummy_4:
                     this->wt = createHWTDummy4(T, bwt, bwtLen, 0, this->code, this->codeLen);
@@ -4020,79 +3870,38 @@ public:
                     break;
             }
             delete[] bwt;
-            if (this->verbose) cout << "Done" << endl;
-            fillArrayC(text, this->textLen, this->c, this->verbose);
+            cout << "Done" << endl;
+            fillArrayC(text, this->textLen, this->c);
             delete[] text;
-            if (this->verbose) cout << "Index successfully built" << endl;
+            cout << "Index successfully built" << endl;
         }
 
-	void save(const char *fileName) {
-            bool nullPointer = false;
-            bool notNullPointer = true;
-            if (this->verbose) cout << "Saving index in " << fileName << " ... " << flush;
-            FILE *outFile;
-            outFile = fopen(fileName, "w");
-            fwrite(&this->verbose, (size_t)sizeof(bool), (size_t)1, outFile);
-            fwrite(&this->textLen, (size_t)sizeof(unsigned int), (size_t)1, outFile);
-            fwrite(this->c, (size_t)sizeof(unsigned int), (size_t)257, outFile);
-            fwrite(this->code, (size_t)sizeof(unsigned long long), (size_t)256, outFile);
-            fwrite(this->codeLen, (size_t)sizeof(unsigned int), (size_t)256, outFile);
-            if (this->wt == NULL) fwrite(&nullPointer, (size_t)sizeof(bool), (size_t)1, outFile);
-            else {
-                    fwrite(&notNullPointer, (size_t)sizeof(bool), (size_t)1, outFile);
-                    this->wt->save(outFile);
-            }
+	void save(FILE *outFile) {
+            FMDummyHWT<T, W>::save(outFile);
             this->ht->save(outFile);
+        }
+        
+        void save(const char *fileName) {
+            cout << "Saving index in " << fileName << " ... " << flush;
+            FILE *outFile = fopen(fileName, "w");
+            this->save(outFile);
             fclose(outFile);
-            if (this->verbose) cout << "Done" << endl;
+            cout << "Done" << endl;
         }
 
-	void load(const char *fileName) {
-            this->free();
-            bool isNotNullPointer;
-            FILE *inFile;
-            inFile = fopen(fileName, "rb");
-            size_t result;
-            result = fread(&this->verbose, (size_t)sizeof(bool), (size_t)1, inFile);
-            if (result != 1) {
-                    cout << "Error loading index from " << fileName << endl;
-                    exit(1);
-            }
-            if (this->verbose) cout << "Loading index from " << fileName << " ... " << flush;
-            result = fread(&this->textLen, (size_t)sizeof(unsigned int), (size_t)1, inFile);
-            if (result != 1) {
-                    cout << "Error loading index from " << fileName << endl;
-                    exit(1);
-            }
-            result = fread(this->c, (size_t)sizeof(unsigned int), (size_t)257, inFile);
-            if (result != 257) {
-                    cout << "Error loading index from " << fileName << endl;
-                    exit(1);
-            }
-            result = fread(this->code, (size_t)sizeof(unsigned long long), (size_t)256, inFile);
-            if (result != 256) {
-                    cout << "Error loading index from " << fileName << endl;
-                    exit(1);
-            }
-            result = fread(this->codeLen, (size_t)sizeof(unsigned int), (size_t)256, inFile);
-            if (result != 256) {
-                    cout << "Error loading index from " << fileName << endl;
-                    exit(1);
-            }
-            result = fread(&isNotNullPointer, (size_t)sizeof(bool), (size_t)1, inFile);
-            if (result != 1) {
-                    cout << "Error loading index from " << fileName << endl;
-                    exit(1);
-            }
-            if (isNotNullPointer) {
-                    this->wt = new WTDummy();
-                    this->wt->load(inFile);
-            }
+	void load(FILE *inFile) {
+            FMDummyHWT<T, W>::load(inFile);
             delete this->ht;
             this->ht = new HTExt<HTType::HT_STANDARD>();
             this->ht->load(inFile);
+        }
+        
+        void load(const char *fileName) {
+            FILE *inFile = fopen(fileName, "rb");
+            cout << "Loading index from " << fileName << " ... " << flush;
+            this->load(inFile);
             fclose(inFile);
-            if (this->verbose) cout << "Done" << endl;
+            cout << "Done" << endl;
         }
 
 	void free() {
