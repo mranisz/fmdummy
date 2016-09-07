@@ -2126,10 +2126,10 @@ WTDummy *createHWTDummy8(int type, unsigned char *text, unsigned int textLen, un
 	return node;
 }
 
-pair<unsigned int, unsigned int> getRankHWTDummy2_512_counters40(unsigned long long code, unsigned int codeLen, unsigned int iFirst, unsigned int iLast, WTDummy *wt, unsigned int wtLevel) {
+pair<unsigned int, unsigned int> getRankHWTDummy2_512_counters40(WTDummy *wt, unsigned long long code, unsigned int codeLen, unsigned int iFirst, unsigned int iLast) {
     unsigned int rank;
 
-    for (wtLevel = 0; wtLevel < codeLen; ++wtLevel) {
+    for (unsigned int wtLevel = 0; wtLevel < codeLen; ++wtLevel) {
             int nextNode = (code >> wtLevel) & 1;
 
             // *** first
@@ -2239,7 +2239,7 @@ unsigned int count_HWTDummy2_512_counter40(unsigned char *pattern, unsigned int 
                 c = pattern[i - 1];
                 if (codeLen[c] == 0) return 0;
 
-                tie(firstVal, lastVal) = getRankHWTDummy2_512_counters40(code[c], codeLen[c], firstVal - 1, lastVal, wt, 0);
+                tie(firstVal, lastVal) = getRankHWTDummy2_512_counters40(wt, code[c], codeLen[c], firstVal - 1, lastVal);
                 firstVal += C[c] + 1;
                 __builtin_prefetch(wt->alignedBits + 8 * ((firstVal - 1) / 448), 0, 3);
                 lastVal  += C[c];
@@ -2250,7 +2250,7 @@ unsigned int count_HWTDummy2_512_counter40(unsigned char *pattern, unsigned int 
         if (firstVal <= lastVal) {
                 c = pattern[i - 1];
                 if (codeLen[c] == 0) return 0;
-                tie(firstVal, lastVal) = getRankHWTDummy2_512_counters40(code[c], codeLen[c], firstVal - 1, lastVal, wt, 0);
+                tie(firstVal, lastVal) = getRankHWTDummy2_512_counters40(wt, code[c], codeLen[c], firstVal - 1, lastVal);
                 firstVal += C[c] + 1;
                 lastVal  += C[c];
         }
@@ -2259,10 +2259,10 @@ unsigned int count_HWTDummy2_512_counter40(unsigned char *pattern, unsigned int 
         else return lastVal - firstVal + 1;
 }
 
-pair<unsigned int, unsigned int>  getRankHWTDummy2_1024_counters32(unsigned long long code, unsigned int codeLen, unsigned int iFirst, unsigned int iLast, WTDummy *wt, unsigned int wtLevel) {
+pair<unsigned int, unsigned int>  getRankHWTDummy2_1024_counters32(WTDummy *wt, unsigned long long code, unsigned int codeLen, unsigned int iFirst, unsigned int iLast) {
         unsigned int rank;
 
-        for (wtLevel = 0; wtLevel < codeLen; ++wtLevel) {
+        for (unsigned int wtLevel = 0; wtLevel < codeLen; ++wtLevel) {
                 int nextNode = (code >> wtLevel) & 1;
 
                 // *** first
@@ -2458,7 +2458,7 @@ unsigned int count_HWTDummy2_1024_counter32(unsigned char *pattern, unsigned int
 	while (firstVal <= lastVal && i > 1) {
 		c = pattern[i - 1];
                 if (codeLen[c] == 0) return 0;
-		tie(firstVal, lastVal) = getRankHWTDummy2_1024_counters32(code[c], codeLen[c], firstVal - 1, lastVal, wt, 0);
+		tie(firstVal, lastVal) = getRankHWTDummy2_1024_counters32(wt, code[c], codeLen[c], firstVal - 1, lastVal);
 		firstVal += C[c] + 1;
 		__builtin_prefetch(wt->alignedBits + 16 * ((firstVal - 1) / 960), 0, 3);
 		lastVal  += C[c];
@@ -2469,7 +2469,7 @@ unsigned int count_HWTDummy2_1024_counter32(unsigned char *pattern, unsigned int
 	if (firstVal <= lastVal) {
 		c = pattern[i - 1];
                 if (codeLen[c] == 0) return 0;
-		tie(firstVal, lastVal) = getRankHWTDummy2_1024_counters32(code[c], codeLen[c], firstVal - 1, lastVal, wt, 0);
+		tie(firstVal, lastVal) = getRankHWTDummy2_1024_counters32(wt, code[c], codeLen[c], firstVal - 1, lastVal);
 		firstVal += C[c] + 1;
                 lastVal  += C[c];
 	}
@@ -2517,10 +2517,10 @@ unsigned long long getHWTDummy4BitVector3L(unsigned long long b) {
 	return (b & (b << 1)) & 0xAAAAAAAAAAAAAAAAULL;
 }
 
-pair<unsigned int, unsigned int> getRankHWTDummy4_512(unsigned long long code, unsigned int codeLen, unsigned int iFirst, unsigned int iLast, WTDummy *wt, unsigned int wtLevel) {
+pair<unsigned int, unsigned int> getRankHWTDummy4_512(WTDummy *wt, unsigned long long code, unsigned int codeLen, unsigned int iFirst, unsigned int iLast) {
     unsigned int rank;
 
-    for (wtLevel = 0; wtLevel < codeLen; ++wtLevel) {
+    for (unsigned int wtLevel = 0; wtLevel < codeLen; ++wtLevel) {
             int nextNode = (code >> (2 * wtLevel)) & 3;
 
             // *** first
@@ -2669,7 +2669,7 @@ unsigned int count_HWTDummy4_512(unsigned char *pattern, unsigned int i, unsigne
     while (firstVal <= lastVal && i > 1) {
         c = pattern[i - 1];
         if (codeLen[c] == 0) return 0;
-        tie(firstVal, lastVal) = getRankHWTDummy4_512(code[c], codeLen[c], firstVal - 1, lastVal, wt, 0);
+        tie(firstVal, lastVal) = getRankHWTDummy4_512(wt, code[c], codeLen[c], firstVal - 1, lastVal);
         firstVal += C[c] + 1;
         __builtin_prefetch(wt->alignedBits + 8 * ((firstVal - 1) / 192), 0, 3);
         lastVal += C[c];
@@ -2680,7 +2680,7 @@ unsigned int count_HWTDummy4_512(unsigned char *pattern, unsigned int i, unsigne
     if (firstVal <= lastVal) {
         c = pattern[i - 1];
         if (codeLen[c] == 0) return 0;
-        tie(firstVal, lastVal) = getRankHWTDummy4_512(code[c], codeLen[c], firstVal - 1, lastVal, wt, 0);
+        tie(firstVal, lastVal) = getRankHWTDummy4_512(wt, code[c], codeLen[c], firstVal - 1, lastVal);
         firstVal += C[c] + 1;
         lastVal += C[c];
     }
@@ -2689,10 +2689,10 @@ unsigned int count_HWTDummy4_512(unsigned char *pattern, unsigned int i, unsigne
     else return lastVal - firstVal + 1;
 }
 
-pair<unsigned int, unsigned int> getRankHWTDummy4_1024(unsigned long long code, unsigned int codeLen, unsigned int iFirst, unsigned int iLast, WTDummy *wt, unsigned int wtLevel) {
+pair<unsigned int, unsigned int> getRankHWTDummy4_1024(WTDummy *wt, unsigned long long code, unsigned int codeLen, unsigned int iFirst, unsigned int iLast) {
         unsigned int rank;
         
-        for (wtLevel = 0; wtLevel < codeLen; ++wtLevel) {
+        for (unsigned int wtLevel = 0; wtLevel < codeLen; ++wtLevel) {
                 int nextNode = (code >> (2 * wtLevel)) & 3;
                 
                 // *** first
@@ -2944,7 +2944,7 @@ unsigned int count_HWTDummy4_1024(unsigned char *pattern, unsigned int i, unsign
 	while (firstVal <= lastVal && i > 1) {
 		c = pattern[i - 1];
                 if (codeLen[c] == 0) return 0;
-                tie(firstVal, lastVal) = getRankHWTDummy4_1024(code[c], codeLen[c], firstVal - 1, lastVal, wt, 0);
+                tie(firstVal, lastVal) = getRankHWTDummy4_1024(wt, code[c], codeLen[c], firstVal - 1, lastVal);
 		firstVal += C[c] + 1;
 		__builtin_prefetch(wt->alignedBits + 16 * ((firstVal - 1) / 448), 0, 3);
 		lastVal += C[c];
@@ -2955,7 +2955,7 @@ unsigned int count_HWTDummy4_1024(unsigned char *pattern, unsigned int i, unsign
 	if (firstVal <= lastVal) {
 		c = pattern[i - 1];
                 if (codeLen[c] == 0) return 0;
-		tie(firstVal, lastVal) = getRankHWTDummy4_1024(code[c], codeLen[c], firstVal - 1, lastVal, wt, 0);
+		tie(firstVal, lastVal) = getRankHWTDummy4_1024(wt, code[c], codeLen[c], firstVal - 1, lastVal);
                 firstVal += C[c] + 1;
                 lastVal += C[c];
 	}
@@ -3082,10 +3082,10 @@ unsigned long long getHWTDummy8BitVector7L(unsigned long long b) {
 	return (b & (b << 1) & (b << 2)) & 0x4924924924924924ULL;
 }
 
-pair<unsigned int, unsigned int> getRankHWTDummy8_512(unsigned long long code, unsigned int codeLen, unsigned int iFirst, unsigned int iLast, WTDummy *wt, unsigned int wtLevel) {
+pair<unsigned int, unsigned int> getRankHWTDummy8_512(WTDummy *wt, unsigned long long code, unsigned int codeLen, unsigned int iFirst, unsigned int iLast) {
         unsigned int rank;
         
-        for (wtLevel = 0; wtLevel < codeLen; ++wtLevel) {
+        for (unsigned int wtLevel = 0; wtLevel < codeLen; ++wtLevel) {
                 int nextNode = (code >> (3 * wtLevel)) & 7;
 
                 // *** first
@@ -3279,7 +3279,7 @@ unsigned int count_HWTDummy8_512(unsigned char *pattern, unsigned int i, unsigne
 	while (firstVal <= lastVal && i > 1) {
 		c = pattern[i - 1];
                 if (codeLen[c] == 0) return 0;
-                tie(firstVal, lastVal) = getRankHWTDummy8_512(code[c], codeLen[c], firstVal - 1, lastVal, wt, 0);
+                tie(firstVal, lastVal) = getRankHWTDummy8_512(wt, code[c], codeLen[c], firstVal - 1, lastVal);
 		firstVal += C[c] + 1;
 		__builtin_prefetch(wt->alignedBits + 8 * ((firstVal - 1) / 84), 0, 3);
 		lastVal += C[c];
@@ -3290,7 +3290,7 @@ unsigned int count_HWTDummy8_512(unsigned char *pattern, unsigned int i, unsigne
 	if (firstVal <= lastVal) {
 		c = pattern[i - 1];
                 if (codeLen[c] == 0) return 0;
-		tie(firstVal, lastVal) = getRankHWTDummy8_512(code[c], codeLen[c], firstVal - 1, lastVal, wt, 0);
+		tie(firstVal, lastVal) = getRankHWTDummy8_512(wt, code[c], codeLen[c], firstVal - 1, lastVal);
                 firstVal += C[c] + 1;
                 lastVal += C[c];
 	}
@@ -3300,10 +3300,10 @@ unsigned int count_HWTDummy8_512(unsigned char *pattern, unsigned int i, unsigne
 
 }
 
-pair<unsigned int, unsigned int> getRankHWTDummy8_1024(unsigned long long code, unsigned int codeLen, unsigned int iFirst, unsigned int iLast, WTDummy *wt, unsigned int wtLevel) {
+pair<unsigned int, unsigned int> getRankHWTDummy8_1024(WTDummy *wt, unsigned long long code, unsigned int codeLen, unsigned int iFirst, unsigned int iLast) {
         unsigned int rank;
         
-        for (wtLevel = 0; wtLevel < codeLen; ++wtLevel) {
+        for (unsigned int wtLevel = 0; wtLevel < codeLen; ++wtLevel) {
                 int nextNode = (code >> (3 * wtLevel)) & 7;
 
                 // *** first
@@ -3597,7 +3597,7 @@ unsigned int count_HWTDummy8_1024(unsigned char *pattern, unsigned int i, unsign
 	while (firstVal <= lastVal && i > 1) {
 		c = pattern[i - 1];
                 if (codeLen[c] == 0) return 0;
-                tie(firstVal, lastVal) = getRankHWTDummy8_1024(code[c], codeLen[c], firstVal - 1, lastVal, wt, 0);
+                tie(firstVal, lastVal) = getRankHWTDummy8_1024(wt, code[c], codeLen[c], firstVal - 1, lastVal);
 		firstVal += C[c] + 1;
 		__builtin_prefetch(wt->alignedBits + 16 * ((firstVal - 1) / 252), 0, 3);
 		lastVal += C[c];
@@ -3608,7 +3608,7 @@ unsigned int count_HWTDummy8_1024(unsigned char *pattern, unsigned int i, unsign
 	if (firstVal <= lastVal) {
 		c = pattern[i - 1];
                 if (codeLen[c] == 0) return 0;
-		tie(firstVal, lastVal) = getRankHWTDummy8_1024(code[c], codeLen[c], firstVal - 1, lastVal, wt, 0);
+		tie(firstVal, lastVal) = getRankHWTDummy8_1024(wt, code[c], codeLen[c], firstVal - 1, lastVal);
                 firstVal += C[c] + 1;
                 lastVal += C[c];
 	}
