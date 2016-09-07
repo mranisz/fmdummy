@@ -1086,8 +1086,6 @@ public:
 	void save(FILE *outFile) {
             FMDummy2<T, S, BPC>::save(outFile);
             this->ht->save(outFile);
-            fclose(outFile);
-            cout << "Done" << endl;
         }
         
         void save(const char *fileName) {
