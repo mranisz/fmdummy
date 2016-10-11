@@ -3,8 +3,8 @@
 #include <string>
 #include <stdlib.h>
 #include <map>
-#include "../shared/patterns.h"
-#include "../shared/timer.h"
+#include "../shared/patterns.hpp"
+#include "../shared/timer.hpp"
 #include "../fmdummy.hpp"
 
 using namespace std;
@@ -155,9 +155,9 @@ void fmDummy1_256(string selectedChars, const char *textFileName, unsigned int q
 		FMD1->save(indexFileName);
 	}
 
-	Patterns *P = new Patterns(textFileName, queriesNum, m, FMDummy1SelectedCharsMap[selectedChars]);
-	//NegativePatterns *P = new NegativePatterns(textFileName, queriesNum, m);
-	/*MaliciousPatterns *P = new MaliciousPatterns(textFileName, m, FMDummy1SelectedCharsMap[selectedChars]);
+	Patterns32 *P = new Patterns32(textFileName, queriesNum, m, FMDummy1SelectedCharsMap[selectedChars]);
+	//NegativePatterns32 *P = new NegativePatterns32(textFileName, queriesNum, m);
+	/*MaliciousPatterns32 *P = new MaliciousPatterns32(textFileName, m, FMDummy1SelectedCharsMap[selectedChars]);
 	queriesNum = P->getQueriesNum();
 	if (queriesNum == 0) exit(1);*/
 	unsigned char **patterns = P->getPatterns();
@@ -203,9 +203,9 @@ void fmDummy1_512(string selectedChars, const char *textFileName, unsigned int q
 		FMD1->save(indexFileName);
 	}
 
-	Patterns *P = new Patterns(textFileName, queriesNum, m, FMDummy1SelectedCharsMap[selectedChars]);
-	//NegativePatterns *P = new NegativePatterns(textFileName, queriesNum, m);
-	/*MaliciousPatterns *P = new MaliciousPatterns(textFileName, m, FMDummy1SelectedCharsMap[selectedChars]);
+	Patterns32 *P = new Patterns32(textFileName, queriesNum, m, FMDummy1SelectedCharsMap[selectedChars]);
+	//NegativePatterns32 *P = new NegativePatterns32(textFileName, queriesNum, m);
+	/*MaliciousPatterns32 *P = new MaliciousPatterns32(textFileName, m, FMDummy1SelectedCharsMap[selectedChars]);
 	queriesNum = P->getQueriesNum();
 	if (queriesNum == 0) exit(1);*/
 	unsigned char **patterns = P->getPatterns();
@@ -251,9 +251,9 @@ void fmDummy1Hash_256(string selectedChars, string k, string loadFactor, const c
 		FMD1->save(indexFileName);
 	}
 
-	Patterns *P = new Patterns(textFileName, queriesNum, m, FMDummy1SelectedCharsMap[selectedChars]);
-	//NegativePatterns *P = new NegativePatterns(textFileName, queriesNum, m);
-	/*MaliciousPatterns *P = new MaliciousPatterns(textFileName, m, FMDummy1SelectedCharsMap[selectedChars]);
+	Patterns32 *P = new Patterns32(textFileName, queriesNum, m, FMDummy1SelectedCharsMap[selectedChars]);
+	//NegativePatterns32 *P = new NegativePatterns32(textFileName, queriesNum, m);
+	/*MaliciousPatterns32 *P = new MaliciousPatterns32(textFileName, m, FMDummy1SelectedCharsMap[selectedChars]);
 	queriesNum = P->getQueriesNum();
 	if (queriesNum == 0) exit(1);*/
 	unsigned char **patterns = P->getPatterns();
@@ -299,9 +299,9 @@ void fmDummy1Hash_512(string selectedChars, string k, string loadFactor, const c
 		FMD1->save(indexFileName);
 	}
 
-	Patterns *P = new Patterns(textFileName, queriesNum, m, FMDummy1SelectedCharsMap[selectedChars]);
-	//NegativePatterns *P = new NegativePatterns(textFileName, queriesNum, m);
-	/*MaliciousPatterns *P = new MaliciousPatterns(textFileName, m, FMDummy1SelectedCharsMap[selectedChars]);
+	Patterns32 *P = new Patterns32(textFileName, queriesNum, m, FMDummy1SelectedCharsMap[selectedChars]);
+	//NegativePatterns32 *P = new NegativePatterns32(textFileName, queriesNum, m);
+	/*MaliciousPatterns32 *P = new MaliciousPatterns32(textFileName, m, FMDummy1SelectedCharsMap[selectedChars]);
 	queriesNum = P->getQueriesNum();
 	if (queriesNum == 0) exit(1);*/
 	unsigned char **patterns = P->getPatterns();
@@ -347,9 +347,9 @@ void fmDummy2_256_SCBO_3(const char *textFileName, unsigned int queriesNum, unsi
 		FMD2->save(indexFileName);
 	}
 
-	Patterns *P = new Patterns(textFileName, queriesNum, m);
-	//NegativePatterns *P = new NegativePatterns(textFileName, queriesNum, m);
-	/*MaliciousPatterns *P = new MaliciousPatterns(textFileName, m);
+	Patterns32 *P = new Patterns32(textFileName, queriesNum, m);
+	//NegativePatterns32 *P = new NegativePatterns32(textFileName, queriesNum, m);
+	/*MaliciousPatterns32 *P = new MaliciousPatterns32(textFileName, m);
 	queriesNum = P->getQueriesNum();
 	if (queriesNum == 0) exit(1);*/
 	unsigned char **patterns = P->getPatterns();
@@ -395,9 +395,9 @@ void fmDummy2_512_SCBO_3(const char *textFileName, unsigned int queriesNum, unsi
 		FMD2->save(indexFileName);
 	}
 
-	Patterns *P = new Patterns(textFileName, queriesNum, m);
-	//NegativePatterns *P = new NegativePatterns(textFileName, queriesNum, m);
-	/*MaliciousPatterns *P = new MaliciousPatterns(textFileName, m);
+	Patterns32 *P = new Patterns32(textFileName, queriesNum, m);
+	//NegativePatterns32 *P = new NegativePatterns32(textFileName, queriesNum, m);
+	/*MaliciousPatterns32 *P = new MaliciousPatterns32(textFileName, m);
 	queriesNum = P->getQueriesNum();
 	if (queriesNum == 0) exit(1);*/
 	unsigned char **patterns = P->getPatterns();
@@ -443,9 +443,9 @@ void fmDummy2_256_CB_3(const char *textFileName, unsigned int queriesNum, unsign
 		FMD2->save(indexFileName);
 	}
 
-	Patterns *P = new Patterns(textFileName, queriesNum, m);
-	//NegativePatterns *P = new NegativePatterns(textFileName, queriesNum, m);
-	/*MaliciousPatterns *P = new MaliciousPatterns(textFileName, m);
+	Patterns32 *P = new Patterns32(textFileName, queriesNum, m);
+	//NegativePatterns32 *P = new NegativePatterns32(textFileName, queriesNum, m);
+	/*MaliciousPatterns32 *P = new MaliciousPatterns32(textFileName, m);
 	queriesNum = P->getQueriesNum();
 	if (queriesNum == 0) exit(1);*/
 	unsigned char **patterns = P->getPatterns();
@@ -491,9 +491,9 @@ void fmDummy2_512_CB_3(const char *textFileName, unsigned int queriesNum, unsign
 		FMD2->save(indexFileName);
 	}
 
-	Patterns *P = new Patterns(textFileName, queriesNum, m);
-	//NegativePatterns *P = new NegativePatterns(textFileName, queriesNum, m);
-	/*MaliciousPatterns *P = new MaliciousPatterns(textFileName, m);
+	Patterns32 *P = new Patterns32(textFileName, queriesNum, m);
+	//NegativePatterns32 *P = new NegativePatterns32(textFileName, queriesNum, m);
+	/*MaliciousPatterns32 *P = new MaliciousPatterns32(textFileName, m);
 	queriesNum = P->getQueriesNum();
 	if (queriesNum == 0) exit(1);*/
 	unsigned char **patterns = P->getPatterns();
@@ -539,9 +539,9 @@ void fmDummy2_256_SCBO_4(const char *textFileName, unsigned int queriesNum, unsi
 		FMD2->save(indexFileName);
 	}
 
-	Patterns *P = new Patterns(textFileName, queriesNum, m);
-	//NegativePatterns *P = new NegativePatterns(textFileName, queriesNum, m);
-	/*MaliciousPatterns *P = new MaliciousPatterns(textFileName, m);
+	Patterns32 *P = new Patterns32(textFileName, queriesNum, m);
+	//NegativePatterns32 *P = new NegativePatterns32(textFileName, queriesNum, m);
+	/*MaliciousPatterns32 *P = new MaliciousPatterns32(textFileName, m);
 	queriesNum = P->getQueriesNum();
 	if (queriesNum == 0) exit(1);*/
 	unsigned char **patterns = P->getPatterns();
@@ -587,9 +587,9 @@ void fmDummy2_512_SCBO_4(const char *textFileName, unsigned int queriesNum, unsi
 		FMD2->save(indexFileName);
 	}
 
-	Patterns *P = new Patterns(textFileName, queriesNum, m);
-	//NegativePatterns *P = new NegativePatterns(textFileName, queriesNum, m);
-	/*MaliciousPatterns *P = new MaliciousPatterns(textFileName, m);
+	Patterns32 *P = new Patterns32(textFileName, queriesNum, m);
+	//NegativePatterns32 *P = new NegativePatterns32(textFileName, queriesNum, m);
+	/*MaliciousPatterns32 *P = new MaliciousPatterns32(textFileName, m);
 	queriesNum = P->getQueriesNum();
 	if (queriesNum == 0) exit(1);*/
 	unsigned char **patterns = P->getPatterns();
@@ -635,9 +635,9 @@ void fmDummy2_256_CB_4(const char *textFileName, unsigned int queriesNum, unsign
 		FMD2->save(indexFileName);
 	}
 
-	Patterns *P = new Patterns(textFileName, queriesNum, m);
-	//NegativePatterns *P = new NegativePatterns(textFileName, queriesNum, m);
-	/*MaliciousPatterns *P = new MaliciousPatterns(textFileName, m);
+	Patterns32 *P = new Patterns32(textFileName, queriesNum, m);
+	//NegativePatterns32 *P = new NegativePatterns32(textFileName, queriesNum, m);
+	/*MaliciousPatterns32 *P = new MaliciousPatterns32(textFileName, m);
 	queriesNum = P->getQueriesNum();
 	if (queriesNum == 0) exit(1);*/
 	unsigned char **patterns = P->getPatterns();
@@ -683,9 +683,9 @@ void fmDummy2_512_CB_4(const char *textFileName, unsigned int queriesNum, unsign
 		FMD2->save(indexFileName);
 	}
 
-	Patterns *P = new Patterns(textFileName, queriesNum, m);
-	//NegativePatterns *P = new NegativePatterns(textFileName, queriesNum, m);
-	/*MaliciousPatterns *P = new MaliciousPatterns(textFileName, m);
+	Patterns32 *P = new Patterns32(textFileName, queriesNum, m);
+	//NegativePatterns32 *P = new NegativePatterns32(textFileName, queriesNum, m);
+	/*MaliciousPatterns32 *P = new MaliciousPatterns32(textFileName, m);
 	queriesNum = P->getQueriesNum();
 	if (queriesNum == 0) exit(1);*/
 	unsigned char **patterns = P->getPatterns();
@@ -731,9 +731,9 @@ void fmDummy2Hash_256_SCBO_3(string k, string loadFactor, const char *textFileNa
 		FMD2->save(indexFileName);
 	}
 
-	Patterns *P = new Patterns(textFileName, queriesNum, m);
-	//NegativePatterns *P = new NegativePatterns(textFileName, queriesNum, m);
-	/*MaliciousPatterns *P = new MaliciousPatterns(textFileName, m);
+	Patterns32 *P = new Patterns32(textFileName, queriesNum, m);
+	//NegativePatterns32 *P = new NegativePatterns32(textFileName, queriesNum, m);
+	/*MaliciousPatterns32 *P = new MaliciousPatterns32(textFileName, m);
 	queriesNum = P->getQueriesNum();
 	if (queriesNum == 0) exit(1);*/
 	unsigned char **patterns = P->getPatterns();
@@ -779,9 +779,9 @@ void fmDummy2Hash_512_SCBO_3(string k, string loadFactor, const char *textFileNa
 		FMD2->save(indexFileName);
 	}
 
-	Patterns *P = new Patterns(textFileName, queriesNum, m);
-	//NegativePatterns *P = new NegativePatterns(textFileName, queriesNum, m);
-	/*MaliciousPatterns *P = new MaliciousPatterns(textFileName, m);
+	Patterns32 *P = new Patterns32(textFileName, queriesNum, m);
+	//NegativePatterns32 *P = new NegativePatterns32(textFileName, queriesNum, m);
+	/*MaliciousPatterns32 *P = new MaliciousPatterns32(textFileName, m);
 	queriesNum = P->getQueriesNum();
 	if (queriesNum == 0) exit(1);*/
 	unsigned char **patterns = P->getPatterns();
@@ -827,9 +827,9 @@ void fmDummy2Hash_256_CB_3(string k, string loadFactor, const char *textFileName
 		FMD2->save(indexFileName);
 	}
 
-	Patterns *P = new Patterns(textFileName, queriesNum, m);
-	//NegativePatterns *P = new NegativePatterns(textFileName, queriesNum, m);
-	/*MaliciousPatterns *P = new MaliciousPatterns(textFileName, m);
+	Patterns32 *P = new Patterns32(textFileName, queriesNum, m);
+	//NegativePatterns32 *P = new NegativePatterns32(textFileName, queriesNum, m);
+	/*MaliciousPatterns32 *P = new MaliciousPatterns32(textFileName, m);
 	queriesNum = P->getQueriesNum();
 	if (queriesNum == 0) exit(1);*/
 	unsigned char **patterns = P->getPatterns();
@@ -875,9 +875,9 @@ void fmDummy2Hash_512_CB_3(string k, string loadFactor, const char *textFileName
 		FMD2->save(indexFileName);
 	}
 
-	Patterns *P = new Patterns(textFileName, queriesNum, m);
-	//NegativePatterns *P = new NegativePatterns(textFileName, queriesNum, m);
-	/*MaliciousPatterns *P = new MaliciousPatterns(textFileName, m);
+	Patterns32 *P = new Patterns32(textFileName, queriesNum, m);
+	//NegativePatterns32 *P = new NegativePatterns32(textFileName, queriesNum, m);
+	/*MaliciousPatterns32 *P = new MaliciousPatterns32(textFileName, m);
 	queriesNum = P->getQueriesNum();
 	if (queriesNum == 0) exit(1);*/
 	unsigned char **patterns = P->getPatterns();
@@ -923,9 +923,9 @@ void fmDummy2Hash_256_SCBO_4(string k, string loadFactor, const char *textFileNa
 		FMD2->save(indexFileName);
 	}
 
-	Patterns *P = new Patterns(textFileName, queriesNum, m);
-	//NegativePatterns *P = new NegativePatterns(textFileName, queriesNum, m);
-	/*MaliciousPatterns *P = new MaliciousPatterns(textFileName, m);
+	Patterns32 *P = new Patterns32(textFileName, queriesNum, m);
+	//NegativePatterns32 *P = new NegativePatterns32(textFileName, queriesNum, m);
+	/*MaliciousPatterns32 *P = new MaliciousPatterns32(textFileName, m);
 	queriesNum = P->getQueriesNum();
 	if (queriesNum == 0) exit(1);*/
 	unsigned char **patterns = P->getPatterns();
@@ -971,9 +971,9 @@ void fmDummy2Hash_512_SCBO_4(string k, string loadFactor, const char *textFileNa
 		FMD2->save(indexFileName);
 	}
 
-	Patterns *P = new Patterns(textFileName, queriesNum, m);
-	//NegativePatterns *P = new NegativePatterns(textFileName, queriesNum, m);
-	/*MaliciousPatterns *P = new MaliciousPatterns(textFileName, m);
+	Patterns32 *P = new Patterns32(textFileName, queriesNum, m);
+	//NegativePatterns32 *P = new NegativePatterns32(textFileName, queriesNum, m);
+	/*MaliciousPatterns32 *P = new MaliciousPatterns32(textFileName, m);
 	queriesNum = P->getQueriesNum();
 	if (queriesNum == 0) exit(1);*/
 	unsigned char **patterns = P->getPatterns();
@@ -1019,9 +1019,9 @@ void fmDummy2Hash_256_CB_4(string k, string loadFactor, const char *textFileName
 		FMD2->save(indexFileName);
 	}
 
-	Patterns *P = new Patterns(textFileName, queriesNum, m);
-	//NegativePatterns *P = new NegativePatterns(textFileName, queriesNum, m);
-	/*MaliciousPatterns *P = new MaliciousPatterns(textFileName, m);
+	Patterns32 *P = new Patterns32(textFileName, queriesNum, m);
+	//NegativePatterns32 *P = new NegativePatterns32(textFileName, queriesNum, m);
+	/*MaliciousPatterns32 *P = new MaliciousPatterns32(textFileName, m);
 	queriesNum = P->getQueriesNum();
 	if (queriesNum == 0) exit(1);*/
 	unsigned char **patterns = P->getPatterns();
@@ -1067,9 +1067,9 @@ void fmDummy2Hash_512_CB_4(string k, string loadFactor, const char *textFileName
 		FMD2->save(indexFileName);
 	}
 
-	Patterns *P = new Patterns(textFileName, queriesNum, m);
-	//NegativePatterns *P = new NegativePatterns(textFileName, queriesNum, m);
-	/*MaliciousPatterns *P = new MaliciousPatterns(textFileName, m);
+	Patterns32 *P = new Patterns32(textFileName, queriesNum, m);
+	//NegativePatterns32 *P = new NegativePatterns32(textFileName, queriesNum, m);
+	/*MaliciousPatterns32 *P = new MaliciousPatterns32(textFileName, m);
 	queriesNum = P->getQueriesNum();
 	if (queriesNum == 0) exit(1);*/
 	unsigned char **patterns = P->getPatterns();
@@ -1116,9 +1116,9 @@ void fmDummy3_512(const char *textFileName, unsigned int queriesNum, unsigned in
 	}
 
 	vector<unsigned char> selectedChars = {'A', 'C', 'G', 'T'};
-	Patterns *P = new Patterns(textFileName, queriesNum, m, selectedChars);
-	//NegativePatterns *P = new NegativePatterns(textFileName, queriesNum, m);
-	/*MaliciousPatterns *P = new MaliciousPatterns(textFileName, m, selectedChars);
+	Patterns32 *P = new Patterns32(textFileName, queriesNum, m, selectedChars);
+	//NegativePatterns32 *P = new NegativePatterns32(textFileName, queriesNum, m);
+	/*MaliciousPatterns32 *P = new MaliciousPatterns32(textFileName, m, selectedChars);
 	queriesNum = P->getQueriesNum();
 	if (queriesNum == 0) exit(1);*/
 	unsigned char **patterns = P->getPatterns();
@@ -1165,9 +1165,9 @@ void fmDummy3_1024(const char *textFileName, unsigned int queriesNum, unsigned i
 	}
 
 	vector<unsigned char> selectedChars = {'A', 'C', 'G', 'T'};
-	Patterns *P = new Patterns(textFileName, queriesNum, m, selectedChars);
-	//NegativePatterns *P = new NegativePatterns(textFileName, queriesNum, m);
-	/*MaliciousPatterns *P = new MaliciousPatterns(textFileName, m, selectedChars);
+	Patterns32 *P = new Patterns32(textFileName, queriesNum, m, selectedChars);
+	//NegativePatterns32 *P = new NegativePatterns32(textFileName, queriesNum, m);
+	/*MaliciousPatterns32 *P = new MaliciousPatterns32(textFileName, m, selectedChars);
 	queriesNum = P->getQueriesNum();
 	if (queriesNum == 0) exit(1);*/
 	unsigned char **patterns = P->getPatterns();
@@ -1214,9 +1214,9 @@ void fmDummy3Hash_512(string k, string loadFactor, const char *textFileName, uns
 	}
 
 	vector<unsigned char> selectedChars = {'A', 'C', 'G', 'T'};
-	Patterns *P = new Patterns(textFileName, queriesNum, m, selectedChars);
-	//NegativePatterns *P = new NegativePatterns(textFileName, queriesNum, m);
-	/*MaliciousPatterns *P = new MaliciousPatterns(textFileName, m, selectedChars);
+	Patterns32 *P = new Patterns32(textFileName, queriesNum, m, selectedChars);
+	//NegativePatterns32 *P = new NegativePatterns32(textFileName, queriesNum, m);
+	/*MaliciousPatterns32 *P = new MaliciousPatterns32(textFileName, m, selectedChars);
 	queriesNum = P->getQueriesNum();
 	if (queriesNum == 0) exit(1);*/
 	unsigned char **patterns = P->getPatterns();
@@ -1263,9 +1263,9 @@ void fmDummy3Hash_1024(string k, string loadFactor, const char *textFileName, un
 	}
 
 	vector<unsigned char> selectedChars = {'A', 'C', 'G', 'T'};
-	Patterns *P = new Patterns(textFileName, queriesNum, m, selectedChars);
-	//NegativePatterns *P = new NegativePatterns(textFileName, queriesNum, m);
-	/*MaliciousPatterns *P = new MaliciousPatterns(textFileName, m, selectedChars);
+	Patterns32 *P = new Patterns32(textFileName, queriesNum, m, selectedChars);
+	//NegativePatterns32 *P = new NegativePatterns32(textFileName, queriesNum, m);
+	/*MaliciousPatterns32 *P = new MaliciousPatterns32(textFileName, m, selectedChars);
 	queriesNum = P->getQueriesNum();
 	if (queriesNum == 0) exit(1);*/
 	unsigned char **patterns = P->getPatterns();
@@ -1311,9 +1311,9 @@ void fmDummyHWT2_512(const char *textFileName, unsigned int queriesNum, unsigned
 		FMDHWT->save(indexFileName);
 	}
 
-	Patterns *P = new Patterns(textFileName, queriesNum, m);
-	//NegativePatterns *P = new NegativePatterns(textFileName, queriesNum, m);
-	/*MaliciousPatterns *P = new MaliciousPatterns(textFileName, m);
+	Patterns32 *P = new Patterns32(textFileName, queriesNum, m);
+	//NegativePatterns32 *P = new NegativePatterns32(textFileName, queriesNum, m);
+	/*MaliciousPatterns32 *P = new MaliciousPatterns32(textFileName, m);
 	queriesNum = P->getQueriesNum();
 	if (queriesNum == 0) exit(1);*/
 	unsigned char **patterns = P->getPatterns();
@@ -1359,9 +1359,9 @@ void fmDummyHWT2_1024(const char *textFileName, unsigned int queriesNum, unsigne
 		FMDHWT->save(indexFileName);
 	}
 
-	Patterns *P = new Patterns(textFileName, queriesNum, m);
-	//NegativePatterns *P = new NegativePatterns(textFileName, queriesNum, m);
-	/*MaliciousPatterns *P = new MaliciousPatterns(textFileName, m);
+	Patterns32 *P = new Patterns32(textFileName, queriesNum, m);
+	//NegativePatterns32 *P = new NegativePatterns32(textFileName, queriesNum, m);
+	/*MaliciousPatterns32 *P = new MaliciousPatterns32(textFileName, m);
 	queriesNum = P->getQueriesNum();
 	if (queriesNum == 0) exit(1);*/
 	unsigned char **patterns = P->getPatterns();
@@ -1407,9 +1407,9 @@ void fmDummyHWT4_512(const char *textFileName, unsigned int queriesNum, unsigned
 		FMDHWT->save(indexFileName);
 	}
 
-	Patterns *P = new Patterns(textFileName, queriesNum, m);
-	//NegativePatterns *P = new NegativePatterns(textFileName, queriesNum, m);
-	/*MaliciousPatterns *P = new MaliciousPatterns(textFileName, m);
+	Patterns32 *P = new Patterns32(textFileName, queriesNum, m);
+	//NegativePatterns32 *P = new NegativePatterns32(textFileName, queriesNum, m);
+	/*MaliciousPatterns32 *P = new MaliciousPatterns32(textFileName, m);
 	queriesNum = P->getQueriesNum();
 	if (queriesNum == 0) exit(1);*/
 	unsigned char **patterns = P->getPatterns();
@@ -1455,9 +1455,9 @@ void fmDummyHWT4_1024(const char *textFileName, unsigned int queriesNum, unsigne
 		FMDHWT->save(indexFileName);
 	}
 
-	Patterns *P = new Patterns(textFileName, queriesNum, m);
-	//NegativePatterns *P = new NegativePatterns(textFileName, queriesNum, m);
-	/*MaliciousPatterns *P = new MaliciousPatterns(textFileName, m);
+	Patterns32 *P = new Patterns32(textFileName, queriesNum, m);
+	//NegativePatterns32 *P = new NegativePatterns32(textFileName, queriesNum, m);
+	/*MaliciousPatterns32 *P = new MaliciousPatterns32(textFileName, m);
 	queriesNum = P->getQueriesNum();
 	if (queriesNum == 0) exit(1);*/
 	unsigned char **patterns = P->getPatterns();
@@ -1503,9 +1503,9 @@ void fmDummyHWT8_512(const char *textFileName, unsigned int queriesNum, unsigned
 		FMDHWT->save(indexFileName);
 	}
 
-	Patterns *P = new Patterns(textFileName, queriesNum, m);
-	//NegativePatterns *P = new NegativePatterns(textFileName, queriesNum, m);
-	/*MaliciousPatterns *P = new MaliciousPatterns(textFileName, m);
+	Patterns32 *P = new Patterns32(textFileName, queriesNum, m);
+	//NegativePatterns32 *P = new NegativePatterns32(textFileName, queriesNum, m);
+	/*MaliciousPatterns32 *P = new MaliciousPatterns32(textFileName, m);
 	queriesNum = P->getQueriesNum();
 	if (queriesNum == 0) exit(1);*/
 	unsigned char **patterns = P->getPatterns();
@@ -1551,9 +1551,9 @@ void fmDummyHWT8_1024(const char *textFileName, unsigned int queriesNum, unsigne
 		FMDHWT->save(indexFileName);
 	}
 
-	Patterns *P = new Patterns(textFileName, queriesNum, m);
-	//NegativePatterns *P = new NegativePatterns(textFileName, queriesNum, m);
-	/*MaliciousPatterns *P = new MaliciousPatterns(textFileName, m);
+	Patterns32 *P = new Patterns32(textFileName, queriesNum, m);
+	//NegativePatterns32 *P = new NegativePatterns32(textFileName, queriesNum, m);
+	/*MaliciousPatterns32 *P = new MaliciousPatterns32(textFileName, m);
 	queriesNum = P->getQueriesNum();
 	if (queriesNum == 0) exit(1);*/
 	unsigned char **patterns = P->getPatterns();
@@ -1599,9 +1599,9 @@ void fmDummyHWT2Hash_512(string k, string loadFactor, const char *textFileName, 
 		FMDHWT->save(indexFileName);
 	}
 
-	Patterns *P = new Patterns(textFileName, queriesNum, m);
-	//NegativePatterns *P = new NegativePatterns(textFileName, queriesNum, m);
-	/*MaliciousPatterns *P = new MaliciousPatterns(textFileName, m);
+	Patterns32 *P = new Patterns32(textFileName, queriesNum, m);
+	//NegativePatterns32 *P = new NegativePatterns32(textFileName, queriesNum, m);
+	/*MaliciousPatterns32 *P = new MaliciousPatterns32(textFileName, m);
 	queriesNum = P->getQueriesNum();
 	if (queriesNum == 0) exit(1);*/
 	unsigned char **patterns = P->getPatterns();
@@ -1647,9 +1647,9 @@ void fmDummyHWT2Hash_1024(string k, string loadFactor, const char *textFileName,
 		FMDHWT->save(indexFileName);
 	}
 
-	Patterns *P = new Patterns(textFileName, queriesNum, m);
-	//NegativePatterns *P = new NegativePatterns(textFileName, queriesNum, m);
-	/*MaliciousPatterns *P = new MaliciousPatterns(textFileName, m);
+	Patterns32 *P = new Patterns32(textFileName, queriesNum, m);
+	//NegativePatterns32 *P = new NegativePatterns32(textFileName, queriesNum, m);
+	/*MaliciousPatterns32 *P = new MaliciousPatterns32(textFileName, m);
 	queriesNum = P->getQueriesNum();
 	if (queriesNum == 0) exit(1);*/
 	unsigned char **patterns = P->getPatterns();
@@ -1695,9 +1695,9 @@ void fmDummyHWT4Hash_512(string k, string loadFactor, const char *textFileName, 
 		FMDHWT->save(indexFileName);
 	}
 
-	Patterns *P = new Patterns(textFileName, queriesNum, m);
-	//NegativePatterns *P = new NegativePatterns(textFileName, queriesNum, m);
-	/*MaliciousPatterns *P = new MaliciousPatterns(textFileName, m);
+	Patterns32 *P = new Patterns32(textFileName, queriesNum, m);
+	//NegativePatterns32 *P = new NegativePatterns32(textFileName, queriesNum, m);
+	/*MaliciousPatterns32 *P = new MaliciousPatterns32(textFileName, m);
 	queriesNum = P->getQueriesNum();
 	if (queriesNum == 0) exit(1);*/
 	unsigned char **patterns = P->getPatterns();
@@ -1743,9 +1743,9 @@ void fmDummyHWT4Hash_1024(string k, string loadFactor, const char *textFileName,
 		FMDHWT->save(indexFileName);
 	}
 
-	Patterns *P = new Patterns(textFileName, queriesNum, m);
-	//NegativePatterns *P = new NegativePatterns(textFileName, queriesNum, m);
-	/*MaliciousPatterns *P = new MaliciousPatterns(textFileName, m);
+	Patterns32 *P = new Patterns32(textFileName, queriesNum, m);
+	//NegativePatterns32 *P = new NegativePatterns32(textFileName, queriesNum, m);
+	/*MaliciousPatterns32 *P = new MaliciousPatterns32(textFileName, m);
 	queriesNum = P->getQueriesNum();
 	if (queriesNum == 0) exit(1);*/
 	unsigned char **patterns = P->getPatterns();
@@ -1791,9 +1791,9 @@ void fmDummyHWT8Hash_512(string k, string loadFactor, const char *textFileName, 
 		FMDHWT->save(indexFileName);
 	}
 
-	Patterns *P = new Patterns(textFileName, queriesNum, m);
-	//NegativePatterns *P = new NegativePatterns(textFileName, queriesNum, m);
-	/*MaliciousPatterns *P = new MaliciousPatterns(textFileName, m);
+	Patterns32 *P = new Patterns32(textFileName, queriesNum, m);
+	//NegativePatterns32 *P = new NegativePatterns32(textFileName, queriesNum, m);
+	/*MaliciousPatterns32 *P = new MaliciousPatterns32(textFileName, m);
 	queriesNum = P->getQueriesNum();
 	if (queriesNum == 0) exit(1);*/
 	unsigned char **patterns = P->getPatterns();
@@ -1839,9 +1839,9 @@ void fmDummyHWT8Hash_1024(string k, string loadFactor, const char *textFileName,
 		FMDHWT->save(indexFileName);
 	}
 
-	Patterns *P = new Patterns(textFileName, queriesNum, m);
-	//NegativePatterns *P = new NegativePatterns(textFileName, queriesNum, m);
-	/*MaliciousPatterns *P = new MaliciousPatterns(textFileName, m);
+	Patterns32 *P = new Patterns32(textFileName, queriesNum, m);
+	//NegativePatterns32 *P = new NegativePatterns32(textFileName, queriesNum, m);
+	/*MaliciousPatterns32 *P = new MaliciousPatterns32(textFileName, m);
 	queriesNum = P->getQueriesNum();
 	if (queriesNum == 0) exit(1);*/
 	unsigned char **patterns = P->getPatterns();

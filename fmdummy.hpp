@@ -5,9 +5,9 @@
 #include <vector>
 #include <algorithm>
 #include <tuple>
-#include "shared/common.h"
+#include "shared/common.hpp"
 #include "shared/hash.hpp"
-#include "shared/huff.h"
+#include "shared/huff.hpp"
 
 using namespace std;
 using namespace shared;
@@ -89,7 +89,7 @@ public:
 
 	void build(const char *textFileName) {
             this->free();
-            unsigned char *text = readText(textFileName, this->textLen, 0);
+            unsigned char *text = readText(textFileName, this->textLen, 0U);
             checkNullChar(text, this->textLen);
             if (this->allChars) {
                     cout << "Counting char frequencies ... " << flush;
@@ -109,7 +109,7 @@ public:
                     for (unsigned int i = 0; i < 256; ++i) if (charsFreq[i] > 0) this->selectedChars.push_back(i);
             }
             unsigned int bwtLen;
-            unsigned char *bwt = getBWT(textFileName, text, this->textLen, bwtLen, 0);
+            unsigned char *bwt = getBWT(textFileName, text, this->textLen, bwtLen, 0U);
             cout << "Compacting BWT for selected chars ... " << flush;
             ++bwtLen;
             unsigned int bwtDenseLen = (bwtLen / 8);
@@ -257,7 +257,7 @@ public:
 
 template<FMDummy1Type T> class FMDummy1Hash : public FMDummy1<T> {
 private:
-	HTExt<HTType::HT_STANDARD> *ht = NULL;
+	HTExt32<HTType::HT_STANDARD> *ht = NULL;
 
 	void freeMemory() {
             FMDummy1<T>::freeMemory();
@@ -268,13 +268,13 @@ public:
         FMDummy1Hash(unsigned int k, double loadFactor) {
 		this->initialize();
 		this->setSelectedChars({});
-                this->ht = new HTExt<HTType::HT_STANDARD>(k, loadFactor);
+                this->ht = new HTExt32<HTType::HT_STANDARD>(k, loadFactor);
 	}
         
 	FMDummy1Hash(vector<unsigned char> selectedChars, unsigned int k, double loadFactor) {
 		this->initialize();
 		this->setSelectedChars(selectedChars);
-                this->ht = new HTExt<HTType::HT_STANDARD>(k, loadFactor);
+                this->ht = new HTExt32<HTType::HT_STANDARD>(k, loadFactor);
 	}
 
 	~FMDummy1Hash() {
@@ -284,7 +284,7 @@ public:
 
 	void build(const char *textFileName) {
             this->free();
-            unsigned char *text = readText(textFileName, this->textLen, 0);
+            unsigned char *text = readText(textFileName, this->textLen, 0U);
             checkNullChar(text, this->textLen);
             if (this->allChars) {
                     cout << "Counting char frequencies ... " << flush;
@@ -305,12 +305,12 @@ public:
             }
             unsigned int bwtLen;
             unsigned int saLen;
-            unsigned int *sa = getSA(textFileName, text, this->textLen, saLen, 0);
+            unsigned int *sa = getSA(textFileName, text, this->textLen, saLen, 0U);
             cout << "Building hash table ... " << flush;
             if (this->allChars) this->ht->build(text, this->textLen, sa, saLen);
             else this->ht->build(text, this->textLen, sa, saLen, this->selectedChars);
             cout << "Done" << endl;
-            unsigned char *bwt = getBWT(text, this->textLen, sa, saLen, bwtLen, 0);
+            unsigned char *bwt = getBWT(text, this->textLen, sa, saLen, bwtLen, 0U);
             delete[] sa;
             cout << "Compacting BWT for selected chars ... " << flush;
             ++bwtLen;
@@ -369,7 +369,7 @@ public:
 	void load(FILE *inFile) {
             FMDummy1<T>::load(inFile);
             delete this->ht;
-            this->ht = new HTExt<HTType::HT_STANDARD>();
+            this->ht = new HTExt32<HTType::HT_STANDARD>();
             this->ht->load(inFile);
         }
         
@@ -730,7 +730,7 @@ public:
 
 	void build(const char *textFileName) {
             this->free();
-            unsigned char *text = readText(textFileName, this->textLen, 0);
+            unsigned char *text = readText(textFileName, this->textLen, 0U);
             checkNullChar(text, this->textLen);
             unsigned int encodedTextLen;
             unsigned char *encodedText = NULL;
@@ -751,8 +751,8 @@ public:
             delete[] text;
             unsigned int bwtLen;
             unsigned int encodedSALen;
-            unsigned int *encodedSA = getSA(encodedText, encodedTextLen, encodedSALen, 0);
-            unsigned char *bwt = getBWT(encodedText, encodedTextLen, encodedSA, encodedSALen, bwtLen, 0);
+            unsigned int *encodedSA = getSA(encodedText, encodedTextLen, encodedSALen, 0U);
+            unsigned char *bwt = getBWT(encodedText, encodedTextLen, encodedSA, encodedSALen, bwtLen, 0U);
             delete[] encodedSA;
             unsigned int encodedCharsLen = (unsigned int)exp2((double)BPC);
             cout << "Compacting BWT ... " << flush;
@@ -929,7 +929,7 @@ public:
 
 template<FMDummy2Type T, FMDummy2Schema S, FMDummy2BPC BPC> class FMDummy2Hash : public FMDummy2<T, S, BPC> {
 protected:
-	HTExt<HTType::HT_STANDARD> *ht = NULL;
+	HTExt32<HTType::HT_STANDARD> *ht = NULL;
 
 	void freeMemory() {
             FMDummy2<T, S, BPC>::freeMemory();
@@ -939,7 +939,7 @@ protected:
 public:
 	FMDummy2Hash(unsigned int k, double loadFactor) {
 		this->initialize();
-		this->ht = new HTExt<HTType::HT_STANDARD>(k, loadFactor);
+		this->ht = new HTExt32<HTType::HT_STANDARD>(k, loadFactor);
 	}
 
 	~FMDummy2Hash() {
@@ -949,10 +949,10 @@ public:
 
 	void build(const char *textFileName) {
             this->free();
-            unsigned char *text = readText(textFileName, this->textLen, 0);
+            unsigned char *text = readText(textFileName, this->textLen, 0U);
             checkNullChar(text, this->textLen);
             unsigned int saLen;
-            unsigned int *sa = getSA(textFileName, text, this->textLen, saLen, 0);
+            unsigned int *sa = getSA(textFileName, text, this->textLen, saLen, 0U);
             cout << "Building hash table ... " << flush;
             unsigned int uniqueSuffixNum = getUniqueSuffixNum(this->ht->k, text, this->textLen, sa, saLen);
             unsigned long long bucketsNum = (double)uniqueSuffixNum * (1.0 / this->ht->loadFactor);
@@ -979,8 +979,8 @@ public:
             delete[] text;
             unsigned int bwtLen;
             unsigned int encodedSALen;
-            unsigned int *encodedSA = getSA(encodedText, encodedTextLen, encodedSALen, 0);
-            unsigned char *bwt = getBWT(encodedText, encodedTextLen, encodedSA, encodedSALen, bwtLen, 0);
+            unsigned int *encodedSA = getSA(encodedText, encodedTextLen, encodedSALen, 0U);
+            unsigned char *bwt = getBWT(encodedText, encodedTextLen, encodedSA, encodedSALen, bwtLen, 0U);
             unsigned int encodedCharsLen = (unsigned int)exp2((double)BPC);
             cout << "Compacting BWT ... " << flush;
             ++bwtLen;
@@ -1025,7 +1025,7 @@ public:
             unsigned char *encodedPattern = new unsigned char[this->maxEncodedCharsLen * this->ht->k + 1];
             unsigned int encodedPatternLen;
             for (unsigned int i = 0; i < this->ht->bucketsNum; ++i) {
-                    if (this->ht->alignedBoundariesHT[2 * i] != HT<HTType::HT_STANDARD>::emptyValueHT) {
+                    if (this->ht->alignedBoundariesHT[2 * i] != HT32<HTType::HT_STANDARD>::emptyValueHT) {
                             entry[0] = cutOutEntries[2 * i];
                             entry[1] = cutOutEntries[2 * i + 1];
                             for (unsigned int j = 0; j < this->ht->prefixLength; ++j) entry[j + 2] = this->ht->alignedEntriesHT[i * this->ht->prefixLength + j];
@@ -1069,7 +1069,7 @@ public:
                             lutPattern[1] = (unsigned char)j;
                             unsigned int encodedPatternLen;
                             encode(lutPattern, 2, this->encodedChars, this->encodedCharsLen, this->maxEncodedCharsLen, encodedPattern, encodedPatternLen);
-                            binarySearch(encodedSA, encodedText, 0, encodedSALen, encodedPattern, encodedPatternLen, this->ht->lut2[i][j][0], this->ht->lut2[i][j][1]);
+                            binarySearch(encodedSA, encodedText, 0U, encodedSALen, encodedPattern, encodedPatternLen, this->ht->lut2[i][j][0], this->ht->lut2[i][j][1]);
                             this->ht->lut2[i][j][1] = this->ht->lut2[i][j][0] + diff;
                     }
             }
@@ -1099,7 +1099,7 @@ public:
 	void load(FILE *inFile) {
             FMDummy2<T, S, BPC>::load(inFile);
             delete this->ht;
-            this->ht = new HTExt<HTType::HT_STANDARD>();
+            this->ht = new HTExt32<HTType::HT_STANDARD>();
             this->ht->load(inFile);
         }
         
@@ -1264,7 +1264,7 @@ public:
 
 	void build(const char *textFileName) {
             this->free();
-            unsigned char *text = readText(textFileName, this->textLen, 0);
+            unsigned char *text = readText(textFileName, this->textLen, 0U);
             checkNullChar(text, this->textLen);
             cout << "Converting text ... " << flush;
             unsigned char *convertedText = new unsigned char[this->textLen];
@@ -1282,7 +1282,7 @@ public:
 
             unsigned int bwtLen;
             vector<unsigned char> selectedChars = { 'A', 'C', 'G', 'T' };
-            unsigned char *bwt = getBWT(convertedText, this->textLen, bwtLen, 0);
+            unsigned char *bwt = getBWT(convertedText, this->textLen, bwtLen, 0U);
             cout << "Encoding BWT ... " << flush;
             ++bwtLen;
             unsigned int bwtEnc125Len;
@@ -1394,7 +1394,7 @@ public:
 
 template<FMDummy3Type T> class FMDummy3Hash : public FMDummy3<T> {
 private:
-	HTExt<HTType::HT_STANDARD> *ht = NULL;
+	HTExt32<HTType::HT_STANDARD> *ht = NULL;
         
 	void freeMemory() {
             FMDummy3<T>::freeMemory();
@@ -1404,7 +1404,7 @@ private:
 public:
 	FMDummy3Hash(unsigned int k, double loadFactor) {
 		this->initialize();
-		this->ht = new HTExt<HTType::HT_STANDARD>(k, loadFactor);
+		this->ht = new HTExt32<HTType::HT_STANDARD>(k, loadFactor);
 	}
 
 	~FMDummy3Hash() {
@@ -1414,7 +1414,7 @@ public:
 
 	void build(const char *textFileName) {
             this->free();
-            unsigned char *text = readText(textFileName, this->textLen, 0);
+            unsigned char *text = readText(textFileName, this->textLen, 0U);
             checkNullChar(text, this->textLen);
             cout << "Converting text ... " << flush;
             unsigned char *convertedText = new unsigned char[this->textLen];
@@ -1433,12 +1433,12 @@ public:
             unsigned int bwtLen;
             vector<unsigned char> selectedChars = { 'A', 'C', 'G', 'T' };
             unsigned int saLen;
-            unsigned int *sa = getSA(convertedText, this->textLen, saLen, 0);
+            unsigned int *sa = getSA(convertedText, this->textLen, saLen, 0U);
             cout << "Building hash table ... " << flush;
 
             this->ht->build(convertedText, this->textLen, sa, saLen, selectedChars);
             cout << "Done" << endl;
-            unsigned char *bwt = getBWT(convertedText, this->textLen, sa, saLen, bwtLen, 0);
+            unsigned char *bwt = getBWT(convertedText, this->textLen, sa, saLen, bwtLen, 0U);
             delete[] sa;
             cout << "Encoding BWT ... " << flush;
             ++bwtLen;
@@ -1479,7 +1479,7 @@ public:
 	void load(FILE *inFile) {
             FMDummy3<T>::load(inFile);
             delete this->ht;
-            this->ht = new HTExt<HTType::HT_STANDARD>();
+            this->ht = new HTExt32<HTType::HT_STANDARD>();
             this->ht->load(inFile);
         }
         
@@ -3663,10 +3663,10 @@ public:
 
 	void build(const char *textFileName) {
             this->free();
-            unsigned char *text = readText(textFileName, this->textLen, 0);
+            unsigned char *text = readText(textFileName, this->textLen, 0U);
             checkNullChar(text, this->textLen);
             unsigned int bwtLen;
-            unsigned char *bwt = getBWT(textFileName, text, this->textLen, bwtLen, 0);
+            unsigned char *bwt = getBWT(textFileName, text, this->textLen, bwtLen, 0U);
             cout << "Huffman encoding ... " << flush;
             encodeHuffFromText(W, bwt, bwtLen, this->code, this->codeLen);
             cout << "Done" << endl;
@@ -3814,7 +3814,7 @@ public:
 
 template<FMDummyHWTType T, WTDummyType W> class FMDummyHWTHash : public FMDummyHWT<T, W> {
 private:
-        HTExt<HTType::HT_STANDARD> *ht = NULL;
+        HTExt32<HTType::HT_STANDARD> *ht = NULL;
         
 	void freeMemory() {
             FMDummyHWT<T, W>::freeMemory();
@@ -3825,7 +3825,7 @@ public:
 
 	FMDummyHWTHash(unsigned int k, double loadFactor) {
 		this->initialize();
-		this->ht = new HTExt<HTType::HT_STANDARD>(k, loadFactor);
+		this->ht = new HTExt32<HTType::HT_STANDARD>(k, loadFactor);
 	}
 
 	~FMDummyHWTHash() {
@@ -3835,15 +3835,15 @@ public:
 
 	void build(const char *textFileName) {
             this->free();
-            unsigned char *text = readText(textFileName, this->textLen, 0);
+            unsigned char *text = readText(textFileName, this->textLen, 0U);
             checkNullChar(text, this->textLen);
             unsigned int bwtLen;
             unsigned int saLen;
-            unsigned int *sa = getSA(textFileName, text, this->textLen, saLen, 0);
+            unsigned int *sa = getSA(textFileName, text, this->textLen, saLen, 0U);
             cout << "Building hash table ... " << flush;
             this->ht->build(text, this->textLen, sa, saLen);
             cout << "Done" << endl;
-            unsigned char *bwt = getBWT(text, this->textLen, sa, saLen, bwtLen, 0);
+            unsigned char *bwt = getBWT(text, this->textLen, sa, saLen, bwtLen, 0U);
             delete[] sa;
             cout << "Huffman encoding ... " << flush;
             encodeHuffFromText(W, bwt, bwtLen, this->code, this->codeLen);
@@ -3890,7 +3890,7 @@ public:
 	void load(FILE *inFile) {
             FMDummyHWT<T, W>::load(inFile);
             delete this->ht;
-            this->ht = new HTExt<HTType::HT_STANDARD>();
+            this->ht = new HTExt32<HTType::HT_STANDARD>();
             this->ht->load(inFile);
         }
         

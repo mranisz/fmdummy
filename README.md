@@ -225,7 +225,7 @@ FMDummyHWTHash<FMDummyHWTType T, WTDummyType W>(unsigned int k, double loadFacto
 ```
 #include <iostream>
 #include <stdlib.h>
-#include "fmdummy/shared/patterns.h"
+#include "fmdummy/shared/patterns.hpp"
 #include "fmdummy/fmdummy.hpp"
 
 using namespace std;
@@ -251,7 +251,7 @@ int main(int argc, char *argv[]) {
 	double indexSize = (double)FMD1->getIndexSize();
 	cout << "Index size: " << indexSize << "B (" << (indexSize / (double)FMD1->getTextSize()) << "n)" << endl << endl;
 
-	Patterns *P = new Patterns(textFileName, queriesNum, patternLen, selectedChars);
+	Patterns32 *P = new Patterns32(textFileName, queriesNum, patternLen, selectedChars);
 	unsigned char **patterns = P->getPatterns();
 
 	for (unsigned int i = 0; i < queriesNum; ++i) {

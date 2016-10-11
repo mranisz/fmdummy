@@ -14,9 +14,9 @@ all: countFMDummy
 countFMDummy: test/countFMDummy.cpp libfmdummy.a libs/$(ASMLIB)
 	$(CXX) $(CFLAGS) test/countFMDummy.cpp libfmdummy.a libs/$(ASMLIB) -o test/countFMDummy
 
-libfmdummy.a: fmdummy.hpp shared/common.h shared/common.cpp shared/patterns.h shared/patterns.cpp shared/sais.h shared/sais.c shared/timer.h shared/timer.cpp shared/xxhash.h shared/xxhash.c shared/hash.hpp shared/huff.h shared/huff.cpp
-	$(CXX) $(CFLAGS) -c shared/common.cpp shared/patterns.cpp shared/sais.c shared/timer.cpp shared/xxhash.c shared/huff.cpp
-	ar rcs libfmdummy.a fmdummy.hpp common.o patterns.o sais.o timer.o xxhash.o huff.o shared/hash.hpp
+libfmdummy.a: fmdummy.hpp shared/common.hpp shared/patterns.hpp shared/sais.h shared/sais.c shared/timer.hpp shared/xxhash.h shared/xxhash.c shared/hash.hpp shared/huff.hpp
+	$(CXX) $(CFLAGS) -c shared/sais.c shared/xxhash.c
+	ar rcs libfmdummy.a fmdummy.hpp sais.o xxhash.o shared/common.hpp shared/patterns.hpp shared/timer.hpp shared/hash.hpp shared/huff.hpp
 	make cleanObjects
 
 cleanObjects:
