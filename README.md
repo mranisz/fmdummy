@@ -1,7 +1,7 @@
 # FMDummy text indexes library
 
 ##What is it?
-The FMDummy text indexes are fast variants of the FM-index, a well-known compressed full-text index by Ferragina and Manzini (2000). We focus more on search speed than space use. One of the novelties is a rank solution with 1 cache miss in the worst case, which (to our knowledge) was not used earlier elsewhere.
+The FMDummy text indexes are fast variants of the FM-index, a well-known compressed full-text index by Ferragina and Manzini \[[1](#references)\]. We focus more on search speed than space use. One of the novelties is a rank solution with 1 cache miss in the worst case, which (to our knowledge) was not used earlier elsewhere.
 
 The current version handles only the count query (i.e., returns the number of occurrences of the given pattern).
 
@@ -268,6 +268,9 @@ Using other FMDummy indexes is analogous.
 - Suffix array building by Yuta Mori (sais)
 - A multi-platform library of highly optimized functions for C and C++ by Agner Fog (asmlib)
 - A very fast hash function by Yann Collet (xxHash)
+
+##References
+1. P. Ferragina, G. Manzini. Opportunistic data structures with applications. In Proc. FOCS, pages 390–398. IEEE, 2000.
 
 ##Authors
 - Szymon Grabowski
