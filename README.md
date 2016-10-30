@@ -9,12 +9,13 @@ The current version handles only the count query (i.e., returns the number of oc
 The FMDummy text indexes require:
 - C++11 ready compiler such as g++ version 4.7 or higher
 - a 64-bit operating system
-- text size is limited to (FMDummy2 limitations are the worst cases for incompressible text, usually they are not so strong):
-    - 2GB for FMDummy1, FMDummy3 and FMDummyHWT
-    - 0.8GB for FMDummy2 with FMD2_SCHEMA_SCBO and FMD2_BPC_3
-    - 1.2GB for FMDummy2 with FMD2_SCHEMA_SCBO and FMD2_BPC_4
-    - 1.1GB for FMDummy2 with FMD2_SCHEMA_CB and FMD2_BPC_3
-    - 1.5GB for FMDummy2 with FMD2_SCHEMA_CB and FMD2_BPC_4
+- text size:
+    - < 2GB for FMDummy1, FMDummy3 and FMDummyHWT
+    - < 0.8GB for FMDummy2 with FMD2_SCHEMA_SCBO and FMD2_BPC_3
+    - < 1.2GB for FMDummy2 with FMD2_SCHEMA_SCBO and FMD2_BPC_4
+    - < 1.1GB for FMDummy2 with FMD2_SCHEMA_CB and FMD2_BPC_3
+    - < 1.5GB for FMDummy2 with FMD2_SCHEMA_CB and FMD2_BPC_4
+- FMDummy2 text limitations are the worst cases for incompressible text, usually they are not so strong
 
 ##Installation
 To download and build the library use the following commands:
@@ -52,7 +53,7 @@ void free();
 ```
 - get the **index size** in bytes (size in memory):
 ```
-unsigned int getIndexSize();
+unsigned long long getIndexSize();
 ```
 - get the size in bytes of the text used to build the index:
 ```

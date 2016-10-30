@@ -232,8 +232,8 @@ public:
             this->initialize();
         }
         
-	unsigned int getIndexSize() {
-            unsigned int size = sizeof(this->bwtWithRanksLen) + sizeof(this->allChars) + this->selectedChars.size();
+	unsigned long long getIndexSize() {
+            unsigned long long size = sizeof(this->bwtWithRanksLen) + sizeof(this->allChars) + this->selectedChars.size();
             size += (257 * sizeof(unsigned int) + 256 * sizeof(unsigned long long*) + 256 * sizeof(unsigned long long*) + this->selectedChars.size() * sizeof(unsigned char));
             if (this->bwtWithRanksLen > 0) size += (this->selectedChars.size() * (this->bwtWithRanksLen + 16) * sizeof(unsigned long long));
             return size;
@@ -386,7 +386,7 @@ public:
             this->initialize();
         }
         
-	unsigned int getIndexSize() {
+	unsigned long long getIndexSize() {
             return FMDummy1<T>::getIndexSize() + sizeof(this->ht) + this->ht->getHTSize();
         }
         
@@ -886,8 +886,8 @@ public:
             this->initialize();
         }
         
-	unsigned int getIndexSize() {
-            unsigned int size = sizeof(this->maxEncodedCharsLen) + sizeof(this->maxPatternLen) + sizeof(bInC) + sizeof(this->bwtWithRanksLen);
+	unsigned long long getIndexSize() {
+            unsigned long long size = sizeof(this->maxEncodedCharsLen) + sizeof(this->maxPatternLen) + sizeof(bInC) + sizeof(this->bwtWithRanksLen);
             size += (257 * sizeof(unsigned int) + 256 * sizeof(unsigned long long *) + 256 * sizeof(unsigned long long *) + 256 * sizeof(unsigned int) + (this->maxEncodedCharsLen * this->maxPatternLen + 1) * sizeof(unsigned char) + this->maxEncodedCharsLen * 256 * sizeof(unsigned char));
             if (this->bwtWithRanksLen > 0) size += ((unsigned int)exp2((double)BPC) * (this->bwtWithRanksLen + 16) * sizeof(unsigned long long));
             return size;
@@ -1116,7 +1116,7 @@ public:
             this->initialize();
         }
         
-	unsigned int getIndexSize() {
+	unsigned long long getIndexSize() {
             return FMDummy2<T, S, BPC>::getIndexSize() + sizeof(this->ht) + this->ht->getHTSize();
         }
 
@@ -1369,8 +1369,8 @@ public:
             this->initialize();
         }
         
-	unsigned int getIndexSize() {
-            unsigned int size = sizeof(this->bwtWithRanksLen);
+	unsigned long long getIndexSize() {
+            unsigned long long size = sizeof(this->bwtWithRanksLen);
             size += (257 * sizeof(unsigned int) + sizeof(unsigned char*) + 256 * 125 * sizeof(unsigned int));
             if (this->bwtWithRanksLen > 0) size += (this->bwtWithRanksLen + 128) * sizeof(unsigned char);
             return size;
@@ -1496,7 +1496,7 @@ public:
             this->initialize();
         }
 
-	unsigned int getIndexSize() {
+	unsigned long long getIndexSize() {
             return FMDummy3<T>::getIndexSize() + sizeof(this->ht) + this->ht->getHTSize();
         }
 
@@ -1557,8 +1557,8 @@ public:
 		this->free();
 	}
 
-	unsigned int getWTSize() {
-            unsigned int size = sizeof(this->bitsLen) + sizeof(this->nodesLen) + sizeof(unsigned long long *);
+	unsigned long long getWTSize() {
+            unsigned long long size = sizeof(this->bitsLen) + sizeof(this->nodesLen) + sizeof(unsigned long long *);
             size += ((this->bitsLen + 16) * sizeof(unsigned long long) + this->nodesLen * sizeof(WTDummy *));
             for (unsigned int i = 0; i < this->nodesLen; ++i) if (this->nodes[i] != NULL) size += this->nodes[i]->getWTSize();
             return size;
@@ -3765,7 +3765,7 @@ public:
             this->initialize();
         }
         
-	unsigned int getIndexSize() {
+	unsigned long long getIndexSize() {
             unsigned int size = sizeof(this->wt);
             size += (257 * sizeof(unsigned int) + 256 * sizeof(unsigned int) + 256 * sizeof(unsigned long long));
             if (this->wt != NULL) size += this->wt->getWTSize();
@@ -3907,7 +3907,7 @@ public:
             this->initialize();
         }
 
-	unsigned int getIndexSize() {
+	unsigned long long getIndexSize() {
             return FMDummyHWT<T, W>::getIndexSize() + sizeof(this->ht) + this->ht->getHTSize();
         }
 
