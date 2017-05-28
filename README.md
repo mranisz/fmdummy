@@ -1,11 +1,11 @@
 # FMDummy text indexes library
 
-##What is it?
+## What is it?
 The FMDummy text indexes are fast variants of the FM-index, a well-known compressed full-text index by Ferragina and Manzini \[[1](#references)\]. We focus more on search speed than space use. One of the novelties is a rank solution with 1 cache miss in the worst case, which (to our knowledge) was not used earlier elsewhere.
 
 The current version handles only the count query (i.e., returns the number of occurrences of the given pattern).
 
-##Requirements
+## Requirements
 The FMDummy text indexes require:
 - C++11 ready compiler such as g++ version 4.7 or higher
 - a 64-bit operating system
@@ -17,7 +17,7 @@ The FMDummy text indexes require:
     - < 1.5GB for FMDummy2 with FMD2_SCHEMA_CB and FMD2_BPC_4
 - FMDummy2 text limitations are the worst cases for incompressible text, usually they are not so strong
 
-##Installation
+## Installation
 To download and build the library use the following commands:
 ```
 git clone https://github.com/mranisz/fmdummy.git
@@ -25,7 +25,7 @@ cd fmdummy
 make
 ```
 
-##Usage
+## Usage
 To use the FMDummy library:
 - include "fmdummy/fmdummy.hpp" to your project
 - compile it with "-std=c++11 -O3 -mpopcnt" options and link it with libraries:
@@ -33,7 +33,7 @@ To use the FMDummy library:
   - fmdummy/libs/libaelf64.a (linux) or fmdummy/libs/libacof64.lib (windows)
 - use "fmdummy" and "shared" namespaces
 
-##API
+## API
 There are several functions you can call on each of the FMDummy text index:
 - **build** the index using text file called textFileName:
 ```
@@ -64,7 +64,7 @@ unsigned int getTextSize();
 unsigned int count(unsigned char *pattern, unsigned int patternLen);
 ```
 
-##FMDummy1\<FMDummy1Type T\>
+## FMDummy1\<FMDummy1Type T\>
 FMDummy1 can be built for up to 16 selected characters from text.
 
 Parameters:
@@ -81,7 +81,7 @@ FMDummy1<FMDummy1Type T>();
 FMDummy1<FMDummy1Type T>(vector<unsigned char> selectedChars);
 ```
 
-##FMDummy1Hash\<FMDummy1Type T\>
+## FMDummy1Hash\<FMDummy1Type T\>
 FMDummy1Hash is FMDummy1 with hashed k-symbol prefixes of suffixes from suffix array to speed up searches (k ≥ 2). This variant is particularly efficient in speed for short patterns (not much longer than k).
 
 Parameters:
@@ -105,7 +105,7 @@ FMDummy1Hash<FMDummy1Type T>(unsigned int k, double loadFactor);
 FMDummy1Hash<FMDummy1Type T>(vector<unsigned char> selectedChars, unsigned int k, double loadFactor);
 ```
 
-##FMDummy2\<FMDummy2Type T, FMDummy2Schema S, FMDummy2BPC BPC\>
+## FMDummy2\<FMDummy2Type T, FMDummy2Schema S, FMDummy2BPC BPC\>
 
 Parameters:
 - T:
@@ -123,7 +123,7 @@ Constructors:
 FMDummy2<FMDummy2Type T, FMDummy2Schema S, FMDummy2BPC BPC>();
 ```
 
-##FMDummy2Hash\<FMDummy2Type T, FMDummy2Schema S, FMDummy2BPC BPC\>
+## FMDummy2Hash\<FMDummy2Type T, FMDummy2Schema S, FMDummy2BPC BPC\>
 FMDummy2Hash is FMDummy2 with hashed k-symbol prefixes of suffixes from suffix array to speed up searches (k ≥ 2). This variant is particularly efficient in speed for short patterns (not much longer than k).
 
 Parameters:
@@ -149,7 +149,7 @@ Constructors:
 FMDummy2Hash<FMDummy2Type T, FMDummy2Schema S, FMDummy2BPC BPC>(unsigned int k, double loadFactor);
 ```
 
-##FMDummy3\<FMDummy3Type T\>
+## FMDummy3\<FMDummy3Type T\>
 FMDummy3 is intended for DNA sequences (it searches only for patterns consisting of the symbols A, C, G, T).
 
 Parameters:
@@ -162,7 +162,7 @@ Constructors:
 FMDummy3<FMDummy3Type T>();
 ```
 
-##FMDummy3Hash\<FMDummy3Type T\>
+## FMDummy3Hash\<FMDummy3Type T\>
 FMDummy3Hash is FMDummy3 with hashed k-symbol prefixes of suffixes from suffix array to speed up searches (k ≥ 2). This variant is particularly efficient in speed for short patterns (not much longer than k).
 
 Parameters:
@@ -182,7 +182,7 @@ Constructors:
 FMDummy3Hash<FMDummy3Type T>(unsigned int k, double loadFactor);
 ```
 
-##FMDummyHWT\<FMDummyHWTType T, WTDummyType W\>
+## FMDummyHWT\<FMDummyHWTType T, WTDummyType W\>
 
 Parameters:
 - T:
@@ -198,7 +198,7 @@ Constructors:
 FMDummyHWT<FMDummyHWTType T, WTDummyType W>();
 ```
 
-##FMDummyHWTHash\<FMDummyHWTType T, WTDummyType W\>
+## FMDummyHWTHash\<FMDummyHWTType T, WTDummyType W\>
 FMDummyHWTHash is FMDummyHWT with hashed k-symbol prefixes of suffixes from suffix array to speed up searches (k ≥ 2). This variant is particularly efficient in speed for short patterns (not much longer than k).
 
 Parameters:
@@ -222,7 +222,7 @@ Constructors:
 FMDummyHWTHash<FMDummyHWTType T, WTDummyType W>(unsigned int k, double loadFactor);
 ```
 
-##FMDummy1 usage example
+## FMDummy1 usage example
 ```
 #include <iostream>
 #include <stdlib.h>
@@ -265,15 +265,15 @@ int main(int argc, char *argv[]) {
 ```
 Using other FMDummy indexes is analogous.
 
-##External resources used in FMDummy project
+## External resources used in FMDummy project
 - Suffix array building by Yuta Mori (sais)
 - A multi-platform library of highly optimized functions for C and C++ by Agner Fog (asmlib)
 - A very fast hash function by Yann Collet (xxHash)
 
-##References
+## References
 1. P. Ferragina, G. Manzini. Opportunistic data structures with applications. In Proc. FOCS, pages 390–398. IEEE, 2000.
 
-##Authors
+## Authors
 - Szymon Grabowski
 - [Marcin Raniszewski](https://github.com/mranisz)
 - Sebastian Deorowicz
