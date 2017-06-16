@@ -8,7 +8,7 @@ The current version handles only the count query (i.e., returns the number of oc
 ## Requirements
 The FMDummy text indexes require:
 - C++11 ready compiler such as g++ version 4.7 or higher
-- a 64-bit operating system
+- a 64-bit UNIX operating system
 - text size:
     - < 2GB for FMDummy1, FMDummy3 and FMDummyHWT
     - < 0.8GB for FMDummy2 with FMD2_SCHEMA_SCBO and FMD2_BPC_3
@@ -30,7 +30,7 @@ To use the FMDummy library:
 - include "fmdummy/fmdummy.hpp" to your project
 - compile it with "-std=c++11 -O3 -mpopcnt" options and link it with libraries:
   - fmdummy/libfmdummy.a
-  - fmdummy/libs/libaelf64.a (linux) or fmdummy/libs/libacof64.lib (windows)
+  - fmdummy/libs/libaelf64.a
 - use "fmdummy" and "shared" namespaces
 
 ## API
