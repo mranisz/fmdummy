@@ -69,11 +69,11 @@ FMDummy1 can be built for up to 16 selected characters from text.
 
 Parameters:
 - T:
-      - FMD1_256 - using 256b blocks: 64b of rank data and 192b of text data
-      - FMD1_512 - using 512b blocks: 64b of rank data and 448b of text data
+  - FMD1_256 - using 256b blocks: 64b of rank data and 192b of text data
+  - FMD1_512 - using 512b blocks: 64b of rank data and 448b of text data
 - selectedChars:
-      - up to 16 ordinal character values, e.g. {'A','C','G','T'}
-      - {} (default) - all characters from the text
+  - up to 16 ordinal character values, e.g. {'A','C','G','T'}
+  - {} (default) - all characters from the text
 
 Constructors:
 ```
@@ -86,11 +86,11 @@ FMDummy1Hash is FMDummy1 with hashed k-symbol prefixes of suffixes from suffix a
 
 Parameters:
 - T:
-      - FMD1_256 - using 256b blocks: 64b of rank data and 192b of text data
-      - FMD1_512 - using 512b blocks: 64b of rank data and 448b of text data
+  - FMD1_256 - using 256b blocks: 64b of rank data and 192b of text data
+  - FMD1_512 - using 512b blocks: 64b of rank data and 448b of text data
 - selectedChars:
-      - up to 16 ordinal character values, e.g. {'A','C','G','T'}
-      - {} (default) - all characters from the text
+  - up to 16 ordinal character values, e.g. {'A','C','G','T'}
+  - {} (default) - all characters from the text
 - k - length of prefixes of suffixes from suffix array
 - loadFactor - hash table load factor
 
@@ -109,14 +109,14 @@ FMDummy1Hash<FMDummy1Type T>(vector<unsigned char> selectedChars, unsigned int k
 
 Parameters:
 - T:
-      - FMD2_256 - using 256b blocks: 64b of rank data and 192b of encoded text data
-      - FMD2_512 - using 512b blocks: 64b of rank data and 448b of encoded text data
+  - FMD2_256 - using 256b blocks: 64b of rank data and 192b of encoded text data
+  - FMD2_512 - using 512b blocks: 64b of rank data and 448b of encoded text data
 - S:
-      - FMD2_SCHEMA_SCBO - using SCBO encoding (A. Fariña, G. Navarro, J. Paramá. Boosting text compression with word-based statistical encoding. The Computer Journal, 55(1):111–131, 2012)
-      - FMD2_SCHEMA_CB - using CB encoding (Sz. Grabowski, M. Raniszewski, S. Deorowicz. FM-index for dummies. arXiv:1506.04896, 2015)
+  - FMD2_SCHEMA_SCBO - using SCBO encoding (A. Fariña, G. Navarro, J. Paramá. Boosting text compression with word-based statistical encoding. The Computer Journal, 55(1):111–131, 2012)
+  - FMD2_SCHEMA_CB - using CB encoding (Sz. Grabowski, M. Raniszewski, S. Deorowicz. FM-index for dummies. arXiv:1506.04896, 2015)
 - BPC:
-      - FMD2_BPC_4 - using 4 bits to store the encoded symbol
-      - FMD2_BPC_3 - using 3 bits to store the encoded symbol
+  - FMD2_BPC_4 - using 4 bits to store the encoded symbol
+  - FMD2_BPC_3 - using 3 bits to store the encoded symbol
 
 Constructors:
 ```
@@ -128,14 +128,14 @@ FMDummy2Hash is FMDummy2 with hashed k-symbol prefixes of suffixes from suffix a
 
 Parameters:
 - T:
-      - FMD2_256 - using 256b blocks: 64b of rank data and 192b of encoded text data
-      - FMD2_512 - using 512b blocks: 64b of rank data and 448b of encoded text data
+  - FMD2_256 - using 256b blocks: 64b of rank data and 192b of encoded text data
+  - FMD2_512 - using 512b blocks: 64b of rank data and 448b of encoded text data
 - S:
-      - FMD2_SCHEMA_SCBO - using SCBO encoding (A. Fariña, G. Navarro, J. Paramá. Boosting text compression with word-based statistical encoding. The Computer Journal, 55(1):111–131, 2012)
-      - FMD2_SCHEMA_CB - using CB encoding (Sz. Grabowski, M. Raniszewski, S. Deorowicz. FM-index for dummies. arXiv:1506.04896, 2015)
+  - FMD2_SCHEMA_SCBO - using SCBO encoding (A. Fariña, G. Navarro, J. Paramá. Boosting text compression with word-based statistical encoding. The Computer Journal, 55(1):111–131, 2012)
+  - FMD2_SCHEMA_CB - using CB encoding (Sz. Grabowski, M. Raniszewski, S. Deorowicz. FM-index for dummies. arXiv:1506.04896, 2015)
 - BPC:
-      - FMD2_BPC_4 - using 4 bits to store the encoded symbol
-      - FMD2_BPC_3 - using 3 bits to store the encoded symbol
+  - FMD2_BPC_4 - using 4 bits to store the encoded symbol
+  - FMD2_BPC_3 - using 3 bits to store the encoded symbol
 - k - length of prefixes of suffixes from suffix array
 - loadFactor - hash table load factor
 
@@ -154,8 +154,8 @@ FMDummy3 is intended for DNA sequences (it searches only for patterns consisting
 
 Parameters:
 - T:
-      - FMD3_512 - using 512b blocks: 128b of rank data and 384b of text data
-      - FMD3_1024 - using 1024b blocks: 128b of rank data and 896b of text data
+  - FMD3_512 - using 512b blocks: 128b of rank data and 384b of text data
+  - FMD3_1024 - using 1024b blocks: 128b of rank data and 896b of text data
 
 Constructors:
 ```
@@ -167,8 +167,8 @@ FMDummy3Hash is FMDummy3 with hashed k-symbol prefixes of suffixes from suffix a
 
 Parameters:
 - T:
-      - FMD3_512 - using 512b blocks: 128b of rank data and 384b of text data
-      - FMD3_1024 - using 1024b blocks: 128b of rank data and 896b of text data
+  - FMD3_512 - using 512b blocks: 128b of rank data and 384b of text data
+  - FMD3_1024 - using 1024b blocks: 128b of rank data and 896b of text data
 - k - length of prefixes of suffixes from suffix array
 - loadFactor - hash table load factor
 
@@ -186,12 +186,12 @@ FMDummy3Hash<FMDummy3Type T>(unsigned int k, double loadFactor);
 
 Parameters:
 - T:
-      - FMDHWT_512 - using 512b blocks: 64b of rank data and 448b of encoded text data
-      - FMDHWT_1024 - using 1024b blocks: 64b of rank data and 960b of encoded text data
+  - FMDHWT_512 - using 512b blocks: 64b of rank data and 448b of encoded text data
+  - FMDHWT_1024 - using 1024b blocks: 64b of rank data and 960b of encoded text data
 - W:
-      - WTDummy_2 - using binary Huffman-shaped wavelet tree
-      - WTDummy_4 - using 4-ary Huffman-shaped wavelet tree
-      - WTDummy_8 - using 8-ary Huffman-shaped wavelet tree
+  - WTDummy_2 - using binary Huffman-shaped wavelet tree
+  - WTDummy_4 - using 4-ary Huffman-shaped wavelet tree
+  - WTDummy_8 - using 8-ary Huffman-shaped wavelet tree
 
 Constructors:
 ```
@@ -203,12 +203,12 @@ FMDummyHWTHash is FMDummyHWT with hashed k-symbol prefixes of suffixes from suff
 
 Parameters:
 - T:
-      - FMDHWT_512 - using 512b blocks: 64b of rank data and 448b of encoded text data
-      - FMDHWT_1024 - using 1024b blocks: 64b of rank data and 960b of encoded text data
+  - FMDHWT_512 - using 512b blocks: 64b of rank data and 448b of encoded text data
+  - FMDHWT_1024 - using 1024b blocks: 64b of rank data and 960b of encoded text data
 - W:
-      - WTDummy_2 - using binary Huffman-shaped wavelet tree
-      - WTDummy_4 - using 4-ary Huffman-shaped wavelet tree
-      - WTDummy_8 - using 8-ary Huffman-shaped wavelet tree
+  - WTDummy_2 - using binary Huffman-shaped wavelet tree
+  - WTDummy_4 - using 4-ary Huffman-shaped wavelet tree
+  - WTDummy_8 - using 8-ary Huffman-shaped wavelet tree
 - k - length of prefixes of suffixes from suffix array
 - loadFactor - hash table load factor
 
