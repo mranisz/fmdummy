@@ -1,7 +1,7 @@
 # FMDummy text indexes library
 
 ## What is it?
-The FMDummy text indexes are fast variants of the FM-index, a well-known compressed full-text index by Ferragina and Manzini \[[1](#references)\]. We focus more on search speed than space use. One of the novelties is a rank solution with 1 cache miss in the worst case, which (to our knowledge) was not used earlier elsewhere.
+The FMDummy text indexes are fast variants of the FM-index \[[1](#references)\], a well-known compressed full-text index by Ferragina and Manzini \[[2](#references)\]. We focus more on search speed than space use. One of the novelties is a rank solution with 1 cache miss in the worst case, which (to our knowledge) was not used earlier elsewhere.
 
 The current version handles only the count query (i.e., returns the number of occurrences of the given pattern).
 
@@ -271,7 +271,8 @@ Using other FMDummy indexes is analogous.
 - A very fast hash function by Yann Collet (xxHash)
 
 ## References
-1. P. Ferragina, G. Manzini. Opportunistic data structures with applications. In Proc. FOCS, pages 390–398. IEEE, 2000.
+1. Sz. Grabowski, M. Raniszewski. FM-index for Dummies. Beyond Databases, Architectures and Structures. Towards Efficient Solutions for Data Analysis and Knowledge Representation - 13th International Conference, BDAS 2017, Ustroń, Poland, May 30 - June 2, 2017, Proceedings, pp. 189-201.
+2. P. Ferragina, G. Manzini. Opportunistic data structures with applications. In Proc. FOCS, pp. 390–398, IEEE, 2000.
 
 ## Authors
 - Szymon Grabowski
