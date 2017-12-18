@@ -28,7 +28,7 @@ make
 ## Usage
 To use the FMDummy library:
 - include "fmdummy/fmdummy.hpp" to your project
-- compile it with "-std=c++11 -O3 -mpopcnt" options and link it with libraries:
+- compile it with "-faligned-new -std=c++11 -O3 -mpopcnt" options and link it with libraries:
   - fmdummy/libfmdummy.a
   - fmdummy/libs/libaelf64.a
 - use "fmdummy" and "shared" namespaces
@@ -264,6 +264,11 @@ int main(int argc, char *argv[]) {
 }
 ```
 Using other FMDummy indexes is analogous.
+
+## Benchmark
+Benchmark script countFMDummy.sh should be run with superuser privileges (as the memory cache is cleared before each test). Benchmark results are saved in the "results" folder.
+
+Before launching a benchmark please download the dna200, english200, proteins200, sources200 and xml200 data files from [http://ranisz.iis.p.lodz.pl/indexes/data/text_files/](http://ranisz.iis.p.lodz.pl/indexes/data/text_files/) and extract them into the main project folder.
 
 ## External resources used in FMDummy project
 - Suffix array building by Yuta Mori (sais)
