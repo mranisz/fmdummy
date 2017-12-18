@@ -268,7 +268,7 @@ Using other FMDummy indexes is analogous.
 ## Benchmark
 Benchmark script countFMDummy.sh should be run with superuser privileges (as the memory cache is cleared before each test). Benchmark results are saved in the "results" folder.
 
-Before launching a benchmark please download the dna200.gz, english200.gz, proteins200.gz, sources200.gz and xml200.gz data files from [http://ranisz.iis.p.lodz.pl/indexes/data/text_files/](http://ranisz.iis.p.lodz.pl/indexes/data/text_files/) and extract them into the main project folder.
+Before launching a benchmark please download the data files from [http://ranisz.iis.p.lodz.pl/indexes/data/text_files/200/](http://ranisz.iis.p.lodz.pl/indexes/data/text_files/200/) and extract them into the main project folder.
 
 ## External resources used in FMDummy project
 - Suffix array building by Yuta Mori (sais)
