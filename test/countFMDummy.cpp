@@ -169,7 +169,7 @@ void fmDummy1_256(string selectedChars, const char *textFileName, unsigned int q
 	}
 	timer.stopTimer();
 
-	string resultFileName = "results/fmdummy/" + string(textFileName) + "_count_FMDummy1.txt";
+	string resultFileName = "results/" + string(textFileName) + "_count_FMDummy1.txt";
 	fstream resultFile(resultFileName.c_str(), ios::out | ios::binary | ios::app);
 	double size = (double)FMD1->getIndexSize() / (double)FMD1->getTextSize();
 	cout << "count FMDummy1-256-" << selectedChars << " " << textFileName << " m=" << m << " queries=" << queriesNum << " size=" << size << "n time=" << timer.getElapsedTime() << endl;
@@ -217,7 +217,7 @@ void fmDummy1_512(string selectedChars, const char *textFileName, unsigned int q
 	}
 	timer.stopTimer();
 
-	string resultFileName = "results/fmdummy/" + string(textFileName) + "_count_FMDummy1.txt";
+	string resultFileName = "results/" + string(textFileName) + "_count_FMDummy1.txt";
 	fstream resultFile(resultFileName.c_str(), ios::out | ios::binary | ios::app);
 	double size = (double)FMD1->getIndexSize() / (double)FMD1->getTextSize();
 	cout << "count FMDummy1-512-" << selectedChars << " " << textFileName << " m=" << m << " queries=" << queriesNum << " size=" << size << "n time=" << timer.getElapsedTime() << endl;
@@ -265,7 +265,7 @@ void fmDummy1Hash_256(string selectedChars, string k, string loadFactor, const c
 	}
 	timer.stopTimer();
 
-	string resultFileName = "results/fmdummy/" + string(textFileName) + "_count_FMDummy1-hash.txt";
+	string resultFileName = "results/" + string(textFileName) + "_count_FMDummy1-hash.txt";
 	fstream resultFile(resultFileName.c_str(), ios::out | ios::binary | ios::app);
 	double size = (double)FMD1->getIndexSize() / (double)FMD1->getTextSize();
 	cout << "count FMDummy1-hash-256-" << selectedChars << "-" << k << "-" << loadFactor << " " << textFileName << " m=" << m << " queries=" << queriesNum << " size=" << size << "n time=" << timer.getElapsedTime() << endl;
@@ -313,7 +313,7 @@ void fmDummy1Hash_512(string selectedChars, string k, string loadFactor, const c
 	}
 	timer.stopTimer();
 
-	string resultFileName = "results/fmdummy/" + string(textFileName) + "_count_FMDummy1-hash.txt";
+	string resultFileName = "results/" + string(textFileName) + "_count_FMDummy1-hash.txt";
 	fstream resultFile(resultFileName.c_str(), ios::out | ios::binary | ios::app);
 	double size = (double)FMD1->getIndexSize() / (double)FMD1->getTextSize();
 	cout << "count FMDummy1-hash-512-" << selectedChars << "-" << k << "-" << loadFactor << " " << textFileName << " m=" << m << " queries=" << queriesNum << " size=" << size << "n time=" << timer.getElapsedTime() << endl;
@@ -361,7 +361,7 @@ void fmDummy2_256_SCBO_3(const char *textFileName, unsigned int queriesNum, unsi
 	}
 	timer.stopTimer();
 
-	string resultFileName = "results/fmdummy/" + string(textFileName) + "_count_FMDummy2.txt";
+	string resultFileName = "results/" + string(textFileName) + "_count_FMDummy2.txt";
 	fstream resultFile(resultFileName.c_str(), ios::out | ios::binary | ios::app);
 	double size = (double)FMD2->getIndexSize() / (double)FMD2->getTextSize();
 	cout << "count FMDummy2-256-SCBO-3 " << textFileName << " m=" << m << " queries=" << queriesNum << " size=" << size << "n time=" << timer.getElapsedTime() << endl;
@@ -409,7 +409,7 @@ void fmDummy2_512_SCBO_3(const char *textFileName, unsigned int queriesNum, unsi
 	}
 	timer.stopTimer();
 
-	string resultFileName = "results/fmdummy/" + string(textFileName) + "_count_FMDummy2.txt";
+	string resultFileName = "results/" + string(textFileName) + "_count_FMDummy2.txt";
 	fstream resultFile(resultFileName.c_str(), ios::out | ios::binary | ios::app);
 	double size = (double)FMD2->getIndexSize() / (double)FMD2->getTextSize();
 	cout << "count FMDummy2-512-SCBO-3 " << textFileName << " m=" << m << " queries=" << queriesNum << " size=" << size << "n time=" << timer.getElapsedTime() << endl;
@@ -457,7 +457,7 @@ void fmDummy2_256_CB_3(const char *textFileName, unsigned int queriesNum, unsign
 	}
 	timer.stopTimer();
 
-	string resultFileName = "results/fmdummy/" + string(textFileName) + "_count_FMDummy2.txt";
+	string resultFileName = "results/" + string(textFileName) + "_count_FMDummy2.txt";
 	fstream resultFile(resultFileName.c_str(), ios::out | ios::binary | ios::app);
 	double size = (double)FMD2->getIndexSize() / (double)FMD2->getTextSize();
 	cout << "count FMDummy2-256-CB-3 " << textFileName << " m=" << m << " queries=" << queriesNum << " size=" << size << "n time=" << timer.getElapsedTime() << endl;
@@ -505,7 +505,7 @@ void fmDummy2_512_CB_3(const char *textFileName, unsigned int queriesNum, unsign
 	}
 	timer.stopTimer();
 
-	string resultFileName = "results/fmdummy/" + string(textFileName) + "_count_FMDummy2.txt";
+	string resultFileName = "results/" + string(textFileName) + "_count_FMDummy2.txt";
 	fstream resultFile(resultFileName.c_str(), ios::out | ios::binary | ios::app);
 	double size = (double)FMD2->getIndexSize() / (double)FMD2->getTextSize();
 	cout << "count FMDummy2-512-CB-3 " << textFileName << " m=" << m << " queries=" << queriesNum << " size=" << size << "n time=" << timer.getElapsedTime() << endl;
@@ -553,7 +553,7 @@ void fmDummy2_256_SCBO_4(const char *textFileName, unsigned int queriesNum, unsi
 	}
 	timer.stopTimer();
 
-	string resultFileName = "results/fmdummy/" + string(textFileName) + "_count_FMDummy2.txt";
+	string resultFileName = "results/" + string(textFileName) + "_count_FMDummy2.txt";
 	fstream resultFile(resultFileName.c_str(), ios::out | ios::binary | ios::app);
 	double size = (double)FMD2->getIndexSize() / (double)FMD2->getTextSize();
 	cout << "count FMDummy2-256-SCBO-4 " << textFileName << " m=" << m << " queries=" << queriesNum << " size=" << size << "n time=" << timer.getElapsedTime() << endl;
@@ -601,7 +601,7 @@ void fmDummy2_512_SCBO_4(const char *textFileName, unsigned int queriesNum, unsi
 	}
 	timer.stopTimer();
 
-	string resultFileName = "results/fmdummy/" + string(textFileName) + "_count_FMDummy2.txt";
+	string resultFileName = "results/" + string(textFileName) + "_count_FMDummy2.txt";
 	fstream resultFile(resultFileName.c_str(), ios::out | ios::binary | ios::app);
 	double size = (double)FMD2->getIndexSize() / (double)FMD2->getTextSize();
 	cout << "count FMDummy2-512-SCBO-4 " << textFileName << " m=" << m << " queries=" << queriesNum << " size=" << size << "n time=" << timer.getElapsedTime() << endl;
@@ -649,7 +649,7 @@ void fmDummy2_256_CB_4(const char *textFileName, unsigned int queriesNum, unsign
 	}
 	timer.stopTimer();
 
-	string resultFileName = "results/fmdummy/" + string(textFileName) + "_count_FMDummy2.txt";
+	string resultFileName = "results/" + string(textFileName) + "_count_FMDummy2.txt";
 	fstream resultFile(resultFileName.c_str(), ios::out | ios::binary | ios::app);
 	double size = (double)FMD2->getIndexSize() / (double)FMD2->getTextSize();
 	cout << "count FMDummy2-256-CB-4 " << textFileName << " m=" << m << " queries=" << queriesNum << " size=" << size << "n time=" << timer.getElapsedTime() << endl;
@@ -697,7 +697,7 @@ void fmDummy2_512_CB_4(const char *textFileName, unsigned int queriesNum, unsign
 	}
 	timer.stopTimer();
 
-	string resultFileName = "results/fmdummy/" + string(textFileName) + "_count_FMDummy2.txt";
+	string resultFileName = "results/" + string(textFileName) + "_count_FMDummy2.txt";
 	fstream resultFile(resultFileName.c_str(), ios::out | ios::binary | ios::app);
 	double size = (double)FMD2->getIndexSize() / (double)FMD2->getTextSize();
 	cout << "count FMDummy2-512-CB-4 " << textFileName << " m=" << m << " queries=" << queriesNum << " size=" << size << "n time=" << timer.getElapsedTime() << endl;
@@ -745,7 +745,7 @@ void fmDummy2Hash_256_SCBO_3(string k, string loadFactor, const char *textFileNa
 	}
 	timer.stopTimer();
 
-	string resultFileName = "results/fmdummy/" + string(textFileName) + "_count_FMDummy2-hash.txt";
+	string resultFileName = "results/" + string(textFileName) + "_count_FMDummy2-hash.txt";
 	fstream resultFile(resultFileName.c_str(), ios::out | ios::binary | ios::app);
 	double size = (double)FMD2->getIndexSize() / (double)FMD2->getTextSize();
 	cout << "count FMDummy2-hash-256-SCBO-3-" << k << "-" << loadFactor << " " << textFileName << " m=" << m << " queries=" << queriesNum << " size=" << size << "n time=" << timer.getElapsedTime() << endl;
@@ -793,7 +793,7 @@ void fmDummy2Hash_512_SCBO_3(string k, string loadFactor, const char *textFileNa
 	}
 	timer.stopTimer();
 
-	string resultFileName = "results/fmdummy/" + string(textFileName) + "_count_FMDummy2-hash.txt";
+	string resultFileName = "results/" + string(textFileName) + "_count_FMDummy2-hash.txt";
 	fstream resultFile(resultFileName.c_str(), ios::out | ios::binary | ios::app);
 	double size = (double)FMD2->getIndexSize() / (double)FMD2->getTextSize();
 	cout << "count FMDummy2-hash-512-SCBO-3-" << k << "-" << loadFactor << " " << textFileName << " m=" << m << " queries=" << queriesNum << " size=" << size << "n time=" << timer.getElapsedTime() << endl;
@@ -841,7 +841,7 @@ void fmDummy2Hash_256_CB_3(string k, string loadFactor, const char *textFileName
 	}
 	timer.stopTimer();
 
-	string resultFileName = "results/fmdummy/" + string(textFileName) + "_count_FMDummy2-hash.txt";
+	string resultFileName = "results/" + string(textFileName) + "_count_FMDummy2-hash.txt";
 	fstream resultFile(resultFileName.c_str(), ios::out | ios::binary | ios::app);
 	double size = (double)FMD2->getIndexSize() / (double)FMD2->getTextSize();
 	cout << "count FMDummy2-hash-256-CB-3-" << k << "-" << loadFactor << " " << textFileName << " m=" << m << " queries=" << queriesNum << " size=" << size << "n time=" << timer.getElapsedTime() << endl;
@@ -889,7 +889,7 @@ void fmDummy2Hash_512_CB_3(string k, string loadFactor, const char *textFileName
 	}
 	timer.stopTimer();
 
-	string resultFileName = "results/fmdummy/" + string(textFileName) + "_count_FMDummy2-hash.txt";
+	string resultFileName = "results/" + string(textFileName) + "_count_FMDummy2-hash.txt";
 	fstream resultFile(resultFileName.c_str(), ios::out | ios::binary | ios::app);
 	double size = (double)FMD2->getIndexSize() / (double)FMD2->getTextSize();
 	cout << "count FMDummy2-hash-512-CB-3-" << k << "-" << loadFactor << " " << textFileName << " m=" << m << " queries=" << queriesNum << " size=" << size << "n time=" << timer.getElapsedTime() << endl;
@@ -937,7 +937,7 @@ void fmDummy2Hash_256_SCBO_4(string k, string loadFactor, const char *textFileNa
 	}
 	timer.stopTimer();
 
-	string resultFileName = "results/fmdummy/" + string(textFileName) + "_count_FMDummy2-hash.txt";
+	string resultFileName = "results/" + string(textFileName) + "_count_FMDummy2-hash.txt";
 	fstream resultFile(resultFileName.c_str(), ios::out | ios::binary | ios::app);
 	double size = (double)FMD2->getIndexSize() / (double)FMD2->getTextSize();
 	cout << "count FMDummy2-hash-256-SCBO-4-" << k << "-" << loadFactor << " " << textFileName << " m=" << m << " queries=" << queriesNum << " size=" << size << "n time=" << timer.getElapsedTime() << endl;
@@ -985,7 +985,7 @@ void fmDummy2Hash_512_SCBO_4(string k, string loadFactor, const char *textFileNa
 	}
 	timer.stopTimer();
 
-	string resultFileName = "results/fmdummy/" + string(textFileName) + "_count_FMDummy2-hash.txt";
+	string resultFileName = "results/" + string(textFileName) + "_count_FMDummy2-hash.txt";
 	fstream resultFile(resultFileName.c_str(), ios::out | ios::binary | ios::app);
 	double size = (double)FMD2->getIndexSize() / (double)FMD2->getTextSize();
 	cout << "count FMDummy2-hash-512-SCBO-4-" << k << "-" << loadFactor << " " << textFileName << " m=" << m << " queries=" << queriesNum << " size=" << size << "n time=" << timer.getElapsedTime() << endl;
@@ -1033,7 +1033,7 @@ void fmDummy2Hash_256_CB_4(string k, string loadFactor, const char *textFileName
 	}
 	timer.stopTimer();
 
-	string resultFileName = "results/fmdummy/" + string(textFileName) + "_count_FMDummy2-hash.txt";
+	string resultFileName = "results/" + string(textFileName) + "_count_FMDummy2-hash.txt";
 	fstream resultFile(resultFileName.c_str(), ios::out | ios::binary | ios::app);
 	double size = (double)FMD2->getIndexSize() / (double)FMD2->getTextSize();
 	cout << "count FMDummy2-hash-256-CB-4-" << k << "-" << loadFactor << " " << textFileName << " m=" << m << " queries=" << queriesNum << " size=" << size << "n time=" << timer.getElapsedTime() << endl;
@@ -1081,7 +1081,7 @@ void fmDummy2Hash_512_CB_4(string k, string loadFactor, const char *textFileName
 	}
 	timer.stopTimer();
 
-	string resultFileName = "results/fmdummy/" + string(textFileName) + "_count_FMDummy2-hash.txt";
+	string resultFileName = "results/" + string(textFileName) + "_count_FMDummy2-hash.txt";
 	fstream resultFile(resultFileName.c_str(), ios::out | ios::binary | ios::app);
 	double size = (double)FMD2->getIndexSize() / (double)FMD2->getTextSize();
 	cout << "count FMDummy2-hash-512-CB-4-" << k << "-" << loadFactor << " " << textFileName << " m=" << m << " queries=" << queriesNum << " size=" << size << "n time=" << timer.getElapsedTime() << endl;
@@ -1130,7 +1130,7 @@ void fmDummy3_512(const char *textFileName, unsigned int queriesNum, unsigned in
 	}
 	timer.stopTimer();
 
-	string resultFileName = "results/fmdummy/" + string(textFileName) + "_count_FMDummy3.txt";
+	string resultFileName = "results/" + string(textFileName) + "_count_FMDummy3.txt";
 	fstream resultFile(resultFileName.c_str(), ios::out | ios::binary | ios::app);
 	double size = (double)FMD3->getIndexSize() / (double)FMD3->getTextSize();
 	cout << "count FMDummy3-512 " << textFileName << " m=" << m << " queries=" << queriesNum << " size=" << size << "n time=" << timer.getElapsedTime() << endl;
@@ -1179,7 +1179,7 @@ void fmDummy3_1024(const char *textFileName, unsigned int queriesNum, unsigned i
 	}
 	timer.stopTimer();
 
-	string resultFileName = "results/fmdummy/" + string(textFileName) + "_count_FMDummy3.txt";
+	string resultFileName = "results/" + string(textFileName) + "_count_FMDummy3.txt";
 	fstream resultFile(resultFileName.c_str(), ios::out | ios::binary | ios::app);
 	double size = (double)FMD3->getIndexSize() / (double)FMD3->getTextSize();
 	cout << "count FMDummy3-1024 " << textFileName << " m=" << m << " queries=" << queriesNum << " size=" << size << "n time=" << timer.getElapsedTime() << endl;
@@ -1228,7 +1228,7 @@ void fmDummy3Hash_512(string k, string loadFactor, const char *textFileName, uns
 	}
 	timer.stopTimer();
 
-	string resultFileName = "results/fmdummy/" + string(textFileName) + "_count_FMDummy3-hash.txt";
+	string resultFileName = "results/" + string(textFileName) + "_count_FMDummy3-hash.txt";
 	fstream resultFile(resultFileName.c_str(), ios::out | ios::binary | ios::app);
 	double size = (double)FMD3->getIndexSize() / (double)FMD3->getTextSize();
 	cout << "count FMDummy3-hash-512-" << k << "-" << loadFactor << " " << textFileName << " m=" << m << " queries=" << queriesNum << " size=" << size << "n time=" << timer.getElapsedTime() << endl;
@@ -1277,7 +1277,7 @@ void fmDummy3Hash_1024(string k, string loadFactor, const char *textFileName, un
 	}
 	timer.stopTimer();
 
-	string resultFileName = "results/fmdummy/" + string(textFileName) + "_count_FMDummy3-hash.txt";
+	string resultFileName = "results/" + string(textFileName) + "_count_FMDummy3-hash.txt";
 	fstream resultFile(resultFileName.c_str(), ios::out | ios::binary | ios::app);
 	double size = (double)FMD3->getIndexSize() / (double)FMD3->getTextSize();
 	cout << "count FMDummy3-hash-1024-" << k << "-" << loadFactor << " " << textFileName << " m=" << m << " queries=" << queriesNum << " size=" << size << "n time=" << timer.getElapsedTime() << endl;
@@ -1325,7 +1325,7 @@ void fmDummyHWT2_512(const char *textFileName, unsigned int queriesNum, unsigned
 	}
 	timer.stopTimer();
 
-	string resultFileName = "results/fmdummy/" + string(textFileName) + "_count_FMDummyHWT.txt";
+	string resultFileName = "results/" + string(textFileName) + "_count_FMDummyHWT.txt";
 	fstream resultFile(resultFileName.c_str(), ios::out | ios::binary | ios::app);
 	double size = (double)FMDHWT->getIndexSize() / (double)FMDHWT->getTextSize();
 	cout << "count FMDummyHWT-2-512 " << textFileName << " m=" << m << " queries=" << queriesNum << " size=" << size << "n time=" << timer.getElapsedTime() << endl;
@@ -1373,7 +1373,7 @@ void fmDummyHWT2_1024(const char *textFileName, unsigned int queriesNum, unsigne
 	}
 	timer.stopTimer();
 
-	string resultFileName = "results/fmdummy/" + string(textFileName) + "_count_FMDummyHWT.txt";
+	string resultFileName = "results/" + string(textFileName) + "_count_FMDummyHWT.txt";
 	fstream resultFile(resultFileName.c_str(), ios::out | ios::binary | ios::app);
 	double size = (double)FMDHWT->getIndexSize() / (double)FMDHWT->getTextSize();
 	cout << "count FMDummyHWT-2-1024 " << textFileName << " m=" << m << " queries=" << queriesNum << " size=" << size << "n time=" << timer.getElapsedTime() << endl;
@@ -1421,7 +1421,7 @@ void fmDummyHWT4_512(const char *textFileName, unsigned int queriesNum, unsigned
 	}
 	timer.stopTimer();
 
-	string resultFileName = "results/fmdummy/" + string(textFileName) + "_count_FMDummyHWT.txt";
+	string resultFileName = "results/" + string(textFileName) + "_count_FMDummyHWT.txt";
 	fstream resultFile(resultFileName.c_str(), ios::out | ios::binary | ios::app);
 	double size = (double)FMDHWT->getIndexSize() / (double)FMDHWT->getTextSize();
 	cout << "count FMDummyHWT-4-512 " << textFileName << " m=" << m << " queries=" << queriesNum << " size=" << size << "n time=" << timer.getElapsedTime() << endl;
@@ -1469,7 +1469,7 @@ void fmDummyHWT4_1024(const char *textFileName, unsigned int queriesNum, unsigne
 	}
 	timer.stopTimer();
 
-	string resultFileName = "results/fmdummy/" + string(textFileName) + "_count_FMDummyHWT.txt";
+	string resultFileName = "results/" + string(textFileName) + "_count_FMDummyHWT.txt";
 	fstream resultFile(resultFileName.c_str(), ios::out | ios::binary | ios::app);
 	double size = (double)FMDHWT->getIndexSize() / (double)FMDHWT->getTextSize();
 	cout << "count FMDummyHWT-4-1024 " << textFileName << " m=" << m << " queries=" << queriesNum << " size=" << size << "n time=" << timer.getElapsedTime() << endl;
@@ -1517,7 +1517,7 @@ void fmDummyHWT8_512(const char *textFileName, unsigned int queriesNum, unsigned
 	}
 	timer.stopTimer();
 
-	string resultFileName = "results/fmdummy/" + string(textFileName) + "_count_FMDummyHWT.txt";
+	string resultFileName = "results/" + string(textFileName) + "_count_FMDummyHWT.txt";
 	fstream resultFile(resultFileName.c_str(), ios::out | ios::binary | ios::app);
 	double size = (double)FMDHWT->getIndexSize() / (double)FMDHWT->getTextSize();
 	cout << "count FMDummyHWT-8-512 " << textFileName << " m=" << m << " queries=" << queriesNum << " size=" << size << "n time=" << timer.getElapsedTime() << endl;
@@ -1565,7 +1565,7 @@ void fmDummyHWT8_1024(const char *textFileName, unsigned int queriesNum, unsigne
 	}
 	timer.stopTimer();
 
-	string resultFileName = "results/fmdummy/" + string(textFileName) + "_count_FMDummyHWT.txt";
+	string resultFileName = "results/" + string(textFileName) + "_count_FMDummyHWT.txt";
 	fstream resultFile(resultFileName.c_str(), ios::out | ios::binary | ios::app);
 	double size = (double)FMDHWT->getIndexSize() / (double)FMDHWT->getTextSize();
 	cout << "count FMDummyHWT-8-1024 " << textFileName << " m=" << m << " queries=" << queriesNum << " size=" << size << "n time=" << timer.getElapsedTime() << endl;
@@ -1613,7 +1613,7 @@ void fmDummyHWT2Hash_512(string k, string loadFactor, const char *textFileName, 
 	}
 	timer.stopTimer();
 
-	string resultFileName = "results/fmdummy/" + string(textFileName) + "_count_FMDummyHWT-hash.txt";
+	string resultFileName = "results/" + string(textFileName) + "_count_FMDummyHWT-hash.txt";
 	fstream resultFile(resultFileName.c_str(), ios::out | ios::binary | ios::app);
 	double size = (double)FMDHWT->getIndexSize() / (double)FMDHWT->getTextSize();
 	cout << "count FMDummyHWT-hash-2-512-" << k << "-" << loadFactor << " " << textFileName << " m=" << m << " queries=" << queriesNum << " size=" << size << "n time=" << timer.getElapsedTime() << endl;
@@ -1661,7 +1661,7 @@ void fmDummyHWT2Hash_1024(string k, string loadFactor, const char *textFileName,
 	}
 	timer.stopTimer();
 
-	string resultFileName = "results/fmdummy/" + string(textFileName) + "_count_FMDummyHWT-hash.txt";
+	string resultFileName = "results/" + string(textFileName) + "_count_FMDummyHWT-hash.txt";
 	fstream resultFile(resultFileName.c_str(), ios::out | ios::binary | ios::app);
 	double size = (double)FMDHWT->getIndexSize() / (double)FMDHWT->getTextSize();
 	cout << "count FMDummyHWT-hash-2-1024-" << k << "-" << loadFactor << " " << textFileName << " m=" << m << " queries=" << queriesNum << " size=" << size << "n time=" << timer.getElapsedTime() << endl;
@@ -1709,7 +1709,7 @@ void fmDummyHWT4Hash_512(string k, string loadFactor, const char *textFileName, 
 	}
 	timer.stopTimer();
 
-	string resultFileName = "results/fmdummy/" + string(textFileName) + "_count_FMDummyHWT-hash.txt";
+	string resultFileName = "results/" + string(textFileName) + "_count_FMDummyHWT-hash.txt";
 	fstream resultFile(resultFileName.c_str(), ios::out | ios::binary | ios::app);
 	double size = (double)FMDHWT->getIndexSize() / (double)FMDHWT->getTextSize();
 	cout << "count FMDummyHWT-hash-4-512-" << k << "-" << loadFactor << " " << textFileName << " m=" << m << " queries=" << queriesNum << " size=" << size << "n time=" << timer.getElapsedTime() << endl;
@@ -1757,7 +1757,7 @@ void fmDummyHWT4Hash_1024(string k, string loadFactor, const char *textFileName,
 	}
 	timer.stopTimer();
 
-	string resultFileName = "results/fmdummy/" + string(textFileName) + "_count_FMDummyHWT-hash.txt";
+	string resultFileName = "results/" + string(textFileName) + "_count_FMDummyHWT-hash.txt";
 	fstream resultFile(resultFileName.c_str(), ios::out | ios::binary | ios::app);
 	double size = (double)FMDHWT->getIndexSize() / (double)FMDHWT->getTextSize();
 	cout << "count FMDummyHWT-hash-4-1024-" << k << "-" << loadFactor << " " << textFileName << " m=" << m << " queries=" << queriesNum << " size=" << size << "n time=" << timer.getElapsedTime() << endl;
@@ -1805,7 +1805,7 @@ void fmDummyHWT8Hash_512(string k, string loadFactor, const char *textFileName, 
 	}
 	timer.stopTimer();
 
-	string resultFileName = "results/fmdummy/" + string(textFileName) + "_count_FMDummyHWT-hash.txt";
+	string resultFileName = "results/" + string(textFileName) + "_count_FMDummyHWT-hash.txt";
 	fstream resultFile(resultFileName.c_str(), ios::out | ios::binary | ios::app);
 	double size = (double)FMDHWT->getIndexSize() / (double)FMDHWT->getTextSize();
 	cout << "count FMDummyHWT-hash-8-512-" << k << "-" << loadFactor << " " << textFileName << " m=" << m << " queries=" << queriesNum << " size=" << size << "n time=" << timer.getElapsedTime() << endl;
@@ -1853,7 +1853,7 @@ void fmDummyHWT8Hash_1024(string k, string loadFactor, const char *textFileName,
 	}
 	timer.stopTimer();
 
-	string resultFileName = "results/fmdummy/" + string(textFileName) + "_count_FMDummyHWT-hash.txt";
+	string resultFileName = "results/" + string(textFileName) + "_count_FMDummyHWT-hash.txt";
 	fstream resultFile(resultFileName.c_str(), ios::out | ios::binary | ios::app);
 	double size = (double)FMDHWT->getIndexSize() / (double)FMDHWT->getTextSize();
 	cout << "count FMDummyHWT-hash-8-1024-" << k << "-" << loadFactor << " " << textFileName << " m=" << m << " queries=" << queriesNum << " size=" << size << "n time=" << timer.getElapsedTime() << endl;
